@@ -355,6 +355,7 @@ var WORKER_URL = 'https://ato-nutrition.andy1996ohare.workers.dev/nutrition';
 
 /* ── WORKOUT DATA ── */
 var WORKOUTS = [
+  {id:'EXTRA',code:'Extra',name:'Extra Run',               type:'e',week:'__extra__',note:''},
   {id:'C3_1',code:'CHO3 1',name:'7km Easy',                type:'e',week:'Week 3',note:''},
   {id:'C3_2',code:'CHO3 2',name:'9km Race Sharpener',      type:'q',week:'Week 3',note:''},
   {id:'C3_3',code:'CHO3 3',name:'6km Easy Flush',          type:'e',week:'Week 3',note:''},
@@ -368,6 +369,7 @@ var WORKOUTS = [
 
 /* ── NUTRITION DAY-TYPE MAPPING (workout id → day index) ── */
 var NUT_MAP = {
+  'EXTRA':2,
   'C3_1':3,  // 7km   → Run 5–8k
   'C3_2':4,  // 9km   → Run 8–12k
   'C3_3':3,  // 6km   → Run 5–8k
@@ -505,10 +507,11 @@ function render(){
       +'</div></div>';
 
   }else if(S.screen==='run_pick'){
-    var rows='';
+    var extraW=WORKOUTS.filter(function(x){return x.id==='EXTRA';})[0];
+    var rows='<div class="sec-lbl">Always available</div>'+workoutCard(extraW);
     for(var wi=0;wi<WEEKS.length;wi++){
       rows+='<div class="sec-lbl">'+WEEKS[wi]+'</div>';
-      var wf=WORKOUTS.filter(function(x){return x.week===WEEKS[wi];});
+      var wf=WORKOUTS.filter(function(x){return x.week===WEEKS[wi]&&x.week!=='__extra__';});
       for(var xi=0;xi<wf.length;xi++) rows+=workoutCard(wf[xi]);
     }
     h=hdr(todayStr(),'PICK YOUR','RUN')+pips()
