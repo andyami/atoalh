@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ATO — Spending Tracker</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f7f5f0; --card: #ffffff; --border: #e2ddd4; --text: #2c2c2a; --muted: #888780;
+    --amber: #BA7517; --amber-light: #FAEEDA; --amber-dark: #412402;
+    --yellow: #A48300;
+    --green: #3B6D11; --green-light: #EAF3DE; --green-dark: #173404;
+    --red: #A32D2D; --red-light: #FCEBEB;
+    --blue: #1a56a0; --blue-light: #ddeeff;
+  }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding: 24px 16px 48px; }
+  .container { max-width: 400px; margin: 0 auto; }
+  header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 28px; }
+  .name { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; }
+  .name span { color: var(--yellow); }
+  .cycle { font-size: 12px; color: var(--muted); }
+  .result-card { border-radius: 14px; padding: 22px 20px; margin-bottom: 12px; }
+  .result-card.positive { background: var(--green-light); border: 1px solid #639922; }
+  .result-card.warning  { background: var(--amber-light); border: 1px solid #EF9F27; }
+  .result-card.negative { background: var(--red-light);   border: 1px solid #E24B4A; }
+  .result-card.empty    { background: var(--card);         border: 1px solid var(--border); }
+  .result-label { font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; margin-bottom: 4px; }
+  .positive .result-label { color: var(--green); }
+  .warning  .result-label { color: var(--amber); }
+  .negative .result-label { color: var(--red); }
+  .empty    .result-label { color: var(--muted); }
+  .result-amount { font-size: 44px; font-weight: 800; letter-spacing: -1.5px; line-height: 1; }
+  .positive .result-amount { color: var(--green-dark); }
+  .warning  .result-amount { color: var(--amber-dark); }
+  .negative .result-amount { color: #501313; }
+  .empty    .result-amount { color: #ccc; }
+  .result-context { font-size: 12px; margin-top: 8px; }
+  .positive .result-context { color: var(--green); }
+  .warning  .result-context { color: var(--amber); }
+  .negative .result-context { color: var(--red); }
+  .empty    .result-context { color: var(--muted); }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px; margin-bottom: 12px; }
+  .card-label { font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; }
+  .field { margin-bottom: 14px; }
+  .field:last-child { margin-bottom: 0; }
+  .field label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 5px; }
+  .hint { font-size: 11px; color: #bbb; margin-top: 5px; }
+  .input-wrap { position: relative; display: flex; align-items: center; }
+  .pound { position: absolute; left: 13px; font-size: 16px; font-weight: 600; color: var(--text); pointer-events: none; }
+  .input-wrap input { width: 100%; padding: 11px 44px 11px 28px; font-size: 18px; font-weight: 600; font-family: inherit; border: 1.5px solid var(--border); border-radius: 10px; background: #faf9f7; color: var(--text); -webkit-appearance: none; appearance: none; transition: border-color 0.15s; }
+  .input-wrap input:focus { outline: none; border-color: var(--yellow); background: #fff; }
+  .input-wrap input.spends-input:focus { border-color: var(--amber); }
+  .saved-tag { position: absolute; right: 10px; font-size: 10px; color: var(--muted); background: #f0ede8; border-radius: 4px; padding: 2px 6px; pointer-events: none; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .reset-btn { width: 100%; padding: 12px; background: none; border: 1px solid var(--border); border-radius: 10px; font-family: inherit; font-size: 13px; color: var(--muted); cursor: pointer; margin-top: 4px; transition: background 0.15s; }
+  .reset-btn:hover { background: #f0ede8; color: var(--text); }
+  .footer { text-align: center; font-size: 11px; color: var(--muted); margin-top: 24px; }
+
+  /* ── Virgin Account section ── */
+  .section-divider { display: flex; align-items: center; gap: 10px; margin: 28px 0 14px; }
+  .section-divider-line { flex: 1; height: 1px; background: var(--border); }
+  .section-divider-label { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+
+  /* Toggle switch */
+  .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0 2px; }
+  .toggle-text { font-size: 13px; font-weight: 600; }
+  .toggle-text.not-taken { color: var(--muted); }
+  .toggle-text.taken { color: var(--green); }
+  .toggle-switch { position: relative; display: inline-block; width: 44px; height: 26px; flex-shrink: 0; }
+  .toggle-switch input { opacity: 0; width: 0; height: 0; }
+  .toggle-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #ddd; border-radius: 26px; transition: 0.2s; }
+  .toggle-slider:before { position: absolute; content: ''; height: 20px; width: 20px; left: 3px; bottom: 3px; background: #fff; border-radius: 50%; transition: 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+  .toggle-switch input:checked + .toggle-slider { background: var(--green); }
+  .toggle-switch input:checked + .toggle-slider:before { transform: translateX(18px); }
+  .fee-note { font-size: 11px; color: var(--muted); margin-top: 6px; }
+
+  /* Pot selector */
+  .pot-selector { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .pot-btn { padding: 11px 8px; border: 1.5px solid var(--border); border-radius: 10px; background: #faf9f7; font-family: inherit; font-size: 14px; font-weight: 600; color: var(--muted); cursor: pointer; transition: all 0.15s; text-align: center; }
+  .pot-btn.active.petrol { background: #FFF8E1; border-color: #E5A000; color: #7A5500; }
+  .pot-btn.active.trains { background: #E8F4FD; border-color: #2980B9; color: #1a4f7a; }
+
+  /* Add button */
+  .add-btn { width: 100%; padding: 13px; background: var(--text); border: none; border-radius: 10px; font-family: inherit; font-size: 14px; font-weight: 700; color: #fff; cursor: pointer; margin-top: 8px; transition: opacity 0.15s; letter-spacing: 0.02em; }
+  .add-btn:active { opacity: 0.75; }
+
+  /* Summary rows */
+  .summary-row { display: flex; align-items: center; justify-content: space-between; padding: 11px 0; border-bottom: 1px solid var(--border); }
+  .summary-row:last-child { border-bottom: none; padding-bottom: 0; }
+  .summary-left { display: flex; flex-direction: column; gap: 2px; }
+  .summary-pot-label { font-size: 11px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted); }
+  .summary-pot-sub { font-size: 11px; color: var(--muted); }
+  .summary-amount { font-size: 16px; font-weight: 700; letter-spacing: -0.2px; }
+  .summary-amount.ok { color: var(--green-dark); }
+  .summary-amount.warn { color: var(--amber-dark); }
+  .summary-amount.over { color: #501313; }
+  .summary-amount.neutral { color: var(--text); }
+
+  .overall-row { display: flex; align-items: center; justify-content: space-between; padding-top: 14px; margin-top: 4px; border-top: 2px solid var(--border); }
+  .overall-label { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+  .overall-amount { font-size: 20px; font-weight: 800; letter-spacing: -0.5px; }
+  .overall-amount.ok { color: var(--green-dark); }
+  .overall-amount.warn { color: var(--amber-dark); }
+  .overall-amount.over { color: #501313; }
+  .fee-pending-badge { display: inline-block; font-size: 10px; font-weight: 700; background: var(--amber-light); color: var(--amber-dark); border: 1px solid #EF9F27; border-radius: 5px; padding: 2px 7px; margin-top: 5px; letter-spacing: 0.04em; }
+
+  /* Allocation check */
+  .alloc-check { display: flex; align-items: center; justify-content: space-between; margin-top: 14px; padding: 10px 13px; border-radius: 9px; font-size: 12px; font-weight: 600; }
+  .alloc-check.ok  { background: var(--green-light); border: 1px solid #639922; color: var(--green-dark); }
+  .alloc-check.over { background: var(--red-light); border: 1px solid #E24B4A; color: #501313; }
+  .alloc-check.neutral { background: #f0ede8; border: 1px solid var(--border); color: var(--muted); }
+  .alloc-check-label { font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+  .alloc-check-amount { font-size: 15px; font-weight: 800; }
+  .history-empty { font-size: 13px; color: var(--muted); text-align: center; padding: 8px 0 2px; }
+  .history-item { display: flex; align-items: center; justify-content: space-between; padding: 9px 0; border-bottom: 1px solid var(--border); }
+  .history-item:last-child { border-bottom: none; }
+  .history-left { display: flex; align-items: center; gap: 9px; }
+  .history-tag { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; padding: 3px 8px; border-radius: 5px; }
+  .history-tag.petrol { background: #FFF8E1; color: #7A5500; border: 1px solid #E5A000; }
+  .history-tag.trains { background: #E8F4FD; color: #1a4f7a; border: 1px solid #2980B9; }
+  .history-amount { font-size: 15px; font-weight: 700; color: var(--text); }
+  .history-right { display: flex; align-items: center; gap: 8px; }
+  .history-time { font-size: 11px; color: var(--muted); }
+  .history-remove { background: none; border: 1px solid var(--border); border-radius: 6px; padding: 3px 9px; font-size: 11px; color: var(--muted); cursor: pointer; font-family: inherit; transition: all 0.15s; }
+  .history-remove:hover { background: var(--red-light); border-color: #E24B4A; color: var(--red); }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="name">ATO <span>Tracker</span></div>
+    <div class="cycle" id="cycle-label"></div>
+  </header>
+
+  <div class="result-card empty" id="result-card">
+    <div class="result-label">Available to spend</div>
+    <div class="result-amount" id="result-amount">—</div>
+    <div class="result-context" id="result-context">Enter your spends budget to begin</div>
+  </div>
+
+  <div class="card">
+    <div class="card-label">RIGHT NOW</div>
+    <div class="two-col">
+      <div class="field">
+        <label>BARCLAYS</label>
+        <div class="input-wrap">
+          <span class="pound">£</span>
+          <input type="number" inputmode="number" id="barclays" placeholder="0">
+          <span class="saved-tag">saved</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>AMEX</label>
+        <div class="input-wrap">
+          <span class="pound">£</span>
+          <input type="number" inputmode="number" id="amex" placeholder="0">
+          <span class="saved-tag">saved</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>EVERYDAY ACCOUNT</label>
+        <div class="input-wrap">
+          <span class="pound">£</span>
+          <input type="number" inputmode="number" id="sta" placeholder="0">
+          <span class="saved-tag">saved</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-label">PAYDAY SPENDS</div>
+    <div class="field">
+      <div class="input-wrap">
+        <span class="pound">£</span>
+        <input type="number" inputmode="number" id="spends" placeholder="0" class="spends-input">
+        <span class="saved-tag">saved</span>
+      </div>
+    </div>
+  </div>
+
+  <button class="reset-btn" onclick="resetAll()">Clear all fields</button>
+
+  <!-- ── TRAVEL ACCOUNT ── -->
+  <div class="section-divider">
+    <div class="section-divider-line"></div>
+    <div class="section-divider-label">Virgin Account</div>
+    <div class="section-divider-line"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-label">PAYDAY DEPOSIT</div>
+    <div class="field">
+      <div class="input-wrap">
+        <span class="pound">£</span>
+        <input type="number" inputmode="number" id="vir_total" placeholder="0">
+        <span class="saved-tag">saved</span>
+      </div>
+    </div>
+    <div id="vir-alloc-check"></div>
+    <div class="field" style="margin-bottom:0">
+      <label>Account management fee (£14, taken 26th)</label>
+      <div class="toggle-row">
+        <span class="toggle-text not-taken" id="fee-toggle-text">Not yet taken</span>
+        <label class="toggle-switch">
+          <input type="checkbox" id="vir_fee_taken" onchange="onFeeToggle()">
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-label">PAYDAY POT ALLOCATION</div>
+    <div class="two-col">
+      <div class="field">
+        <label>⛽ Petrol</label>
+        <div class="input-wrap">
+          <span class="pound">£</span>
+          <input type="number" inputmode="number" id="vir_petrol" placeholder="0">
+          <span class="saved-tag">saved</span>
+        </div>
+      </div>
+      <div class="field">
+        <label>🚆 Trains</label>
+        <div class="input-wrap">
+          <span class="pound">£</span>
+          <input type="number" inputmode="number" id="vir_trains" placeholder="0">
+          <span class="saved-tag">saved</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-label">SPEND LOG</div>
+    <div class="field">
+      <div class="input-wrap">
+        <span class="pound">£</span>
+        <input type="number" inputmode="number" id="vir_spend_input" placeholder="0">
+      </div>
+    </div>
+    <div class="field" style="margin-bottom:0">
+      <label>Pot</label>
+      <div class="pot-selector">
+        <button class="pot-btn active petrol" id="pot-petrol" onclick="selectPot('petrol')">⛽ Petrol</button>
+        <button class="pot-btn trains" id="pot-trains" onclick="selectPot('trains')">🚆 Trains</button>
+      </div>
+    </div>
+    <button class="add-btn" onclick="addVirSpend()">Add</button>
+  </div>
+
+  <div class="card" id="vir-summary-card">
+    <div class="card-label">POT SUMMARY</div>
+    <div id="vir-summary-rows"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-label">SPEND HISTORY</div>
+    <div id="vir-history-list"></div>
+  </div>
+
+  <div class="footer">Spends, Barclays, AMEX &amp; Virgin pots are remembered between visits</div>
+
+</div>
+<script>
+  /* ─── MAIN TRACKER ─── */
+  var PERSIST = ['spends', 'amex', 'barclays', 'sta'];
+
+  function fmt(n) {
+    return '£' + Math.abs(n).toLocaleString('en-GB', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+  }
+  function fmtSigned(n) {
+    return (n < 0 ? '−\u2009' : '') + fmt(n);
+  }
+
+  function val(id) {
+    var el = document.getElementById(id);
+    return el ? (parseFloat(el.value) || 0) : 0;
+  }
+
+  function saveAll() {
+    PERSIST.forEach(function(id) {
+      try { localStorage.setItem('ato_' + id, document.getElementById(id).value); } catch(e) {}
+    });
+  }
+
+  function loadAll() {
+    PERSIST.forEach(function(id) {
+      try {
+        var stored = localStorage.getItem('ato_' + id);
+        if (stored !== null && stored !== '') document.getElementById(id).value = stored;
+      } catch(e) {}
+    });
+  }
+
+  function calc() {
+    saveAll();
+    var spends    = val('spends');
+    var amex      = val('amex');
+    var barcl     = val('barclays');
+    var sta       = val('sta');
+    var available = (spends + sta) - amex - barcl;
+
+    var card    = document.getElementById('result-card');
+    var amount  = document.getElementById('result-amount');
+    var context = document.getElementById('result-context');
+
+    if (spends === 0) {
+      card.className = 'result-card empty';
+      amount.textContent = '—';
+      context.textContent = 'Enter your spends budget to begin';
+      return;
+    }
+
+    amount.textContent = fmtSigned(available);
+
+    if (available < 0) {
+      card.className = 'result-card negative';
+      context.textContent = 'Over budget by ' + fmt(available);
+    } else if (available < spends * 0.25) {
+      card.className = 'result-card warning';
+      context.textContent = 'Nearly gone — ' + fmt(available) + ' left of ' + fmt(spends);
+    } else if (available < spends * 0.5) {
+      card.className = 'result-card warning';
+      context.textContent = 'Past halfway — ' + fmt(available) + ' left of ' + fmt(spends);
+    } else {
+      card.className = 'result-card positive';
+      context.textContent = fmt(available) + ' left of ' + fmt(spends) + ' budget';
+    }
+  }
+
+  function resetAll() {
+    ['spends', 'sta', 'amex', 'barclays'].forEach(function(id) {
+      document.getElementById(id).value = '';
+    });
+    PERSIST.forEach(function(id) {
+      try { localStorage.removeItem('ato_' + id); } catch(e) {}
+    });
+    calc();
+  }
+
+  function setCycle() {
+    var now   = new Date();
+    var day   = now.getDate();
+    var start = day >= 25
+      ? new Date(now.getFullYear(), now.getMonth(), 25)
+      : new Date(now.getFullYear(), now.getMonth() - 1, 25);
+    var end   = new Date(start.getFullYear(), start.getMonth() + 1, 24);
+    var opts  = { day: 'numeric', month: 'short' };
+    document.getElementById('cycle-label').textContent =
+      start.toLocaleDateString('en-GB', opts) + ' – ' + end.toLocaleDateString('en-GB', opts);
+  }
+
+  document.querySelectorAll('input:not([type=checkbox])').forEach(function(el) {
+    el.addEventListener('input', calc);
+  });
+
+  /* ─── VIRGIN ACCOUNT ─── */
+  var virHistory = [];
+  var virSelectedPot = 'petrol';
+  var VIR_SIMPLE = ['vir_total', 'vir_petrol', 'vir_trains'];
+
+  function saveVir() {
+    VIR_SIMPLE.forEach(function(id) {
+      try { localStorage.setItem('ato_' + id, document.getElementById(id).value); } catch(e) {}
+    });
+    try { localStorage.setItem('ato_vir_fee_taken', document.getElementById('vir_fee_taken').checked ? '1' : '0'); } catch(e) {}
+    try { localStorage.setItem('ato_vir_history', JSON.stringify(virHistory)); } catch(e) {}
+  }
+
+  function loadVir() {
+    VIR_SIMPLE.forEach(function(id) {
+      try {
+        var s = localStorage.getItem('ato_' + id);
+        if (s !== null && s !== '') document.getElementById(id).value = s;
+      } catch(e) {}
+    });
+    try {
+      var feeSaved = localStorage.getItem('ato_vir_fee_taken');
+      if (feeSaved !== null) {
+        document.getElementById('vir_fee_taken').checked = feeSaved === '1';
+        updateFeeLabel();
+      }
+    } catch(e) {}
+    try {
+      var hist = localStorage.getItem('ato_vir_history');
+      virHistory = hist ? JSON.parse(hist) : [];
+    } catch(e) { virHistory = []; }
+  }
+
+  function onFeeToggle() {
+    updateFeeLabel();
+    saveVir();
+    renderVirSummary();
+  }
+
+  function updateFeeLabel() {
+    var taken = document.getElementById('vir_fee_taken').checked;
+    var el = document.getElementById('fee-toggle-text');
+    el.textContent = taken ? '£14 taken ✓' : 'Not yet taken';
+    el.className = 'toggle-text ' + (taken ? 'taken' : 'not-taken');
+  }
+
+  function selectPot(pot) {
+    virSelectedPot = pot;
+    document.getElementById('pot-petrol').className = 'pot-btn petrol' + (pot === 'petrol' ? ' active' : '');
+    document.getElementById('pot-trains').className = 'pot-btn trains' + (pot === 'trains' ? ' active' : '');
+  }
+
+  function addVirSpend() {
+    var amountEl = document.getElementById('vir_spend_input');
+    var amount = parseFloat(amountEl.value) || 0;
+    if (amount <= 0) {
+      amountEl.focus();
+      return;
+    }
+    var now = new Date();
+    virHistory.push({
+      id: Date.now(),
+      pot: virSelectedPot,
+      amount: amount,
+      time: now.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) + ' ' +
+            now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
+    });
+    amountEl.value = '';
+    saveVir();
+    renderVirSummary();
+    renderVirHistory();
+  }
+
+  function removeVirSpend(id) {
+    virHistory = virHistory.filter(function(e) { return e.id !== id; });
+    saveVir();
+    renderVirSummary();
+    renderVirHistory();
+  }
+
+  function amountClass(left, alloc) {
+    if (alloc === 0) return 'neutral';
+    if (left < 0) return 'over';
+    if (left < alloc * 0.25) return 'warn';
+    return 'ok';
+  }
+
+  function renderVirSummary() {
+    var total       = val('vir_total');
+    var feeTaken    = document.getElementById('vir_fee_taken').checked;
+    var petrolAlloc = val('vir_petrol');
+    var trainsAlloc = val('vir_trains');
+
+    var petrolSpent = virHistory.filter(function(e){ return e.pot === 'petrol'; })
+                                .reduce(function(s, e){ return s + e.amount; }, 0);
+    var trainsSpent = virHistory.filter(function(e){ return e.pot === 'trains'; })
+                                .reduce(function(s, e){ return s + e.amount; }, 0);
+
+    var feeAmount   = feeTaken ? 14 : 0;
+    var petrolLeft  = petrolAlloc - petrolSpent;
+    var trainsLeft  = trainsAlloc - trainsSpent;
+    var overallLeft = total - feeAmount - petrolSpent - trainsSpent;
+
+    var html = '';
+
+    // Petrol row
+    html += '<div class="summary-row">';
+    html += '<div class="summary-left"><div class="summary-pot-label">⛽ Petrol</div>';
+    if (petrolAlloc > 0) html += '<div class="summary-pot-sub">' + fmt(petrolSpent) + ' spent of ' + fmt(petrolAlloc) + '</div>';
+    html += '</div>';
+    html += '<div class="summary-amount ' + amountClass(petrolLeft, petrolAlloc) + '">' + fmtSigned(petrolLeft) + '</div>';
+    html += '</div>';
+
+    // Trains row
+    html += '<div class="summary-row">';
+    html += '<div class="summary-left"><div class="summary-pot-label">🚆 Trains</div>';
+    if (trainsAlloc > 0) html += '<div class="summary-pot-sub">' + fmt(trainsSpent) + ' spent of ' + fmt(trainsAlloc) + '</div>';
+    html += '</div>';
+    html += '<div class="summary-amount ' + amountClass(trainsLeft, trainsAlloc) + '">' + fmtSigned(trainsLeft) + '</div>';
+    html += '</div>';
+
+    // Overall
+    var overallCls = overallLeft < 0 ? 'over' : overallLeft < total * 0.2 ? 'warn' : 'ok';
+    html += '<div class="overall-row">';
+    html += '<div><div class="overall-label">Overall in account</div>';
+    if (!feeTaken && total > 0) html += '<div class="fee-pending-badge">£14 fee not yet deducted</div>';
+    html += '</div>';
+    html += '<div class="overall-amount ' + overallCls + '">' + fmtSigned(overallLeft) + '</div>';
+    html += '</div>';
+
+    document.getElementById('vir-summary-rows').innerHTML = html;
+
+    // Allocation check in deposit card
+    var allocTotal = petrolAlloc + trainsAlloc + 14;
+    var checkEl = document.getElementById('vir-alloc-check');
+    if (total === 0 && allocTotal === 14) {
+      checkEl.innerHTML = '';
+    } else {
+      var diff = total - allocTotal;
+      var cls = total === 0 ? 'neutral' : diff < 0 ? 'over' : 'ok';
+      var msg = diff < 0
+        ? 'Short by ' + fmt(Math.abs(diff))
+        : diff === 0 ? 'Fully allocated ✓' : fmt(diff) + ' unallocated';
+      checkEl.innerHTML =
+        '<div class="alloc-check ' + cls + '">' +
+        '<span class="alloc-check-label">Pots + fee (' + fmt(allocTotal) + ')</span>' +
+        '<span class="alloc-check-amount">' + msg + '</span>' +
+        '</div>';
+    }
+  }
+
+  function renderVirHistory() {
+    var list = document.getElementById('vir-history-list');
+    if (virHistory.length === 0) {
+      list.innerHTML = '<div class="history-empty">No spends logged yet</div>';
+      return;
+    }
+    var html = '';
+    // Newest first
+    var sorted = virHistory.slice().reverse();
+    sorted.forEach(function(e) {
+      html += '<div class="history-item">';
+      html += '<div class="history-left">';
+      html += '<span class="history-tag ' + e.pot + '">' + (e.pot === 'petrol' ? '⛽ Petrol' : '🚆 Trains') + '</span>';
+      html += '<span class="history-amount">' + fmt(e.amount) + '</span>';
+      html += '</div>';
+      html += '<div class="history-right">';
+      html += '<span class="history-time">' + e.time + '</span>';
+      html += '<button class="history-remove" onclick="removeVirSpend(' + e.id + ')">Remove</button>';
+      html += '</div>';
+      html += '</div>';
+    });
+    list.innerHTML = html;
+  }
+
+  // Wire up Virgin inputs to save + re-render
+  ['vir_total', 'vir_petrol', 'vir_trains'].forEach(function(id) {
+    document.getElementById(id).addEventListener('input', function() {
+      saveVir();
+      renderVirSummary();
+    });
+  });
+
+  setCycle();
+  loadAll();
+  calc();
+  loadVir();
+  renderVirSummary();
+  renderVirHistory();
+</script>
+</body>
+</html>

@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ATO Tools">
+<title>ATO Tools</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #f5f5f3;
+  color: #1a1a1a;
+  padding: 20px 16px 48px;
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100vh;
+}
+
+/* ── Page header ── */
+.page-header {
+  margin-bottom: 28px;
+}
+.page-header h1 {
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  margin-bottom: 2px;
+}
+.page-header p {
+  font-size: 13px;
+  color: #888;
+}
+
+/* ── Group block ── */
+.group {
+  margin-bottom: 24px;
+}
+.group-header {
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.group-header h2 {
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+.group-header .count {
+  font-size: 12px;
+  font-weight: 500;
+  opacity: 0.7;
+}
+
+/* Home group — beige */
+.group-home .group-header {
+  background: #e8e0d0;
+  color: #4a3f2f;
+}
+
+/* ATO Life group — yellow */
+.group-life .group-header {
+  background: #f0c830;
+  color: #3a2e00;
+}
+
+/* ── Tool cards ── */
+.tool-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 8px;
+  text-decoration: none;
+  color: inherit;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  transition: transform 0.1s, box-shadow 0.1s;
+  -webkit-tap-highlight-color: transparent;
+  cursor: pointer;
+}
+.tool-card:active {
+  transform: scale(0.98);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+.tool-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.tool-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+/* Home group icon colours — beige tones */
+.icon-finance-ato  { background: #f0ece4; }
+.icon-finance-alh  { background: #e8dfd0; }
+.icon-food         { background: #f0e8d8; }
+.icon-recipe       { background: #ece4d8; }
+.icon-mealprep     { background: #e8e0cc; }
+
+/* ATO Life group icon colours — yellow tones */
+.icon-nutrition    { background: #eaf3de; }
+.icon-stretching   { background: #fff8d0; }
+
+.tool-info h3 {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 1px;
+}
+.tool-info p {
+  font-size: 12px;
+  color: #888;
+}
+.tool-arrow {
+  font-size: 18px;
+  color: #ccc;
+  flex-shrink: 0;
+}
+
+/* ── Footer ── */
+.footer {
+  text-align: center;
+  font-size: 11px;
+  color: #bbb;
+  margin-top: 8px;
+}
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>ATO Tools</h1>
+  <p>Your personal toolkit</p>
+</div>
+
+<!-- Home Group -->
+<div class="group group-home">
+  <div class="group-header">
+    <h2>🏠 Home</h2>
+    <span class="count">5 tools</span>
+  </div>
+
+  <a class="tool-card" href="home/finance-ato/index.html">
+    <div class="tool-left">
+      <div class="tool-icon icon-finance-ato">💳</div>
+      <div class="tool-info">
+        <h3>ATO Finance</h3>
+        <p>Spending tracker</p>
+      </div>
+    </div>
+    <span class="tool-arrow">›</span>
+  </a>
+
+  <a class="tool-card" href="home/finance-alh/index.html">
+    <div class="tool-left">
+      <div class="tool-icon icon-finance-alh">💳</div>
+      <div class="tool-info">
+        <h3>ALH Finance</h3>
+        <p>Spending tracker</p>
+      </div>
+    </div>
+    <span class="tool-arrow">›</span>
+  </a>
+
+  <a class="tool-card" href="home/food-database/index.html">
+    <div class="tool-left">
+      <div class="tool-icon icon-food">🥦</div>
+      <div class="tool-info">
+        <h3>Food Database</h3>
+        <p>Nutrition reference</p>
+      </div>
+    </div>
+    <span class="tool-arrow">›</span>
+  </a>
+
+  <a class="tool-card" href="home/recipe-database/index.html">
+    <div class="tool-left">
+      <div class="tool-icon icon-recipe">📖</div>
+      <div class="tool-info">
+        <h3>Recipe Database</h3>
+        <p>Saved recipes</p>
+      </div>
+    </div>
+    <span class="tool-arrow">›</span>
+  </a>
+
+  <a class="tool-card" href="home/meal-prep-planner/index.html">
+    <div class="tool-left">
+      <div class="tool-icon icon-mealprep">🥗</div>
+      <div class="tool-info">
+        <h3>Meal Prep Planner</h3>
+        <p>Weekly prep planning</p>
+      </div>
+    </div>
+    <span class="tool-arrow">›</span>
+  </a>
+</div>
+
+<!-- ATO Life Group -->
+<div class="group group-life">
+  <div class="group-header">
+    <h2>⚡ ATO Life</h2>
+    <span class="count">2 tools</span>
+  </div>
+
+  <a class="tool-card" href="ato-life/nutrition/index.html">
+    <div class="tool-left">
+      <div class="tool-icon icon-nutrition">🥑</div>
+      <div class="tool-info">
+        <h3>Nutrition Tracker</h3>
+        <p>Daily macro targets</p>
+      </div>
+    </div>
+    <span class="tool-arrow">›</span>
+  </a>
+
+  <a class="tool-card" href="ato-life/stretching-running-sp/index.html">
+    <div class="tool-left">
+      <div class="tool-icon icon-stretching">🏃</div>
+      <div class="tool-info">
+        <h3>Stretching / Running / S&P</h3>
+        <p>Daily exercise guide</p>
+      </div>
+    </div>
+    <span class="tool-arrow">›</span>
+  </a>
+</div>
+
+<div class="footer">Hosted on GitHub Pages</div>
+
+</body>
+</html>

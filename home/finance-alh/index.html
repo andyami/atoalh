@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ALH — Spending Tracker</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #f7f5f0; --card: #ffffff; --border: #e2ddd4; --text: #2c2c2a; --muted: #888780;
+    --amber: #BA7517; --amber-light: #FAEEDA; --amber-dark: #412402;
+    --alhgreen: #216A39;
+    --green: #3B6D11; --green-light: #EAF3DE; --green-dark: #173404;
+    --red: #A32D2D; --red-light: #FCEBEB;
+  }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding: 24px 16px 48px; }
+  .container { max-width: 400px; margin: 0 auto; }
+  header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 28px; }
+  .name { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; }
+  .name span { color: var(--alhgreen); }
+  .cycle { font-size: 12px; color: var(--muted); }
+  .result-card { border-radius: 14px; padding: 22px 20px; margin-bottom: 12px; }
+  .result-card.positive { background: var(--green-light); border: 1px solid #639922; }
+  .result-card.warning  { background: var(--amber-light); border: 1px solid #EF9F27; }
+  .result-card.negative { background: var(--red-light);   border: 1px solid #E24B4A; }
+  .result-card.empty    { background: var(--card);         border: 1px solid var(--border); }
+  .result-label { font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; margin-bottom: 4px; }
+  .positive .result-label { color: var(--green); }
+  .warning  .result-label { color: var(--amber); }
+  .negative .result-label { color: var(--red); }
+  .empty    .result-label { color: var(--muted); }
+  .result-amount { font-size: 44px; font-weight: 800; letter-spacing: -1.5px; line-height: 1; }
+  .positive .result-amount { color: var(--green-dark); }
+  .warning  .result-amount { color: var(--amber-dark); }
+  .negative .result-amount { color: #501313; }
+  .empty    .result-amount { color: #ccc; }
+  .result-context { font-size: 12px; margin-top: 8px; }
+  .positive .result-context { color: var(--green); }
+  .warning  .result-context { color: var(--amber); }
+  .negative .result-context { color: var(--red); }
+  .empty    .result-context { color: var(--muted); }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px; margin-bottom: 12px; }
+  .card-label { font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; }
+  .field { margin-bottom: 14px; }
+  .field:last-child { margin-bottom: 0; }
+  .field label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 5px; }
+  .hint { font-size: 11px; color: #bbb; margin-top: 5px; }
+  .input-wrap { position: relative; display: flex; align-items: center; }
+  .pound { position: absolute; left: 13px; font-size: 16px; font-weight: 600; color: var(--text); pointer-events: none; }
+  .input-wrap input { width: 100%; padding: 11px 44px 11px 28px; font-size: 18px; font-weight: 600; font-family: inherit; border: 1.5px solid var(--border); border-radius: 10px; background: #faf9f7; color: var(--text); -webkit-appearance: none; appearance: none; transition: border-color 0.15s; }
+  .input-wrap input:focus { outline: none; border-color: var(--alhgreen); background: #fff; }
+  .input-wrap input.spends-input:focus { border-color: var(--amber); }
+  .saved-tag { position: absolute; right: 10px; font-size: 10px; color: var(--muted); background: #f0ede8; border-radius: 4px; padding: 2px 6px; pointer-events: none; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .reset-btn { width: 100%; padding: 12px; background: none; border: 1px solid var(--border); border-radius: 10px; font-family: inherit; font-size: 13px; color: var(--muted); cursor: pointer; margin-top: 4px; transition: background 0.15s; }
+  .reset-btn:hover { background: #f0ede8; color: var(--text); }
+  .footer { text-align: center; font-size: 11px; color: var(--muted); margin-top: 24px; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="name">ALH <span>Tracker</span></div>
+    <div class="cycle" id="cycle-label"></div>
+  </header>
+
+  <div class="result-card empty" id="result-card">
+    <div class="result-label">Available to spend</div>
+    <div class="result-amount" id="result-amount">—</div>
+    <div class="result-context" id="result-context">Enter your spends budget to begin</div>
+  </div>
+
+    <div class="card">
+    <div class="card-label">RIGHT NOW</div>
+
+      <div class="field">
+        <label>BARCLAYS</label>
+        <div class="input-wrap">
+          <span class="pound">£</span>
+          <input type="number" inputmode="number" id="barclays" placeholder="0">
+          <span class="saved-tag">saved</span>
+        </div>
+      </div>
+      <div class="field">
+      <label>EVERYDAY ACCOUNT</label>
+      <div class="input-wrap">
+        <span class="pound">£</span>
+        <input type="number" inputmode="number" id="sta" placeholder="0">
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-label">PAYDAY SPENDS</div>
+    <div class="field">
+      <div class="input-wrap">
+        <span class="pound">£</span>
+        <input type="number" inputmode="number" id="spends" placeholder="0" class="spends-input">
+        <span class="saved-tag">saved</span>
+      </div>
+    </div>
+  </div>
+
+  <button class="reset-btn" onclick="resetAll()">Clear all fields</button>
+  <div class="footer">Spends & Barclays are remembered between visits</div>
+
+</div>
+<script>
+  var PERSIST = ['spends', 'barclays'];
+
+  function fmt(n) {
+    return '\u00a3' + Math.abs(n).toLocaleString('en-GB', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+  }
+
+  function val(id) {
+    var el = document.getElementById(id);
+    return el ? (parseFloat(el.value) || 0) : 0;
+  }
+
+  function saveAll() {
+    PERSIST.forEach(function(id) {
+      try { localStorage.setItem('alh_' + id, document.getElementById(id).value); } catch(e) {}
+    });
+  }
+
+  function loadAll() {
+    PERSIST.forEach(function(id) {
+      try {
+        var stored = localStorage.getItem('alh_' + id);
+        if (stored !== null && stored !== '') {
+          document.getElementById(id).value = stored;
+        }
+      } catch(e) {}
+    });
+  }
+
+  function calc() {
+    saveAll();
+    var spends    = val('spends');
+    var barcl     = val('barclays');
+    var sta       = val('sta');
+    var available = (spends + sta) - barcl;
+
+    var card    = document.getElementById('result-card');
+    var amount  = document.getElementById('result-amount');
+    var context = document.getElementById('result-context');
+
+    if (spends === 0) {
+      card.className = 'result-card empty';
+      amount.textContent = '\u2014';
+      context.textContent = 'Enter your spends budget to begin';
+      return;
+    }
+
+    amount.textContent = (available < 0 ? '\u2212 ' : '') + fmt(available);
+
+    if (available < 0) {
+      card.className = 'result-card negative';
+      context.textContent = 'STOP SPENDING AMI, OVER BUDGET BY ' + fmt(available);
+    } else if (available < spends * 0.25) {
+      card.className = 'result-card warning';
+      context.textContent = 'Nearly gone \u2014 ' + fmt(available) + ' left of ' + fmt(spends);
+    } else if (available < spends * 0.5) {
+      card.className = 'result-card warning';
+      context.textContent = 'Past halfway \u2014 ' + fmt(available) + ' left of ' + fmt(spends);
+    } else {
+      card.className = 'result-card positive';
+      context.textContent = fmt(available) + ' left of ' + fmt(spends) + ' budget';
+    }
+  }
+
+  function resetAll() {
+    ['spends', 'sta', 'barclays'].forEach(function(id) {
+      document.getElementById(id).value = '';
+    });
+    PERSIST.forEach(function(id) {
+      try { localStorage.removeItem('alh_' + id); } catch(e) {}
+    });
+    calc();
+  }
+
+  function setCycle() {
+    var now   = new Date();
+    var day   = now.getDate();
+    var start = day >= 25
+      ? new Date(now.getFullYear(), now.getMonth(), 25)
+      : new Date(now.getFullYear(), now.getMonth() - 1, 25);
+    var end   = new Date(start.getFullYear(), start.getMonth() + 1, 24);
+    var opts  = { day: 'numeric', month: 'short' };
+    document.getElementById('cycle-label').textContent =
+      start.toLocaleDateString('en-GB', opts) + ' \u2013 ' + end.toLocaleDateString('en-GB', opts);
+  }
+
+  document.querySelectorAll('input').forEach(function(el) {
+    el.addEventListener('input', calc);
+  });
+
+  setCycle();
+  loadAll();
+  calc();
+</script>
+</body>
+</html>

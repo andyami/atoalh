@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Recipe Database</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #FAF8F5;
+  --surface: #FFFFFF;
+  --surface2: #F5F1EB;
+  --border: #E8E2D9;
+  --text: #1C1A17;
+  --muted: #8A8478;
+  --accent: #C4522A;
+  --accent2: #2A5C3F;
+  --header-bg: #1C1A17;
+  --header-text: #FAF8F5;
+  --radius: 12px;
+  --shadow: 0 2px 12px rgba(0,0,0,0.07);
+  --shadow-lg: 0 8px 40px rgba(0,0,0,0.15);
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-body: 'DM Sans', sans-serif;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-height:100vh;font-size:14px}
+
+/* ── HEADER ── */
+.header{background:var(--header-bg);color:var(--header-text);padding:0 24px;display:flex;align-items:center;gap:16px;height:60px;position:sticky;top:0;z-index:100;flex-wrap:wrap}
+.logo{font-family:var(--font-display);font-size:20px;font-weight:700;color:#F5C07A;white-space:nowrap;flex-shrink:0}
+.logo span{color:var(--header-text);font-style:italic;font-weight:400}
+.search-wrap{flex:1;min-width:160px;max-width:400px;position:relative}
+.search-wrap input{width:100%;background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.15);color:var(--header-text);border-radius:8px;padding:8px 12px 8px 36px;font-family:var(--font-body);font-size:14px;outline:none;transition:background .2s}
+.search-wrap input::placeholder{color:rgba(255,255,255,0.4)}
+.search-wrap input:focus{background:rgba(255,255,255,0.15)}
+.search-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:rgba(255,255,255,0.4);pointer-events:none}
+.header-actions{display:flex;gap:8px;margin-left:auto}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:8px;border:none;cursor:pointer;font-family:var(--font-body);font-size:13px;font-weight:500;transition:all .15s;white-space:nowrap}
+.btn-ghost{background:rgba(255,255,255,0.1);color:var(--header-text);border:1px solid rgba(255,255,255,0.15)}
+.btn-ghost:hover{background:rgba(255,255,255,0.18)}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:#b3481f}
+.btn-secondary{background:var(--surface);color:var(--text)}
+.btn-secondary:hover{background:var(--surface2)}
+.btn-danger{background:#dc3545;color:#fff}
+.btn-danger:hover{background:#c82333}
+.btn-sm{padding:5px 10px;font-size:12px}
+
+/* ── FILTER BAR ── */
+.filter-bar{background:var(--surface);border-bottom:1px solid var(--border);padding:10px 24px;display:flex;gap:8px;align-items:center;overflow-x:auto;scrollbar-width:none;flex-wrap:nowrap}
+.filter-bar::-webkit-scrollbar{display:none}
+.filter-label{font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);white-space:nowrap;flex-shrink:0}
+.filter-pill{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:20px;border:1px solid var(--border);background:var(--surface);cursor:pointer;font-size:12px;font-weight:500;white-space:nowrap;transition:all .15s;flex-shrink:0}
+.filter-pill:hover{border-color:var(--accent);color:var(--accent)}
+.filter-pill.active{color:#fff;border-color:transparent}
+.filter-sep{width:1px;height:20px;background:var(--border);flex-shrink:0}
+.cooked-toggle{display:flex;border:1px solid var(--border);border-radius:20px;overflow:hidden;flex-shrink:0}
+.cooked-toggle button{padding:5px 12px;border:none;background:transparent;cursor:pointer;font-size:12px;font-weight:500;font-family:var(--font-body);color:var(--muted);transition:all .15s}
+.cooked-toggle button.active{background:var(--accent);color:#fff}
+
+/* ── RESULTS BAR ── */
+.results-bar{padding:12px 24px 0;display:flex;align-items:center;justify-content:space-between;color:var(--muted);font-size:12px}
+
+/* ── GRID ── */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:18px;padding:16px 24px 40px}
+.empty-state{grid-column:1/-1;text-align:center;padding:80px 20px;color:var(--muted)}
+.empty-state .big{font-family:var(--font-display);font-size:48px;margin-bottom:8px;opacity:.3}
+.empty-state p{font-size:15px}
+
+/* ── CARD ── */
+.card{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow);cursor:pointer;transition:transform .15s,box-shadow .15s;overflow:hidden;display:flex;flex-direction:column;border-top:3px solid var(--border);position:relative}
+.card:hover{transform:translateY(-2px);box-shadow:var(--shadow-lg)}
+.card-badges{display:flex;gap:4px;flex-wrap:wrap;padding:12px 14px 0}
+.cb-badge{font-size:10px;font-weight:600;padding:2px 8px;border-radius:10px;color:#fff;white-space:nowrap}
+.card-body{padding:12px 14px;flex:1;display:flex;flex-direction:column;gap:8px}
+.card-name{font-family:var(--font-display);font-size:16px;font-weight:600;line-height:1.3;color:var(--text)}
+.card-desc{font-size:12px;color:var(--muted);line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.card-tags{display:flex;gap:4px;flex-wrap:wrap}
+.tag{font-size:11px;color:var(--accent2);background:#EEF4F0;padding:2px 7px;border-radius:10px;font-weight:500}
+.card-stats{display:flex;gap:12px;align-items:center;padding-top:4px;border-top:1px solid var(--border)}
+.stat{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--muted)}
+.stat svg{flex-shrink:0}
+.card-footer{padding:10px 14px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--border);background:var(--surface2)}
+.macros{display:flex;gap:8px}
+.macro{font-size:11px;font-weight:600;color:var(--muted)}
+.macro span{color:var(--text)}
+.rating{display:flex;gap:2px}
+.star{font-size:13px;color:#D4A853}
+.want-badge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:10px;background:#EEF2FF;color:#4361EE;letter-spacing:.02em}
+.cooked-badge{font-size:10px;font-weight:700;padding:3px 8px;border-radius:10px;background:#EEFBF3;color:var(--accent2)}
+
+/* ── MODAL BASE ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(28,26,23,0.6);z-index:200;display:flex;align-items:flex-start;justify-content:center;padding:20px;backdrop-filter:blur(3px);overflow-y:auto}
+.modal-overlay.hidden{display:none}
+.modal{background:var(--surface);border-radius:16px;width:100%;max-width:860px;box-shadow:var(--shadow-lg);overflow:hidden;margin:auto}
+
+/* ── RECIPE MODAL ── */
+.recipe-modal-header{background:var(--header-bg);color:var(--header-text);padding:24px 28px 20px;position:relative}
+.recipe-modal-header .cb-badges{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.recipe-modal-header h2{font-family:var(--font-display);font-size:26px;font-weight:700;line-height:1.2;margin-bottom:6px}
+.recipe-modal-header .desc{color:rgba(255,255,255,0.65);font-size:14px;line-height:1.5}
+.recipe-modal-header .meta-row{display:flex;gap:16px;margin-top:14px;flex-wrap:wrap}
+.recipe-modal-header .meta-item{display:flex;align-items:center;gap:6px;font-size:13px;color:rgba(255,255,255,0.7)}
+.close-btn{position:absolute;top:16px;right:16px;width:32px;height:32px;background:rgba(255,255,255,0.15);border:none;border-radius:50%;color:#fff;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:background .15s}
+.close-btn:hover{background:rgba(255,255,255,0.25)}
+
+.recipe-modal-body{display:grid;grid-template-columns:1fr 1.3fr;min-height:300px}
+@media(max-width:640px){.recipe-modal-body{grid-template-columns:1fr}}
+.recipe-modal-ing{padding:20px 24px;border-right:1px solid var(--border)}
+.recipe-modal-method{padding:20px 24px}
+
+.serving-control{display:flex;align-items:center;gap:10px;margin-bottom:16px;padding:10px 14px;background:var(--surface2);border-radius:10px;border:1px solid var(--border)}
+.serving-control label{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);flex:1}
+.serving-control .sc-inner{display:flex;align-items:center;gap:8px}
+.sc-btn{width:28px;height:28px;border-radius:50%;border:1px solid var(--border);background:var(--surface);cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;font-weight:600;transition:all .15s;color:var(--text)}
+.sc-btn:hover{background:var(--accent);color:#fff;border-color:var(--accent)}
+.sc-val{font-size:16px;font-weight:700;min-width:24px;text-align:center}
+
+.section-title{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:10px}
+.ing-section-header{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--accent);margin-top:12px;list-style:none}
+.ing-section-header:first-child{margin-top:0}
+.ingredients-list{list-style:none;display:flex;flex-direction:column;gap:6px}
+.ingredients-list li{font-size:13.5px;line-height:1.4;padding:6px 0;border-bottom:1px solid var(--border);color:var(--text)}
+.ingredients-list li:last-child{border-bottom:none}
+.ing-amount{font-weight:600}
+
+.method-steps{display:flex;flex-direction:column;gap:14px}
+.method-step{display:flex;gap:12px}
+.step-num{flex-shrink:0;width:26px;height:26px;background:var(--accent);color:#fff;border-radius:50%;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;margin-top:1px}
+.step-text{font-size:13.5px;line-height:1.6;color:var(--text)}
+
+.modal-macros{display:flex;gap:16px;padding:14px 24px;background:var(--surface2);border-top:1px solid var(--border)}
+.modal-macro{text-align:center;flex:1}
+.modal-macro .val{font-size:20px;font-weight:700;font-family:var(--font-display);color:var(--text)}
+.modal-macro .lbl{font-size:11px;color:var(--muted);font-weight:500;text-transform:uppercase;letter-spacing:.04em}
+
+.modal-footer{padding:14px 24px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:10px}
+.modal-tags{display:flex;gap:5px;flex-wrap:wrap}
+.modal-footer-actions{display:flex;gap:8px;flex-shrink:0}
+
+/* ── EDIT MODAL ── */
+.edit-modal{max-width:680px}
+.edit-modal-header{padding:20px 24px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.edit-modal-header h3{font-family:var(--font-display);font-size:20px;font-weight:600}
+.edit-modal-body{padding:20px 24px;max-height:70vh;overflow-y:auto;display:flex;flex-direction:column;gap:16px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-group label{font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.form-group input,.form-group textarea,.form-group select{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:9px 12px;font-family:var(--font-body);font-size:14px;color:var(--text);outline:none;transition:border-color .15s;width:100%}
+.form-group input:focus,.form-group textarea:focus,.form-group select:focus{border-color:var(--accent)}
+.form-group textarea{resize:vertical;min-height:80px;line-height:1.5}
+.form-group .hint{font-size:11px;color:var(--muted)}
+.cb-check-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:6px}
+.cb-check{display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;padding:8px 10px;border-radius:6px;border:1px solid var(--border);transition:all .15s;min-width:0}
+.cb-check input{accent-color:var(--accent);flex-shrink:0;width:15px;height:15px;cursor:pointer}
+.cb-check .cb-label{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0}
+.cb-check.checked{border-color:var(--accent);background:#FEF5F2}
+.star-picker{display:flex;gap:4px}
+.star-picker span{font-size:22px;cursor:pointer;transition:transform .1s;color:#D4D0C8}
+.star-picker span.lit{color:#D4A853}
+.star-picker span:hover{transform:scale(1.15)}
+.toggle-row{display:flex;align-items:center;gap:10px}
+.toggle{position:relative;width:44px;height:24px;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0}
+.toggle-slider{position:absolute;inset:0;background:#ccc;border-radius:12px;cursor:pointer;transition:.2s}
+.toggle-slider:before{content:'';position:absolute;width:18px;height:18px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s}
+.toggle input:checked + .toggle-slider{background:var(--accent2)}
+.toggle input:checked + .toggle-slider:before{transform:translateX(20px)}
+.edit-modal-footer{padding:14px 24px;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;gap:10px}
+
+/* ── COOKBOOK MODAL ── */
+.cb-modal{max-width:540px}
+.cb-modal-body{padding:20px 24px;max-height:60vh;overflow-y:auto}
+.cb-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;border:1px solid var(--border);margin-bottom:8px}
+.cb-dot{width:14px;height:14px;border-radius:50%;flex-shrink:0}
+.cb-item-info{flex:1;min-width:0}
+.cb-item-name{font-weight:600;font-size:14px}
+.cb-item-desc{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cb-item-actions{display:flex;gap:6px;flex-shrink:0}
+.cb-edit-form{background:var(--surface2);border-radius:10px;padding:14px;margin-bottom:12px;border:1px solid var(--border)}
+.cb-edit-form .form-row{margin-bottom:10px}
+.color-picker-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+.color-swatch{width:24px;height:24px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:all .15s;flex-shrink:0}
+.color-swatch.selected{border-color:var(--text);transform:scale(1.15)}
+
+/* ── IMPORT/EXPORT TOAST ── */
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:var(--text);color:#fff;padding:10px 20px;border-radius:20px;font-size:13px;z-index:500;opacity:0;transition:opacity .3s;pointer-events:none}
+.toast.show{opacity:1}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:6px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
+
+@media(max-width:640px){
+  .header{padding:0 14px;height:auto;padding-top:10px;padding-bottom:10px;gap:10px}
+  .grid{grid-template-columns:1fr;padding:12px 14px 40px}
+  .filter-bar{padding:10px 14px}
+  .results-bar{padding:10px 14px 0}
+  .header-actions .btn span{display:none}
+  .recipe-modal-ing{border-right:none;border-bottom:1px solid var(--border)}
+  .form-row{grid-template-columns:1fr}
+  .cb-check-grid{grid-template-columns:repeat(2,1fr)}
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="logo">Recipes<span></span></div>
+  <div class="search-wrap">
+    <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input id="search" type="text" placeholder="Search recipes or #tags…" oninput="applyFilters()">
+  </div>
+  <div class="header-actions">
+    <button class="btn btn-ghost btn-sm" onclick="openCookbookModal()">📚 <span>Cookbooks</span></button>
+    <button class="btn btn-ghost btn-sm" onclick="triggerImport()">⬆ <span>Import</span></button>
+    <button class="btn btn-ghost btn-sm" onclick="exportCSV()">⬇ <span>Export</span></button>
+    <button class="btn btn-primary btn-sm" onclick="openEditModal(null)">+ <span>Add Recipe</span></button>
+  </div>
+  <input type="file" id="import-input" accept=".csv" style="display:none" onchange="importCSV(event)">
+</header>
+
+<!-- FILTER BAR -->
+<div class="filter-bar">
+  <span class="filter-label">Cookbook</span>
+  <div id="cb-filters" style="display:flex;gap:6px;flex-shrink:0"></div>
+  <div class="filter-sep"></div>
+  <div class="cooked-toggle">
+    <button class="active" onclick="setCookedFilter('all',this)">All</button>
+    <button onclick="setCookedFilter('cooked',this)">✓ Cooked</button>
+    <button onclick="setCookedFilter('uncooked',this)">★ To Try</button>
+  </div>
+</div>
+
+<!-- RESULTS -->
+<div class="results-bar"><span id="results-count"></span></div>
+
+<!-- GRID -->
+<div class="grid" id="recipe-grid"></div>
+
+<!-- RECIPE VIEW MODAL -->
+<div class="modal-overlay hidden" id="recipe-overlay" onclick="closeOnOverlay(event,'recipe-overlay')">
+  <div class="modal" id="recipe-modal">
+    <div class="recipe-modal-header" id="rm-header">
+      <button class="close-btn" onclick="closeModal('recipe-overlay')">✕</button>
+      <div class="cb-badges" id="rm-badges"></div>
+      <h2 id="rm-name"></h2>
+      <p class="desc" id="rm-desc"></p>
+      <div class="meta-row" id="rm-meta"></div>
+    </div>
+    <div id="rm-macros-bar"></div>
+    <div class="recipe-modal-body">
+      <div class="recipe-modal-ing">
+        <div class="serving-control">
+          <label>Servings</label>
+          <div class="sc-inner">
+            <button class="sc-btn" onclick="changeServings(-1)">−</button>
+            <div class="sc-val" id="sc-val">2</div>
+            <button class="sc-btn" onclick="changeServings(1)">+</button>
+          </div>
+        </div>
+        <div class="section-title">Ingredients</div>
+        <div id="rm-ingredients"></div>
+      </div>
+      <div class="recipe-modal-method">
+        <div class="section-title">Method</div>
+        <div class="method-steps" id="rm-method"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <div class="modal-tags" id="rm-tags"></div>
+      <div class="modal-footer-actions">
+        <button class="btn btn-secondary btn-sm" onclick="editCurrentRecipe()">✎ Edit</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteCurrentRecipe()">🗑</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="modal-overlay hidden" id="edit-overlay" onclick="closeOnOverlay(event,'edit-overlay')">
+  <div class="modal edit-modal" id="edit-modal">
+    <div class="edit-modal-header">
+      <h3 id="edit-title">Add Recipe</h3>
+      <button class="close-btn" style="position:static;background:var(--surface2);color:var(--text)" onclick="closeModal('edit-overlay')">✕</button>
+    </div>
+    <div class="edit-modal-body">
+      <div class="form-group"><label>Recipe Name *</label><input id="f-name" placeholder="e.g. Chicken Tikka Masala"></div>
+      <div class="form-group"><label>Description</label><input id="f-desc" placeholder="One-line summary"></div>
+      <div class="form-group">
+        <label>Cookbooks</label>
+        <div class="cb-check-grid" id="f-cookbooks"></div>
+      </div>
+      <div class="form-group"><label>Tags (space or comma separated)</label><input id="f-tags" placeholder="#chicken #dinner #quick"></div>
+      <div class="form-row">
+        <div class="form-group"><label>Default Servings</label><input id="f-servings" type="number" min="1" value="2"></div>
+        <div class="form-group"><label>Prep Time (mins)</label><input id="f-prep" type="number" min="0" value="0"></div>
+        <div class="form-group"><label>Cook Time (mins)</label><input id="f-cook" type="number" min="0" value="0"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group"><label>Calories / Serving</label><input id="f-cal" type="number" placeholder="Leave blank"></div>
+        <div class="form-group"><label>Protein (g) / Serving</label><input id="f-protein" type="number" placeholder="Leave blank"></div>
+        <div class="form-group"><label>Fat (g) / Serving</label><input id="f-fat" type="number" placeholder="Leave blank"></div>
+      </div>
+      <div class="form-group">
+        <label>Ingredients</label>
+        <textarea id="f-ingredients" rows="6" placeholder="One ingredient per line, e.g:&#10;300g chicken breast&#10;2 tbsp olive oil&#10;&#10;For the sauce:&#10;200ml cream"></textarea>
+        <span class="hint">Blank lines create section breaks. Start a line with "For the..." for a section header.</span>
+      </div>
+      <div class="form-group">
+        <label>Method</label>
+        <textarea id="f-method" rows="5" placeholder="One step per line"></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Rating</label>
+          <div class="star-picker" id="f-rating-stars" onmouseleave="refreshStarDisplay()">
+            <span onclick="setRating(1)">★</span><span onclick="setRating(2)">★</span>
+            <span onclick="setRating(3)">★</span><span onclick="setRating(4)">★</span><span onclick="setRating(5)">★</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Cooked?</label>
+          <div class="toggle-row">
+            <label class="toggle"><input type="checkbox" id="f-cooked"><span class="toggle-slider"></span></label>
+            <span id="f-cooked-lbl" style="font-size:13px;color:var(--muted)">Not yet tried</span>
+          </div>
+        </div>
+      </div>
+      <div class="form-group"><label>Notes</label><textarea id="f-notes" rows="2" placeholder="Any notes or tips"></textarea></div>
+    </div>
+    <div class="edit-modal-footer">
+      <div id="edit-delete-btn"></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-secondary" onclick="closeModal('edit-overlay')">Cancel</button>
+        <button class="btn btn-primary" onclick="saveRecipe()">Save Recipe</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- COOKBOOK MODAL -->
+<div class="modal-overlay hidden" id="cb-overlay" onclick="closeOnOverlay(event,'cb-overlay')">
+  <div class="modal cb-modal">
+    <div class="edit-modal-header">
+      <h3>Manage Cookbooks</h3>
+      <button class="close-btn" style="position:static;background:var(--surface2);color:var(--text)" onclick="closeModal('cb-overlay')">✕</button>
+    </div>
+    <div class="cb-modal-body" id="cb-list"></div>
+    <div class="edit-modal-footer" style="justify-content:flex-end">
+      <button class="btn btn-primary btn-sm" onclick="openNewCookbookForm()">+ Add Cookbook</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ════════════════════════════════════════════════════════════
+// DATA
+// ════════════════════════════════════════════════════════════
+
+let COOKBOOKS = [{"id": "CB01", "name": "Breakfasts", "description": "rise and shine", "colour": "#FFD166"}, {"id": "CB02", "name": "Dinners", "description": "12pm already?", "colour": "#EE6C4D"}, {"id": "CB03", "name": "Teas", "description": "weeknights or weekends when the meal preps really aren't it", "colour": "#839973"}, {"id": "CB04", "name": "Cooking Together", "description": "will we ever get round to trying these?", "colour": "#4361EE"}, {"id": "CB05", "name": "Sandwiches", "description": "mission to make the perfect sandwich", "colour": "#BC6C25"}, {"id": "CB06", "name": "Date Nights", "description": "its just me and you baby", "colour": "#641220"}, {"id": "CB07", "name": "Low Calorie", "description": "beach body in no time", "colour": "#90E0EF"}, {"id": "CB08", "name": "Quick", "description": "five minute timer, GO!", "colour": "#FF8A5B"}, {"id": "CB09", "name": "Protein", "description": "what way is the beach?", "colour": "#2F4858"}, {"id": "CB10", "name": "Snacks", "description": "all things snacky", "colour": "#FFB4A2"}, {"id": "CB11", "name": "Desserts", "description": "yes its that time, its sweet treat time", "colour": "#A29BFE"}];
+
+let db = [{"id": "R001", "name": "Anthony Bourdain's Favourite Sandwich", "description": "Crispy fried mortadella stacked with melted provolone on a toasted white bun", "cookbooks": ["CB02", "CB04", "CB05"], "tags": ["#sandwich", "#pork", "#quick", "#lunch"], "servings": 2, "prepTime": 5, "cookTime": 10, "calories": null, "protein": null, "fat": null, "ingredients": "180g mortadella (9 slices)|2 tbsp olive oil|1 white bun|1 tbsp mayonnaise|1 tbsp Dijon mustard|provolone cheese (to taste)", "method": "Heat a large frying pan with a little olive oil. Scrunch and fold 3 pieces of mortadella and fry separately on both sides until crispy. Stack the fried mortadella, slice the provolone and place on top. Add a splash of water and cover until the provolone melts. Repeat twice more.|Slice and toast your bun in the same pan with a little olive oil. Spread mayonnaise on the bottom half and Dijon mustard on the top half.|Place the stack of mortadella and melted cheese on the bottom bun, then add the top bun.", "rating": null, "cooked": false, "notes": ""}, {"id": "R002", "name": "Bacon Cheddar Biscuits", "description": "Almond flour biscuits packed with bacon, cheddar and green onion — serve with butter or cottage cheese", "cookbooks": ["CB01", "CB02", "CB04"], "tags": ["#biscuits", "#bacon", "#snacks", "#baking", "#protein"], "servings": 8, "prepTime": 10, "cookTime": 11, "calories": null, "protein": null, "fat": null, "ingredients": "150g almond flour|4 eggs|3 tbsp Greek yogurt|170g uncured bacon, cooked and diced (approx. 6 strips)|140g shredded cheddar (habanero cheddar recommended)|25g green onion, sliced|2 tsp baking powder|0.5 tsp baking soda|1 tsp garlic powder|0.5 tsp onion powder|0.5 tsp salt|0.25 tsp black pepper", "method": "Preheat oven to 200°C (400°F). Grease a large baking sheet with avocado oil.|In a large bowl, whisk the almond flour, baking powder, baking soda, garlic powder, onion powder, salt and pepper. In a small bowl, beat the eggs and Greek yogurt. Fold the egg mixture, bacon, green onions and 110g of cheddar into the dry ingredients until well combined and mixture begins to thicken.|Using a cookie scoop, scoop 8 balls of dough onto the baking sheet. Gently press down each ball to form a biscuit and top with remaining cheddar.|Bake for 9–11 minutes until baked through and lightly browned. Serve with butter or cottage cheese and avocado.", "rating": null, "cooked": false, "notes": ""}, {"id": "R003", "name": "Chicken & Chorizo in a Creamy Garlic & Herb Sauce", "description": "Diced chicken and chorizo in a rich cream cheese and herb sauce — great with rice or mash", "cookbooks": ["CB03", "CB06"], "tags": ["#chicken", "#chorizo", "#teas", "#one-pan"], "servings": 4, "prepTime": 10, "cookTime": 25, "calories": null, "protein": null, "fat": null, "ingredients": "50g chorizo, diced|500g chicken breast, diced|2 tbsp chicken seasoning|1 onion, finely diced|3 cloves garlic, minced|2 tbsp plain flour|500ml chicken stock|100g cream cheese|1 tsp dried parsley|1 tsp dried oregano|0.5 tsp dried dill|1 tsp mustard (optional)|1 tbsp lemon juice|salt and pepper to taste|chilli flakes and fresh parsley to garnish (optional)", "method": "Add the chorizo into a pan and cook until crispy, then remove. In the same pan, add the chicken seasoned with chicken seasoning. Once browned, add the onion and cook until soft, then add the garlic and cook for 30 seconds.|Add the flour and cook out for a few minutes. Slowly add the stock bit by bit, stirring continuously, until a thicker sauce forms.|Add the cream cheese, seasonings, mustard and lemon juice. Season to taste. Return the chorizo.|Garnish with chilli flakes and parsley. Serve and enjoy.", "rating": null, "cooked": false, "notes": ""}, {"id": "R004", "name": "Chicken Alfredo Garlic Bread", "description": "Seasoned chicken breast and creamy Alfredo sauce piled onto garlic butter Italian bread, baked until golden", "cookbooks": ["CB02", "CB04"], "tags": ["#chicken", "#garlic-bread", "#baking"], "servings": 4, "prepTime": 20, "cookTime": 35, "calories": null, "protein": null, "fat": null, "ingredients": "For the chicken: 454g boneless skinless chicken breast, halved lengthwise and pounded|salt to taste|1 tbsp smoked paprika powder|1 tbsp garlic powder|1 tsp black pepper|1 tsp onion powder|2 tbsp clarified butter or oil for cooking||For the Alfredo sauce: 2 tbsp fresh garlic, finely minced|2 tbsp butter|240ml unsweetened heavy whipping cream|salt to taste|1 tsp black pepper|50g Parmesan cheese, freshly grated||For the garlic butter: 115g unsalted butter, softened|1 tbsp fresh garlic, finely minced|1 tbsp fresh parsley, finely chopped||To assemble: 1 loaf Italian bread|100g mozzarella cheese", "method": "Preheat oven to 180°C (350°F).|Season chicken with salt, pepper, paprika, garlic powder and onion powder on both sides.|Heat clarified butter in a pan over medium heat. Cook seasoned chicken for 4–5 minutes per side until internal temperature reaches 74°C (165°F). Remove, slice and set aside.|In another pan, melt butter over medium-low heat. Add garlic and sauté until fragrant. Add heavy cream and bring to a boil. Gradually add Parmesan. Season with salt and pepper. Cook until sauce thickens.|Make garlic butter by mixing softened butter, garlic, parsley and a pinch of salt in a bowl.|Cut the loaf in half lengthwise and spread 2–3 tbsp garlic butter on it. Add the Alfredo sauce, mozzarella, and sliced chicken. Add more Alfredo on top with some parsley.|Place on a baking sheet and bake for 20–25 minutes until bread is crispy and cheese is golden. Serve warm.", "rating": null, "cooked": false, "notes": ""}, {"id": "R005", "name": "Cottage Cheese Pizza", "description": "High-protein pizza with a cottage cheese and egg white crust — low calorie and surprisingly good", "cookbooks": ["CB04", "CB07", "CB09"], "tags": ["#pizza", "#protein", "#low-calorie", "#baking"], "servings": 2, "prepTime": 15, "cookTime": 20, "calories": null, "protein": null, "fat": null, "ingredients": "70g self-rising flour (or plain flour + pinch of salt + 4g baking powder)|12g coconut flour|5g nutritional yeast|150g 2% cottage cheese|75g egg whites|90g pizza sauce|56g part-skim mozzarella", "method": "Blend cottage cheese and egg whites together until smooth.|Add the dry ingredients to a bowl and mix to avoid clumping. Add the cottage cheese and egg white mixture and mix until you get a thick paste.|Add dough to the middle of a large piece of parchment paper. Spread the crust out to about 30–33cm, working from the inside out in a circular motion, keeping the edges thick.|Transfer the parchment with the crust to a pan and bake at 230°C (450°F) for 8–10 minutes until golden.|Remove from parchment and return the crust to the pan. Add your toppings and bake until toppings are golden.|Slice and enjoy.", "rating": null, "cooked": false, "notes": ""}, {"id": "R006", "name": "Creamy Garlic Parmesan Chicken Pasta", "description": "Marinated pan-seared chicken breast in a rich garlic Parmesan cream sauce over pasta", "cookbooks": ["CB03", "CB06"], "tags": ["#chicken", "#pasta"], "servings": 4, "prepTime": 15, "cookTime": 30, "calories": null, "protein": null, "fat": null, "ingredients": "For the chicken: 454g boneless chicken breast, pounded slightly|salt to taste|1 tsp smoked paprika powder|1 tbsp garlic powder|1 tsp black pepper|2 tbsp oil (for marinade)|2 tbsp clarified butter/ghee|1 tbsp butter||For the sauce: 1 small yellow onion, finely chopped|1 tbsp fresh garlic, minced|2 tbsp all-purpose flour|360ml chicken broth (or 1 stock cube in 360ml water)|360ml unsweetened heavy whipping cream|salt to taste|1 tbsp smoked paprika powder|1 tsp red chilli flakes|0.5 tsp black pepper|1 tsp garlic powder|1 tbsp dried parsley|1 tbsp Italian seasoning|50g Parmesan cheese, freshly grated||To assemble: 283g pasta of choice, cooked", "method": "Season chicken with salt, pepper, garlic powder, smoked paprika and oil. Mix to coat evenly and marinate for at least 1 hour.|Heat pan on medium, add clarified butter. Once hot, cook chicken 8–10 minutes flipping halfway until cooked through (74°C / 165°F internally). Remove, slice and set aside.|In the same pan add butter once melted. Sauté onions for 1 minute until translucent. Add garlic for 30 seconds. Add all seasonings and flour and mix.|Gradually add chicken broth, stirring until sauce thickens. Cook 2–4 minutes on medium. Stir in heavy cream and whisk. Add Parmesan and parsley, mixing well.|Add cooked pasta and top with sliced chicken. Mix everything together. Top with more Parmesan if desired.", "rating": null, "cooked": false, "notes": ""}, {"id": "R007", "name": "Creamy Pesto Chicken & Hasselback Potatoes", "description": "Pan-fried chicken breast in a pesto cream sauce with crispy air-fryer hasselback potatoes", "cookbooks": ["CB03", "CB06"], "tags": ["#chicken", "#potatoes", "#pesto", "#air-fryer"], "servings": 2, "prepTime": 10, "cookTime": 40, "calories": null, "protein": null, "fat": null, "ingredients": "300g potato|300g chicken breast|1 tsp paprika|1 tsp oil|30g low fat pesto|80ml low fat cream|150ml chicken stock|30g bacon lardons|salt and pepper to taste", "method": "Cut slices in the potatoes (hasselback style) then season with oil, salt and pepper.|Air fry potatoes for 30 mins at 180°C.|Season chicken breast with paprika, salt and pepper. Ensure pieces are thin. Pan fry the chicken until golden then set aside.|In the same pan, add the bacon and fry until cooked.|Add the stock, cream and pesto. Stir over a low heat until it thickens, then add the chicken back in and cook for a further 5 minutes.|Top with parsley and serve with the potatoes and some broccoli.", "rating": null, "cooked": false, "notes": ""}, {"id": "R008", "name": "Crunchy Roasted BBQ Chickpeas", "description": "Crispy oven-roasted chickpeas coated in a smoky BBQ spice mix — great healthy snack", "cookbooks": ["CB04", "CB10"], "tags": ["#chickpeas", "#baking"], "servings": 4, "prepTime": 5, "cookTime": 25, "calories": null, "protein": null, "fat": null, "ingredients": "250g canned chickpeas (drained and rinsed)|2 tbsp (30ml) maple syrup or date syrup|0.5 tsp smoked paprika powder|0.5 tsp chilli powder|0.5 tsp cumin powder|0.5 tsp onion powder|0.5 tsp garlic powder|0.5 tsp salt", "method": "Drain and rinse the chickpeas, then place in a bowl.|In another bowl, pour in the maple syrup (or date syrup).|Add all spices and salt to the syrup and mix until well combined.|Combine the chickpeas with the syrup and spice mixture, ensuring they are evenly coated.|Spread coated chickpeas onto a baking sheet.|Bake at 200°C (400°F) for 25 minutes.|Enjoy your super crunchy BBQ snack.", "rating": null, "cooked": false, "notes": ""}, {"id": "R009", "name": "Garlicy Soy Chicken Rice", "description": "One-pot Asian-style rice cooked in a garlic soy sauce broth with chicken — top with a fried egg", "cookbooks": ["CB03", "CB06"], "tags": ["#chicken", "#rice", "#asian", "#one-pan"], "servings": 2, "prepTime": 10, "cookTime": 25, "calories": null, "protein": null, "fat": null, "ingredients": "300g basmati rice|450ml boiling water|1 chicken stock cube|2 tbsp rice wine|2 tbsp oyster sauce|1 tbsp dark soy sauce|1 tbsp sriracha|2 tsp light soy sauce|2 tsp sesame oil|2 cloves garlic, grated|4 chicken thigh fillets|4 spring onions, finely chopped|chilli oil to serve|2 fried eggs (optional)", "method": "Place rice in a saucepan. Whisk the water with the stock cube, then add rice wine, oyster sauce, dark soy, sriracha, light soy, sesame oil and garlic. Pour over the rice and place chicken thighs on top.|Bring to the boil over medium heat. Cover, reduce heat to low and cook for 20 minutes until all liquid is absorbed and chicken is cooked through.|Remove from heat and stand for 5 minutes. Add spring onions and chilli oil. Serve immediately with fried eggs if using.", "rating": null, "cooked": false, "notes": ""}, {"id": "R010", "name": "Loaded Bacon & Roasted Garlic Potatoes", "description": "Thinly sliced potatoes layered with a roasted garlic cheddar sauce and crispy bacon — au gratin style", "cookbooks": ["CB03", "CB06"], "tags": ["#potatoes", "#bacon"], "servings": 6, "prepTime": 20, "cookTime": 65, "calories": null, "protein": null, "fat": null, "ingredients": "170g bacon (approx. 6 strips)|5–6 cloves roasted garlic|2 tbsp butter|2 tbsp all-purpose flour|480ml whole milk|340g cheddar, grated (for sauce)|0.25 tsp paprika|1 tsp dried thyme|1 tsp dried rosemary|170g cheddar, grated (for topping)|700g yukon or similar potatoes (4–5 medium), peeled and thinly sliced|salt and pepper to taste", "method": "Preheat oven to 190°C (375°F). Grease a 23x33cm baking dish.|Cook bacon in a large skillet until crispy. Remove, crumble and set aside. Reserve 2–3 tbsp bacon fat.|Add butter to the skillet with bacon fat. Once melted, add flour and whisk into a roux. Cook 1–2 minutes until golden.|Gradually pour in milk, whisking constantly until thickened.|Add roasted garlic, salt, pepper, paprika, thyme and rosemary. Stir to combine. Gradually add 340g cheddar until the sauce is creamy.|Arrange sliced potatoes in the baking dish. Pour the cheese sauce over, ensuring even coverage. Sprinkle crumbled bacon on top. Cover with foil and bake for 45 minutes.|Uncover, add remaining 170g cheddar on top and bake a further 15–20 minutes until potatoes are tender and top is golden and bubbly.|Rest for a few minutes before serving.", "rating": null, "cooked": false, "notes": ""}, {"id": "R011", "name": "Marry Me Chicken Pasta", "description": "Quick and easy chicken pasta in a light cream cheese and sun-dried tomato sauce", "cookbooks": ["CB03", "CB06"], "tags": ["#chicken", "#pasta"], "servings": 2, "prepTime": 10, "cookTime": 20, "calories": null, "protein": null, "fat": null, "ingredients": "70g tagliatelle|25g light cream cheese|1 chicken stock pot dissolved in 60ml boiling water|20g sundried tomatoes|120g raw chicken breast|handful of cherry tomatoes and spinach (approx. 50g each)|10g light grated cheese|60ml soy milk|0.5 red pepper, sliced|0.25 onion, sliced", "method": "Slice the chicken, tomatoes and onion. Fry for 7 minutes with a pinch of salt, pepper and chicken seasoning.|Boil the tagliatelle for 8–10 minutes until soft.|Add the soy milk, cream cheese, spinach and stock water to the pan. Stir on a medium heat until the liquid condenses. Add the pasta and the grated cheese after a couple of minutes.|Mix together and enjoy.", "rating": null, "cooked": false, "notes": ""}, {"id": "R012", "name": "OREO Protein Balls", "description": "No-bake frozen protein balls made with Greek yogurt and crushed Oreos — defrost 5–10 mins before eating", "cookbooks": ["CB04", "CB09", "CB10", "CB11"], "tags": ["#oreo"], "servings": 17, "prepTime": 15, "cookTime": 0, "calories": null, "protein": null, "fat": null, "ingredients": "250g Greek yogurt (plain or vanilla)|60g coconut flour|40g vanilla whey protein powder|1 tbsp sweetener (optional)|4 Oreos, crushed", "method": "Combine all ingredients except Oreos until a thick batter forms — it should be very thick and hard to mix. Stir in the crushed Oreos.|Form balls with the mixture (makes approx. 17). Tip: wash hands between every 3 balls to prevent sticking.|Freeze until solid. Drizzle with white chocolate and more crushed Oreos if desired.|Store in the freezer. Defrost for 5–10 minutes before eating.", "rating": null, "cooked": false, "notes": ""}, {"id": "R013", "name": "Steak au Poivre with Dauphinoise Potatoes", "description": "Pepper-crusted sirloin steak in a rich cognac cream sauce served alongside a classic French potato gratin", "cookbooks": ["CB06"], "tags": ["#steak", "#potatoes"], "servings": 2, "prepTime": 20, "cookTime": 50, "calories": null, "protein": null, "fat": null, "ingredients": "For the dauphinoise: 600g potatoes, peeled and thinly sliced|300ml heavy cream|150ml whole milk|2 cloves garlic|3 sprigs fresh thyme|pinch of nutmeg|salt and pepper|butter for greasing||For the steak: 2 sirloin or fillet steaks (approx. 200g each)|2 tbsp whole black peppercorns, coarsely crushed|1 tbsp oil|1 tbsp butter|1 shallot, finely minced|60ml brandy or cognac|120ml beef stock|120ml heavy cream|1 tsp Dijon mustard|salt", "method": "Preheat oven to 180°C. Grease a small baking dish with butter and rub with a halved garlic clove.|Warm the cream, milk, thyme, garlic and nutmeg in a saucepan. Season well. Place sliced potatoes in a bowl, pour over the cream mixture and mix to coat.|Layer potatoes in the baking dish. Cover with parchment and bake for 25 minutes. Remove parchment and bake a further 15–20 minutes until golden and tender.|Pat steaks dry and press coarsely crushed peppercorns firmly into both sides. Season with salt.|Heat oil in a heavy pan over high heat. Sear steaks for 2–3 minutes per side for medium rare. Remove and rest for 10 minutes.|In the same pan over medium heat, add butter and shallot and cook for 1 minute. Add brandy and cook until reduced by half. Add beef stock and reduce by half again. Stir in heavy cream and Dijon mustard. Simmer until the sauce coats the back of a spoon.|Serve steaks with the sauce spooned over and dauphinoise alongside.", "rating": null, "cooked": false, "notes": "Start the dauphinoise first — it takes the longest. A mandolin is very helpful for slicing the potatoes evenly."}, {"id": "R014", "name": "Crispy Sesame Beef Noodle Bowls", "description": "Ramen-inspired bowls with crispy sesame beef, pak choi and egg noodles in a garlicky soy broth", "cookbooks": ["CB03", "CB06"], "tags": ["#beef", "#noodles", "#ramen"], "servings": 2, "prepTime": 10, "cookTime": 35, "calories": null, "protein": null, "fat": null, "ingredients": "250g beef mince|2 eggs|1 pak choi|1.5 tsp chilli flakes|0.5 tbsp sesame oil|1 clove garlic, finely chopped|12.5g fresh ginger, finely chopped|3 spring onions, sliced|500ml chicken stock|1 tbsp soy sauce|250g egg noodles|vegetable oil for cooking", "method": "Boil the eggs for 6 minutes, then transfer to a bowl of ice cold water and chill for 5 minutes. Peel and set aside.|Heat a good drizzle of vegetable oil in a frying pan. Add the beef mince and break it up. Cook until nice and crispy.|Add the ginger, garlic and spring onions to the pan. Add the soy sauce, chilli flakes (save a pinch for later) and sesame oil. Mix together.|Heat the chicken stock in a saucepan. Once hot, add the egg noodles and cook until softened. Add the pak choi and cook through.|Divide noodles between bowls, spoon in a few ladles of stock and pak choi. Add the crispy beef and one boiled egg, cutting it open to reveal the runny yolk. Sprinkle remaining chilli flakes over the top.", "rating": null, "cooked": false, "notes": "Source: mob.co.uk"}, {"id": "R015", "name": "\"Marry Me\" Chicken Orzo", "description": "Chicken breast and orzo cooked together in a creamy sun-dried tomato and pesto sauce", "cookbooks": ["CB03", "CB06"], "tags": ["#chicken", "#orzo", "#creamy", "#one-pan"], "servings": 2, "prepTime": 10, "cookTime": 40, "calories": null, "protein": null, "fat": null, "ingredients": "1 onion, finely diced|235g chicken breast, chopped into bite-sized chunks|55g sun-dried tomatoes, sliced|1-2 garlic cloves, crushed|400ml chicken stock|0.75 tsp dried oregano|0.75 tsp dried thyme|13g reduced-fat red pesto|160g orzo|80ml single cream|35g fresh basil|Parmesan to serve|0.5 tbsp oil from sun-dried tomato jar", "method": "Finely dice the onion, chop the chicken, slice the sun-dried tomatoes and crush the garlic.|Add 0.5 tbsp oil from the sun-dried tomato jar to a deep pan. Add the onion and garlic and cook for a few minutes until softened. Add the chicken and cook for around 10 minutes until cooked through.|Add the sun-dried tomatoes, oregano, thyme, pesto and a pinch of salt and pepper. Stir to coat, then pour in about 90% of the stock. Bring to the boil.|Tip in the orzo and reduce to a simmer. Cook for around 7 minutes until most liquid is absorbed (add remaining stock plus extra water if needed). Stir in the cream and cook for a further 3 minutes until the orzo is fully cooked.|Stir through torn basil, divide between bowls and top with extra basil and Parmesan.", "rating": null, "cooked": false, "notes": "Source: mob.co.uk"}, {"id": "R016", "name": "Chicken & Basil Stir Fry", "description": "Thai-inspired Pad Kra Pao with chicken mince, tenderstem broccoli and Thai basil in a punchy sauce — great for meal prep", "cookbooks": ["CB03", "CB06"], "tags": ["#chicken", "#stir-fry"], "servings": 2, "prepTime": 10, "cookTime": 25, "calories": null, "protein": null, "fat": null, "ingredients": "100g jasmine rice|15ml vegetable oil|250g chicken mince|100g tenderstem broccoli, chopped into bite-sized pieces|10g Thai basil|2 eggs||For the sauce: 1 shallot|1 red chilli|2-3 garlic cloves|1.75 tbsp sriracha|fish sauce to taste|1.5 tbsp oyster sauce|1.5 tbsp dark soy sauce|15g caster sugar", "method": "Cook the rice following packet instructions.|Make the sauce: add all sauce ingredients to a food processor and blend until smooth (some texture is fine). Taste and season with fish sauce. Set aside.|Heat a large pan or wok over high heat and add the vegetable oil. Once hot, add the chicken mince and cook for 3 minutes, breaking it up. Add the sauce and cook for another 2–3 minutes.|Add the broccoli and cook for 3–4 minutes until tender. Add the basil leaves and toss through to wilt. Season with fish sauce if needed.|For the eggs, either boil for 7 minutes then peel and store in the fridge, or fry them fresh each time.|To serve: plate up the rice and chicken and finish with an egg, a lime wedge and extra sriracha.", "rating": null, "cooked": false, "notes": "Source: mob.co.uk — inspired by Thai Pad Kra Pao. Keeps in fridge up to 4 days."}, {"id": "R017", "name": "Crispy Pork & Saucy Ginger Turmeric Noodles", "description": "Crispy sausage meat in a rich fragrant coconut turmeric broth with egg noodles", "cookbooks": ["CB03", "CB06"], "tags": ["#pork", "#noodles", "#coconut"], "servings": 2, "prepTime": 10, "cookTime": 25, "calories": null, "protein": null, "fat": null, "ingredients": "200g sausages|10g fresh ginger, finely chopped|0.5 red chilli, finely chopped|10g fresh coriander, stems thinly sliced|12.5g fresh mint|0.5 tsp ground turmeric|200ml coconut milk|250ml chicken stock|125g egg noodles|1 lime|15g toasted sesame seeds|olive oil", "method": "Squeeze the sausage meat out of the casings. Finely chop the ginger and chilli. Pick the coriander and mint leaves, thinly slicing the coriander stems.|Heat a drizzle of olive oil in a large saucepan over medium-high heat. Add the sausage meat and cook for 8–10 minutes, breaking it up until golden and crispy. Transfer to a plate.|Add the ginger, chilli and turmeric to the same pan and stir-fry for a few seconds until fragrant. Pour in the coconut milk and stock, scraping up any caramelised bits. Season with salt and black pepper and bring to the boil.|Drop in the noodles and cook following pack instructions. Adjust seasoning with lime juice, salt and pepper. Add a splash of water if you want it saucier.|Divide the noodles between bowls. Top with the crispy sausage and ladle over the sauce. Finish with toasted sesame seeds, fresh herbs and a wedge of lime.", "rating": null, "cooked": false, "notes": "Source: mob.co.uk"}, {"id": "R018", "name": "Sausage & Fennel Pasta", "description": "Aromatic pork sausage pasta with fennel seeds, tomato purée and cream — an instant weeknight classic", "cookbooks": ["CB03", "CB06"], "tags": ["#sausage", "#pasta", "#fennel"], "servings": 2, "prepTime": 10, "cookTime": 25, "calories": null, "protein": null, "fat": null, "ingredients": "4 pork sausages|1 onion, finely chopped|1.5 garlic cloves, sliced|1 tsp fennel seeds|0.5 tsp chilli flakes|75g tomato purée|100ml double cream|50g Parmesan, grated|250g conchiglie|25g fresh basil|olive oil|salt and pepper", "method": "Heat a wide frying pan on a medium heat. De-skin the sausages and add small balls of sausage meat to the pan with a splash of oil. Fry until brown on all sides, then remove and set aside.|Add the finely chopped onion to the pan with the sausage fat. Cook for about 10 minutes over low-medium heat until translucent.|Add the garlic, chilli flakes and fennel seeds and cook for 30 seconds until fragrant. Add the tomato purée and cook for 5–10 minutes until it starts caramelising.|Add the cream and three-quarters of the Parmesan. Mix together and season with salt and pepper.|Cook the pasta in a pan of salted boiling water. Once the water is starchy, add a good cup of it to the tomato sauce to loosen.|When the sauce is bubbling, add the sausage meat back in. Tear in some basil.|When the pasta is al dente, add it to the sauce. Stir through, adding more pasta water. Cook until it all comes together.|Serve in warm bowls topped with more Parmesan, basil and a drizzle of olive oil.", "rating": null, "cooked": false, "notes": "Source: mob.co.uk"}, {"id": "R019", "name": "Caramelised Soy Chicken in Garlic Ginger Broth with Rice", "description": "Kecap manis-glazed chicken thighs served in a fragrant garlic and ginger broth with rice and spring onion oil", "cookbooks": ["CB03", "CB06"], "tags": ["#chicken", "#rice", "#broth", "#one-pan"], "servings": 2, "prepTime": 10, "cookTime": 35, "calories": null, "protein": null, "fat": null, "ingredients": "4 boneless skinless chicken thighs|1.5 tbsp kecap manis|ground white pepper|5g fresh ginger, bashed|5 garlic cloves, bashed|350ml chicken stock|3 spring onions (whites and greens separated)|15ml neutral oil|0.5 tbsp sesame oil|1 tsp toasted sesame seeds|35ml water|0.5 cucumber, thinly sliced|250g cooked rice|sambal or chilli sauce to serve", "method": "Bash the ginger and garlic, then transfer to a saucepan with the stock. Halve the spring onion whites lengthways and add to the stock. Place over medium heat and let simmer while you prepare the rest.|Put the chicken thighs in a bowl with the kecap manis, season with salt and white pepper. Set aside to marinate.|Add the neutral oil to a frying pan with the spring onion greens over high heat. Once wilted, tip into a bowl. Stir through the sesame oil and toasted sesame seeds. Set aside as the spring onion oil.|Return the frying pan to medium-high heat. Cook the chicken for 7–8 minutes until golden brown and caramelised. Pour water into the leftover marinade and pour over the chicken. Cook until reduced to a thick sauce.|Trim and thinly slice the cucumber and season with salt.|Share the rice between bowls. Ladle over the broth and top with sliced chicken and cucumber. Drizzle with sambal and the sesame spring onion oil.", "rating": null, "cooked": false, "notes": "Source: mob.co.uk — uses chicken thighs. Kecap manis is Indonesian sweet soy sauce, available in most supermarkets."}, {"id": "R020", "name": "Spicy Pork & Sesame Noodles", "description": "Spicy gochujang pork mince with a silky tahini miso sauce and fresh herb salad over egg noodles", "cookbooks": ["CB03", "CB06"], "tags": ["#pork", "#noodles", "#spicy"], "servings": 2, "prepTime": 15, "cookTime": 35, "calories": null, "protein": null, "fat": null, "ingredients": "For the tahini miso sauce: 60g tahini|25g white miso|20ml rice vinegar|20ml shoyu soy sauce|0.5 tsp MSG (optional)|65ml water||For the herb salad: 0.5 cucumber|7.5g fresh coriander|7.5g fresh mint|4 spring onions (whites for pork, greens for salad)||For the spicy pork: 3 garlic cloves|1 tbsp gochujang|1 tbsp Korean chilli flakes|1 tbsp Chinese dark soy sauce|0.5 tbsp rice vinegar|0.5 tbsp sugar|500g 5% fat pork mince|vegetable oil||To serve: 200g egg noodles", "method": "Make the tahini miso sauce: whisk together all ingredients except the water until smooth and creamy. Slowly add the water a little at a time, whisking until velvety. Set aside.|For the herb salad: slice the cucumber in half lengthwise then thinly cut into half moons. Pick the coriander and mint leaves and finely slice the green tops of the spring onions (reserve the white parts for the pork). Toss together in a bowl.|For the spicy pork: combine all pork ingredients — excluding the mince and oil, but including the spring onion whites — in a blender and blitz until smooth and fragrant.|Heat a large frying pan over high heat. Add a glug of vegetable oil and half the pork mince. Press into the pan and let it brown on one side, then break it up. Once fully cooked, remove and repeat with remaining mince.|Add all the pork back into the pan, pour in the blended sauce. Stir and cook for another 2–3 minutes until evenly coated.|Cook noodles following packet instructions, drain and toss with the tahini miso sauce.|Divide the noodles between plates, top with the pork and fresh herb salad. Finish with an extra drizzle of tahini miso sauce.", "rating": null, "cooked": false, "notes": "Source: mob.co.uk — great for meal prep. Store pork, tahini sauce and herb salad in separate containers. Keeps 5 days in fridge."}, {"id": "R021", "name": "Sausage Gochujang Rigatoni", "description": "Spicy, sweet and creamy sausage pasta with gochujang, honey and lime — topped with coriander breadcrumbs", "cookbooks": ["CB03", "CB06"], "tags": ["#sausage", "#pasta", "#gochujang", "#spicy", "#quick"], "servings": 2, "prepTime": 10, "cookTime": 20, "calories": null, "protein": null, "fat": null, "ingredients": "1 shallot, minced|1-2 garlic cloves, minced|3 pork sausages|1 tbsp butter|1 tbsp gochujang|110ml single cream|1 tbsp honey|1 lime, juiced and zested|20g Parmesan, grated|200g rigatoni|15g fresh coriander, finely chopped|7.5g panko breadcrumbs|olive oil|salt and pepper", "method": "Mince the shallot and garlic.|Heat a drizzle of olive oil in a large pan over medium heat. Dcase the sausages and crumble the meat into the pan. Fry until well browned and caramelised — don\'t deglaze too early as the caramelisation is crucial for flavour. Remove and set aside.|Return the pan to medium heat, add the butter. Once melted, add the shallot and garlic and fry for a few minutes until softened and fragrant.|Add the gochujang, single cream, honey and the juice of the lime. Grate in ¾ of the Parmesan. Add the caramelised sausage back in. Season with salt and pepper and leave to simmer while you cook the pasta.|Bring a large pot of salted water to the boil. Cook the rigatoni until al dente. Reserve the pasta water before draining.|Heat a glug of olive oil in a separate pan, add the breadcrumbs and fry for a minute until golden. Remove from heat, grate in the remaining Parmesan and add a small sprinkling of coriander. Mix to combine and set aside.|Add the cooked pasta to the sauce with a ladle of pasta water. Keep mixing until glossy. Add more pasta water if needed.|Add the remaining coriander and mix through. Serve scattered with the coriander breadcrumbs and grated lime zest.", "rating": null, "cooked": false, "notes": "Source: mob.co.uk — rated 4.9 on Mob."}, {"id": "R022", "name": "Garlic Butter Steak Bites & Creamy Tomato Orzo", "description": "Juicy ribeye steak bites tossed in garlic butter, served over creamy tomato-parmesan orzo", "cookbooks": ["CB02", "CB04"], "tags": ["#steak", "#orzo", "#beef"], "servings": 4, "prepTime": 10, "cookTime": 25, "calories": null, "protein": null, "fat": null, "ingredients": "For the steak: approx. 500g ribeye steak, cut into bite-sized pieces|salt, black pepper, onion powder and garlic powder to season|1 tbsp butter|1 tbsp minced garlic|fresh parsley||For the orzo: olive oil|1 white onion, diced|1 tbsp minced garlic|3 tbsp tomato paste|454g orzo, toasted 1–2 minutes in a dry pan|960ml beef stock|salt and pepper|1 tsp paprika|1 tsp crushed red pepper flakes|240ml heavy cream|30g fresh parsley|100g Parmesan, grated", "method": "Make the orzo: heat olive oil in a large pan. Add the onion and cook until softened. Add garlic and tomato paste and cook for 1–2 minutes.|Add the toasted orzo and pour in the beef stock. Season with salt, pepper, paprika and red pepper flakes. Simmer, stirring occasionally, until the orzo is cooked and liquid is mostly absorbed. Stir in the heavy cream, parsley and Parmesan. Keep warm.|Season the steak pieces with salt, black pepper, onion powder and garlic powder.|Cook on medium-high heat until your preferred doneness.|Add butter, minced garlic and parsley to the pan and toss the steak until well coated.|Serve the steak bites over the creamy tomato orzo.", "rating": null, "cooked": false, "notes": "Source: ReciMe app — ribeye quantity not given; approx. 500g used here for 4 servings."}, {"id": "R023", "name": "Honey Garlic Beef Pasta", "description": "Savoury-sweet beef mince pasta with honey, Worcestershire sauce and a touch of cream", "cookbooks": ["CB03", "CB06"], "tags": ["#beef", "#pasta", "#honey"], "servings": 2, "prepTime": 10, "cookTime": 25, "calories": null, "protein": null, "fat": null, "ingredients": "345g extra lean beef mince|150g dried pasta|1 brown onion, diced|2 tsp garlic paste|1 tbsp tomato purée|1 tsp smoked paprika|1 tsp garlic granules|1 tsp onion granules|1 tsp oregano|1 tbsp Worcestershire sauce|200ml vegetable stock|100ml single cream|25g honey|1 tsp red chilli flakes|1 tsp black pepper|2 tsp salt", "method": "Add the onion to a pan, season with salt and pepper and fry until softened. Add the mince and fry for about 10 minutes. Add the seasonings (paprika, garlic granules, onion granules, oregano) and cook for a few more minutes.|Add the garlic paste, tomato purée and Worcestershire sauce. Stir thoroughly, then add the stock, cream and honey. Allow to simmer. Meanwhile cook the pasta according to packet instructions.|Once the pasta is ready, add to the pan, mix together and serve.", "rating": null, "cooked": false, "notes": ""}, {"id": "R024", "name": "Everything Egg & Pesto Bagel", "description": "Quick air-fryer bagel with a baked egg, green pesto, melted cheddar and everything seasoning", "cookbooks": ["CB01", "CB02", "CB08"], "tags": ["#pesto", "#eggs", "#bagel", "#air-fryer"], "servings": 2, "prepTime": 2, "cookTime": 7, "calories": null, "protein": null, "fat": null, "ingredients": "1 bagel|2 eggs|30g reduced-fat cheddar, grated|1 tbsp green pesto|salt and pepper|chilli flakes (optional)", "method": "Optionally line your air fryer with baking paper.|Spread the pesto onto each bagel half. Crack an egg onto each half. Sprinkle with chilli flakes, salt and pepper, then top with grated cheddar.|Air fry at 180°C for 6–7 minutes until the egg is set and cheese is melted.", "rating": null, "cooked": false, "notes": ""}, {"id": "R025", "name": "Chorizo Carbonara", "description": "Crispy chorizo carbonara — a quicker, punchier take on the Italian classic", "cookbooks": ["CB03", "CB06"], "tags": ["#chorizo", "#pasta", "#carbonara"], "servings": 2, "prepTime": 5, "cookTime": 20, "calories": null, "protein": null, "fat": null, "ingredients": "150g dried spaghetti|100g chorizo, diced|1 large egg|2 egg yolks|100g Parmesan, grated|fresh parsley|black pepper|50ml pasta water", "method": "Cook the spaghetti in boiling salted water according to packet instructions.|In a bowl, whisk together the egg and 2 yolks. Add the Parmesan and a generous grind of black pepper. Set aside.|Fry the chorizo for a few minutes until crispy. Add the cooked spaghetti to the pan and toss together.|Take the pan off the heat and allow to cool for a couple of minutes. Add the egg and Parmesan mixture and 50ml of pasta water, stirring thoroughly to form a silky sauce. Add fresh parsley and serve.", "rating": null, "cooked": false, "notes": "Original recipe uses JD carbonara seasoning (optional) — omit if unavailable."}, {"id": "R026", "name": "Creamy Garlic Parmesan Chicken Meatballs", "description": "Baked chicken meatballs with hidden veg in a rich garlic Parmesan cream sauce", "cookbooks": ["CB03", "CB06"], "tags": ["#chicken", "#meatballs"], "servings": 5, "prepTime": 15, "cookTime": 35, "calories": null, "protein": null, "fat": null, "ingredients": "For the meatballs: 500g chicken breast mince|1 egg|1 carrot, grated|1 courgette, grated (excess water squeezed)|1 onion, finely diced|3 cloves garlic, minced|15g fresh parsley|1 tsp smoked paprika|1.5 tsp oregano|1 tsp salt|0.5 tsp black pepper||For the sauce: 6 cloves garlic, minced|1 brown onion, finely diced|80ml white wine|50g Parmesan, grated|480ml whole milk|120ml chicken stock|2 tbsp light butter|2 tbsp plain flour|25g fresh parsley, finely chopped|25g fresh chives, finely chopped|2 tbsp lemon juice|1 tsp smoked paprika|1.5 tsp oregano|1 tsp salt", "method": "Preheat oven to 200°C. Squeeze excess water from the courgette. In a large bowl, combine all meatball ingredients — hands work best. Roll into balls slightly larger than golf balls and place on a lined baking tray. Spray lightly with olive oil and bake for 20 minutes until golden and cooked through.|Make the sauce: in a large pan over medium heat, sauté onion with a pinch of salt for 4–5 minutes until soft and golden. Add garlic and seasonings and cook for 1–2 minutes until fragrant. Deglaze pan with white wine and simmer until mostly evaporated.|Add butter and melt. Sprinkle over flour and stir to form a roux. Gradually add the milk, stirring continuously until thickened and smooth. Stir in Parmesan, chives and parsley.|Add baked meatballs to the sauce and simmer gently for a minute. Finish with fresh lemon juice.|Serve over mash and green beans, or with rice or pasta.", "rating": null, "cooked": false, "notes": ""}, {"id": "R027", "name": "Creamy Paprika Beef Pasta", "description": "Deeply caramelised minced beef in a smoky paprika tomato sauce finished with mascarpone and Parmesan", "cookbooks": ["CB03", "CB06"], "tags": ["#beef", "#pasta"], "servings": 4, "prepTime": 10, "cookTime": 20, "calories": null, "protein": null, "fat": null, "ingredients": "400g rigatoni|1 onion, diced|500g minced beef|4 garlic cloves, minced|1 tbsp smoked paprika|1 tbsp tomato paste|400g tin chopped tomatoes|150ml beef stock|150g mascarpone|40g Parmesan, grated|10g fresh parsley, chopped|cooking oil|salt and pepper", "method": "Heat cooking oil in a large pan over medium-high heat. Add the minced beef and spread it out. Leave it to caramelise — once deeply browned underneath, break it up and cook until browned all over.|Add the onion and cook for 4–5 minutes until softened.|Stir in the garlic and smoked paprika and cook for 1 minute.|Add the tomato paste and cook out for another minute to deepen the flavour.|Pour in the chopped tomatoes and beef stock. Stir well and simmer for 10 minutes until thickened and rich.|Meanwhile, cook the pasta in salted boiling water until al dente.|Drain the pasta, keeping back a splash of pasta water. Add the pasta straight into the sauce.|Stir through the mascarpone, grated Parmesan and chopped parsley. Add a splash of pasta water and toss until glossy and silky.|Taste for seasoning, finish with more Parmesan and serve immediately.", "rating": null, "cooked": false, "notes": ""}];
+
+// ════════════════════════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════════════════════════
+let state = {
+  filterCookbooks: [],
+  filterCooked: 'all',
+  currentRecipeId: null,
+  currentServings: 2,
+  editingId: null,
+  editRating: 0,
+};
+
+// ════════════════════════════════════════════════════════════
+// UTILS
+// ════════════════════════════════════════════════════════════
+function getCookbook(id){ return COOKBOOKS.find(c=>c.id===id)||{name:id,colour:'#999'}; }
+
+function parseFraction(s){
+  s = s.trim();
+  const m = s.match(/^(\d+)\s+(\d+)\/(\d+)$/);
+  if(m) return +m[1] + +m[2]/+m[3];
+  const f = s.match(/^(\d+)\/(\d+)$/);
+  if(f) return +f[1]/+f[2];
+  return parseFloat(s)||0;
+}
+
+function formatNum(n){
+  if(n<=0) return '0';
+  const fracs=[[0.25,'¼'],[0.33,'⅓'],[0.5,'½'],[0.67,'⅔'],[0.75,'¾']];
+  const int=Math.floor(n), fr=n-int;
+  for(const [v,sym] of fracs) if(Math.abs(fr-v)<0.06) return int>0?`${int}${sym}`:sym;
+  return Math.abs(n-Math.round(n))<0.05 ? String(Math.round(n)) : n.toFixed(1);
+}
+
+function scaleIngredient(text, ratio){
+  if(ratio===1) return text;
+  // Match leading: "1 1/2", "1/2", "0.5", "300", "4–5"
+  return text.replace(/^(\d+(?:\s+\d+\/\d+|\.\d+|\/\d+)?)(\s*[–-]\s*(\d+(?:\.\d+)?))?/, (_, n1, rng, n2)=>{
+    const v1 = parseFraction(n1)*ratio;
+    if(rng && n2) return `${formatNum(v1)}–${formatNum(parseFloat(n2)*ratio)}`;
+    return formatNum(v1);
+  });
+}
+
+function parseIngredients(str){
+  const items = str.split('|');
+  const sections=[];
+  let cur={header:null, items:[]};
+  for(const item of items){
+    if(item===''){
+      if(cur.items.length) sections.push(cur);
+      cur={header:null,items:[]};
+    } else {
+      const hm = item.match(/^((?:For (?:the )?|To assemble)[^:]+):\s*(.+)$/i);
+      if(hm){ cur.header=hm[1]; cur.items.push(hm[2]); }
+      else cur.items.push(item);
+    }
+  }
+  if(cur.items.length) sections.push(cur);
+  return sections;
+}
+
+function renderStars(rating, max=5){
+  if(!rating) return '';
+  let s='';
+  for(let i=1;i<=max;i++) s+=`<span class="star">${i<=rating?'★':'☆'}</span>`;
+  return s;
+}
+
+function totalTime(r){ return (r.prepTime||0)+(r.cookTime||0); }
+function ingCount(r){ return r.ingredients.split('|').filter(i=>i.trim()&&!i.match(/^(For |To assemble)/i)).length; }
+
+function nextId(){
+  const nums = db.map(r=>parseInt(r.id.replace('R',''))||0);
+  return 'R'+String(Math.max(0,...nums)+1).padStart(3,'0');
+}
+
+function allTags(){
+  const s=new Set();
+  db.forEach(r=>r.tags.forEach(t=>s.add(t)));
+  return [...s].sort();
+}
+
+// ════════════════════════════════════════════════════════════
+// FILTER + SEARCH
+// ════════════════════════════════════════════════════════════
+function getFilteredRecipes(){
+  const search = document.getElementById('search').value.toLowerCase().trim();
+  return db.filter(r=>{
+    if(state.filterCookbooks.length && !state.filterCookbooks.some(cb=>r.cookbooks.includes(cb))) return false;
+    if(state.filterCooked==='cooked' && !r.cooked) return false;
+    if(state.filterCooked==='uncooked' && r.cooked) return false;
+    if(search){
+      const hay = (r.name+' '+r.description+' '+r.tags.join(' ')+' '+r.notes).toLowerCase();
+      if(!hay.includes(search)) return false;
+    }
+    return true;
+  });
+}
+
+function applyFilters(){ renderGrid(); }
+
+function setCookedFilter(val, btn){
+  state.filterCooked=val;
+  document.querySelectorAll('.cooked-toggle button').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderGrid();
+}
+
+// ════════════════════════════════════════════════════════════
+// RENDER
+// ════════════════════════════════════════════════════════════
+function renderCookbookFilters(){
+  const el=document.getElementById('cb-filters');
+  el.innerHTML=COOKBOOKS.map(cb=>`
+    <button class="filter-pill ${state.filterCookbooks.includes(cb.id)?'active':''}"
+      style="${state.filterCookbooks.includes(cb.id)?`background:${cb.colour};border-color:${cb.colour}`:'color:var(--muted)'}"
+      onclick="toggleCbFilter('${cb.id}',this,'${cb.colour}')">${cb.name}</button>
+  `).join('');
+}
+
+function toggleCbFilter(id, btn, colour){
+  const i=state.filterCookbooks.indexOf(id);
+  if(i===-1){ state.filterCookbooks.push(id); btn.classList.add('active'); btn.style.background=colour; btn.style.borderColor=colour; btn.style.color='#fff'; }
+  else { state.filterCookbooks.splice(i,1); btn.classList.remove('active'); btn.style.background=''; btn.style.borderColor=''; btn.style.color='var(--muted)'; }
+  renderGrid();
+}
+
+function renderGrid(){
+  const recipes=getFilteredRecipes();
+  const grid=document.getElementById('recipe-grid');
+  document.getElementById('results-count').textContent=`${recipes.length} recipe${recipes.length!==1?'s':''}`;
+  if(!recipes.length){
+    grid.innerHTML=`<div class="empty-state"><div class="big">🍽</div><p>No recipes match your filters.</p></div>`;
+    return;
+  }
+  grid.innerHTML=recipes.map(r=>renderCard(r)).join('');
+}
+
+function renderCard(r){
+  const topCb = r.cookbooks[0] ? getCookbook(r.cookbooks[0]) : null;
+  const borderColor = topCb ? topCb.colour : 'var(--border)';
+  const badges = r.cookbooks.slice(0,3).map(id=>{
+    const cb=getCookbook(id);
+    return `<span class="cb-badge" style="background:${cb.colour}">${cb.name}</span>`;
+  }).join('');
+  const tags = r.tags.slice(0,5).map(t=>`<span class="tag">${t}</span>`).join('');
+  const tt = totalTime(r);
+  const ic = ingCount(r);
+  const hasM = r.calories||r.protein||r.fat;
+  const macroHtml = hasM ? `<div class="macros">
+    ${r.calories?`<div class="macro"><span>${r.calories}</span>kcal</div>`:''}
+    ${r.protein?`<div class="macro"><span>${r.protein}g</span> prot</div>`:''}
+    ${r.fat?`<div class="macro"><span>${r.fat}g</span> fat</div>`:''}
+  </div>` : '<div></div>';
+  const statusHtml = r.cooked
+    ? `<div style="display:flex;align-items:center;gap:4px">${renderStars(r.rating)||'<span class="cooked-badge">Cooked ✓</span>'}</div>`
+    : `<span class="want-badge">Want to Try</span>`;
+
+  return `<div class="card" style="border-top-color:${borderColor}" onclick="openRecipe('${r.id}')">
+    <div class="card-badges">${badges}</div>
+    <div class="card-body">
+      <div class="card-name">${r.name}</div>
+      <div class="card-desc">${r.description}</div>
+      <div class="card-tags">${tags}</div>
+      <div class="card-stats">
+        <div class="stat"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>${tt?tt+' min':'—'}</div>
+        <div class="stat"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>${r.servings} serving${r.servings!==1?'s':''}</div>
+        <div class="stat"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/></svg>${ic} ingr.</div>
+      </div>
+    </div>
+    <div class="card-footer">${macroHtml}${statusHtml}</div>
+  </div>`;
+}
+
+// ════════════════════════════════════════════════════════════
+// RECIPE MODAL
+// ════════════════════════════════════════════════════════════
+function openRecipe(id){
+  const r=db.find(x=>x.id===id);
+  if(!r) return;
+  state.currentRecipeId=id;
+  state.currentServings=r.servings;
+  populateRecipeModal(r);
+  document.getElementById('recipe-overlay').classList.remove('hidden');
+  document.body.style.overflow='hidden';
+}
+
+function populateRecipeModal(r){
+  document.getElementById('rm-name').textContent=r.name;
+  document.getElementById('rm-desc').textContent=r.description;
+  document.getElementById('sc-val').textContent=state.currentServings;
+  document.getElementById('rm-badges').innerHTML=r.cookbooks.map(id=>{
+    const cb=getCookbook(id); return `<span class="cb-badge" style="background:${cb.colour}">${cb.name}</span>`;
+  }).join('');
+  const tt=totalTime(r);
+  document.getElementById('rm-meta').innerHTML=`
+    <div class="meta-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>${r.prepTime||0} min prep + ${r.cookTime||0} min cook</div>
+    <div class="meta-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>${r.servings} default servings</div>
+    ${r.cooked ? `<div class="meta-item" style="color:#90D4A3">✓ Cooked ${r.rating?renderStars(r.rating):''}</div>` : `<div class="meta-item" style="color:#a8b4e8">★ Want to try</div>`}
+  `;
+  // Macros bar
+  const hasM=r.calories||r.protein||r.fat;
+  const ratio=state.currentServings/r.servings;
+  document.getElementById('rm-macros-bar').innerHTML = hasM ? `<div class="modal-macros">
+    ${r.calories?`<div class="modal-macro"><div class="val">${Math.round(r.calories*ratio)}</div><div class="lbl">Calories</div></div>`:''}
+    ${r.protein?`<div class="modal-macro"><div class="val">${(r.protein*ratio).toFixed(1)}g</div><div class="lbl">Protein</div></div>`:''}
+    ${r.fat?`<div class="modal-macro"><div class="val">${(r.fat*ratio).toFixed(1)}g</div><div class="lbl">Fat</div></div>`:''}
+  </div>` : '';
+  renderIngredients(r);
+  renderMethod(r);
+  document.getElementById('rm-tags').innerHTML=r.tags.map(t=>`<span class="tag">${t}</span>`).join('');
+}
+
+function renderIngredients(r){
+  const ratio=state.currentServings/r.servings;
+  const sections=parseIngredients(r.ingredients);
+  let html='';
+  for(const sec of sections){
+    if(sec.header) html+=`<p class="ing-section-header">${sec.header}</p>`;
+    html+='<ul class="ingredients-list">';
+    for(const item of sec.items) html+=`<li>${scaleIngredient(item,ratio)}</li>`;
+    html+='</ul>';
+  }
+  document.getElementById('rm-ingredients').innerHTML=html;
+}
+
+function renderMethod(r){
+  const steps=r.method.split('|').filter(s=>s.trim());
+  document.getElementById('rm-method').innerHTML=steps.map((s,i)=>`
+    <div class="method-step">
+      <div class="step-num">${i+1}</div>
+      <div class="step-text">${s}</div>
+    </div>`).join('');
+}
+
+function changeServings(delta){
+  const r=db.find(x=>x.id===state.currentRecipeId);
+  if(!r) return;
+  state.currentServings=Math.max(1,state.currentServings+delta);
+  document.getElementById('sc-val').textContent=state.currentServings;
+  renderIngredients(r);
+  // re-render macros
+  const hasM=r.calories||r.protein||r.fat;
+  const ratio=state.currentServings/r.servings;
+  document.getElementById('rm-macros-bar').innerHTML = hasM ? `<div class="modal-macros">
+    ${r.calories?`<div class="modal-macro"><div class="val">${Math.round(r.calories*ratio)}</div><div class="lbl">Calories</div></div>`:''}
+    ${r.protein?`<div class="modal-macro"><div class="val">${(r.protein*ratio).toFixed(1)}g</div><div class="lbl">Protein</div></div>`:''}
+    ${r.fat?`<div class="modal-macro"><div class="val">${(r.fat*ratio).toFixed(1)}g</div><div class="lbl">Fat</div></div>`:''}
+  </div>` : '';
+}
+
+function editCurrentRecipe(){ closeModal('recipe-overlay'); openEditModal(state.currentRecipeId); }
+function deleteCurrentRecipe(){
+  if(!confirm(`Delete "${db.find(r=>r.id===state.currentRecipeId)?.name}"?`)) return;
+  db=db.filter(r=>r.id!==state.currentRecipeId);
+  closeModal('recipe-overlay');
+  renderGrid();
+  showToast('Recipe deleted');
+}
+
+// ════════════════════════════════════════════════════════════
+// EDIT MODAL
+// ════════════════════════════════════════════════════════════
+function openEditModal(id){
+  state.editingId=id;
+  state.editRating=0;
+  document.getElementById('edit-title').textContent=id?'Edit Recipe':'Add Recipe';
+  document.getElementById('edit-delete-btn').innerHTML=id?`<button class="btn btn-danger btn-sm" onclick="deleteFromEdit('${id}')">🗑 Delete</button>`:'';
+  // Render cookbook checkboxes
+  document.getElementById('f-cookbooks').innerHTML=COOKBOOKS.map(cb=>`
+    <label class="cb-check" id="cbcheck-${cb.id}">
+      <input type="checkbox" id="cb-${cb.id}" onchange="updateCbCheck('${cb.id}')">
+      <span style="width:9px;height:9px;border-radius:50%;background:${cb.colour};flex-shrink:0;display:inline-block"></span>
+      <span class="cb-label">${cb.name}</span>
+    </label>`).join('');
+  if(id){
+    const r=db.find(x=>x.id===id);
+    document.getElementById('f-name').value=r.name;
+    document.getElementById('f-desc').value=r.description;
+    document.getElementById('f-tags').value=r.tags.join(' ');
+    document.getElementById('f-servings').value=r.servings;
+    document.getElementById('f-prep').value=r.prepTime||0;
+    document.getElementById('f-cook').value=r.cookTime||0;
+    document.getElementById('f-cal').value=r.calories||'';
+    document.getElementById('f-protein').value=r.protein||'';
+    document.getElementById('f-fat').value=r.fat||'';
+    // Convert pipe-delimited back to newlines for editing
+    document.getElementById('f-ingredients').value=r.ingredients.replace(/\|\|/g,'\n\n').replace(/\|/g,'\n');
+    document.getElementById('f-method').value=r.method.replace(/\|/g,'\n');
+    state.editRating=r.rating||0;
+    document.getElementById('f-cooked').checked=r.cooked;
+    document.getElementById('f-cooked-lbl').textContent=r.cooked?'Yes, cooked it!':'Not yet tried';
+    document.getElementById('f-notes').value=r.notes||'';
+    r.cookbooks.forEach(id=>{
+      const cb=document.getElementById('cb-'+id);
+      if(cb){cb.checked=true; document.getElementById('cbcheck-'+id).classList.add('checked');}
+    });
+  } else {
+    document.getElementById('f-name').value='';
+    document.getElementById('f-desc').value='';
+    document.getElementById('f-tags').value='';
+    document.getElementById('f-servings').value=2;
+    document.getElementById('f-prep').value=0;
+    document.getElementById('f-cook').value=0;
+    document.getElementById('f-cal').value='';
+    document.getElementById('f-protein').value='';
+    document.getElementById('f-fat').value='';
+    document.getElementById('f-ingredients').value='';
+    document.getElementById('f-method').value='';
+    document.getElementById('f-notes').value='';
+    document.getElementById('f-cooked').checked=false;
+    document.getElementById('f-cooked-lbl').textContent='Not yet tried';
+  }
+  document.getElementById('f-cooked').onchange=function(){
+    document.getElementById('f-cooked-lbl').textContent=this.checked?'Yes, cooked it!':'Not yet tried';
+  };
+  refreshStarDisplay();
+  document.getElementById('edit-overlay').classList.remove('hidden');
+  document.body.style.overflow='hidden';
+}
+
+function updateCbCheck(id){
+  const cb=document.getElementById('cb-'+id); const label=document.getElementById('cbcheck-'+id);
+  label.classList.toggle('checked',cb.checked);
+}
+
+function setRating(n){ state.editRating=n; refreshStarDisplay(); }
+function refreshStarDisplay(){
+  document.querySelectorAll('#f-rating-stars span').forEach((s,i)=>{
+    s.classList.toggle('lit',i<state.editRating); s.style.color=i<state.editRating?'#D4A853':'#D4D0C8';
+  });
+}
+function hoverStars(n){ document.querySelectorAll('#f-rating-stars span').forEach((s,i)=>{ s.style.color=i<n?'#D4A853':'#D4D0C8'; }); }
+
+document.querySelectorAll('#f-rating-stars span').forEach((s,i)=>{ s.onmouseover=()=>hoverStars(i+1); });
+
+function saveRecipe(){
+  const name=document.getElementById('f-name').value.trim();
+  if(!name){ alert('Please enter a recipe name.'); return; }
+  const selectedCbs=[...document.querySelectorAll('#f-cookbooks input:checked')].map(i=>i.id.replace('cb-',''));
+  const rawTags=document.getElementById('f-tags').value.trim();
+  const tags=rawTags.split(/[\s,]+/).filter(t=>t).map(t=>t.startsWith('#')?t:'#'+t);
+  const ingRaw=document.getElementById('f-ingredients').value.trim();
+  const ingredients=ingRaw.split(/\n\n+/).map(block=>block.split('\n').map(l=>l.trim()).filter(l=>l).join('|')).join('||');
+  const methodRaw=document.getElementById('f-method').value.trim();
+  const method=methodRaw.split('\n').map(l=>l.trim()).filter(l=>l).join('|');
+  const calVal=parseFloat(document.getElementById('f-cal').value)||null;
+  const proVal=parseFloat(document.getElementById('f-protein').value)||null;
+  const fatVal=parseFloat(document.getElementById('f-fat').value)||null;
+
+  const recipe={
+    id:state.editingId||nextId(), name,
+    description:document.getElementById('f-desc').value.trim(),
+    cookbooks:selectedCbs, tags,
+    servings:parseInt(document.getElementById('f-servings').value)||2,
+    prepTime:parseInt(document.getElementById('f-prep').value)||0,
+    cookTime:parseInt(document.getElementById('f-cook').value)||0,
+    calories:calVal, protein:proVal, fat:fatVal,
+    ingredients, method,
+    rating:state.editRating||null,
+    cooked:document.getElementById('f-cooked').checked,
+    notes:document.getElementById('f-notes').value.trim(),
+  };
+  if(state.editingId){ const i=db.findIndex(r=>r.id===state.editingId); db[i]=recipe; }
+  else db.push(recipe);
+  closeModal('edit-overlay');
+  renderGrid();
+  showToast(state.editingId?'Recipe updated':'Recipe added!');
+}
+
+function deleteFromEdit(id){
+  if(!confirm('Delete this recipe?')) return;
+  db=db.filter(r=>r.id!==id);
+  closeModal('edit-overlay');
+  renderGrid();
+  showToast('Recipe deleted');
+}
+
+// ════════════════════════════════════════════════════════════
+// COOKBOOK MODAL
+// ════════════════════════════════════════════════════════════
+const PRESET_COLOURS=['#FFD166','#EE6C4D','#839973','#4361EE','#BC6C25','#641220','#90E0EF','#FF8A5B','#2F4858','#FFB4A2','#A29BFE','#06D6A0','#118AB2','#073B4C'];
+let editingCbId=null;
+
+function openCookbookModal(){ renderCookbookList(); document.getElementById('cb-overlay').classList.remove('hidden'); document.body.style.overflow='hidden'; }
+
+function renderCookbookList(){
+  const el=document.getElementById('cb-list');
+  el.innerHTML=COOKBOOKS.map(cb=>`
+    <div class="cb-item">
+      <div class="cb-dot" style="background:${cb.colour}"></div>
+      <div class="cb-item-info">
+        <div class="cb-item-name">${cb.name}</div>
+        <div class="cb-item-desc">${cb.description}</div>
+      </div>
+      <div class="cb-item-actions">
+        <button class="btn btn-secondary btn-sm" onclick="openCbEditForm('${cb.id}')">✎</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteCookbook('${cb.id}')">🗑</button>
+      </div>
+    </div>`).join('');
+}
+
+function openNewCookbookForm(){ openCbEditForm(null); }
+
+function openCbEditForm(id){
+  editingCbId=id;
+  const cb=id?COOKBOOKS.find(c=>c.id===id):null;
+  const el=document.getElementById('cb-list');
+  const formHtml=`<div class="cb-edit-form" id="cb-edit-form">
+    <div class="form-row"><div class="form-group"><label>Name</label><input id="cf-name" value="${cb?cb.name:''}" placeholder="e.g. Meal Prep"></div>
+    <div class="form-group"><label>Description</label><input id="cf-desc" value="${cb?cb.description:''}" placeholder="Short tagline"></div></div>
+    <div class="form-group"><label>Colour</label>
+    <div class="color-picker-row">${PRESET_COLOURS.map(c=>`<div class="color-swatch ${cb&&cb.colour===c?'selected':''}" style="background:${c}" onclick="selectCbColour('${c}',this)"></div>`).join('')}
+    <input type="color" id="cf-colour" value="${cb?cb.colour:'#4361EE'}" style="width:24px;height:24px;border:none;cursor:pointer;border-radius:50%;padding:0" onchange="syncColourFromPicker(this.value)"></div></div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px">
+      <button class="btn btn-secondary btn-sm" onclick="renderCookbookList()">Cancel</button>
+      <button class="btn btn-primary btn-sm" onclick="saveCookbook()">Save</button>
+    </div>
+  </div>`;
+  el.insertAdjacentHTML('afterbegin', formHtml);
+}
+
+let selectedCbColour=null;
+function selectCbColour(c, el){
+  selectedCbColour=c;
+  document.querySelectorAll('.color-swatch').forEach(s=>s.classList.remove('selected'));
+  el.classList.add('selected');
+  document.getElementById('cf-colour').value=c;
+}
+function syncColourFromPicker(v){
+  selectedCbColour=v;
+  document.querySelectorAll('.color-swatch').forEach(s=>s.classList.remove('selected'));
+}
+
+function saveCookbook(){
+  const name=document.getElementById('cf-name').value.trim();
+  if(!name){ alert('Please enter a cookbook name.'); return; }
+  const colour=selectedCbColour||document.getElementById('cf-colour').value||'#4361EE';
+  const desc=document.getElementById('cf-desc').value.trim();
+  if(editingCbId){ const cb=COOKBOOKS.find(c=>c.id===editingCbId); cb.name=name; cb.description=desc; cb.colour=colour; }
+  else { const newId='CB'+String(COOKBOOKS.length+1).padStart(2,'0'); COOKBOOKS.push({id:newId,name,description:desc,colour}); }
+  renderCookbookFilters();
+  renderCookbookList();
+  showToast('Cookbook saved');
+}
+
+function deleteCookbook(id){
+  if(!confirm('Delete this cookbook? Recipes will lose this tag.')) return;
+  COOKBOOKS=COOKBOOKS.filter(c=>c.id!==id);
+  db.forEach(r=>{ r.cookbooks=r.cookbooks.filter(c=>c!==id); });
+  renderCookbookFilters();
+  renderCookbookList();
+  renderGrid();
+}
+
+// ════════════════════════════════════════════════════════════
+// IMPORT / EXPORT
+// ════════════════════════════════════════════════════════════
+const CSV_COLS=['ID','Name','Description','Cookbooks','Tags','Default Servings','Prep Time (mins)','Cook Time (mins)','Calories Per Serving','Protein Per Serving (g)','Fat Per Serving (g)','Ingredients','Method','Rating','Cooked','Notes'];
+
+function exportCSV(){
+  const rows=[CSV_COLS.map(h=>`"${h}"`).join(',')];
+  for(const r of db){
+    rows.push([
+      r.id, r.name, r.description,
+      r.cookbooks.join('|'), r.tags.join('|'),
+      r.servings, r.prepTime||0, r.cookTime||0,
+      r.calories||'', r.protein||'', r.fat||'',
+      r.ingredients, r.method,
+      r.rating||'', r.cooked?'Y':'N', r.notes||''
+    ].map(v=>`"${String(v).replace(/"/g,'""')}"`).join(','));
+  }
+  download('Recipe_Database.csv', rows.join('\n'));
+  showToast('Recipes exported as CSV');
+}
+
+function triggerImport(){ document.getElementById('import-input').click(); }
+
+function importCSV(e){
+  const file=e.target.files[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    try{
+      const lines=parseCSVLines(ev.target.result);
+      const headers=lines[0];
+      const colIdx=h=>headers.findIndex(x=>x.trim()===h.trim());
+      const imported=lines.slice(1).filter(l=>l.length>1 && l[colIdx('ID')]).map(l=>{
+        const g=i=>l[i]||'';
+        const cbs=g(colIdx('Cookbooks')).split('|').filter(Boolean);
+        const tags=g(colIdx('Tags')).split('|').filter(Boolean);
+        return {
+          id:g(colIdx('ID')), name:g(colIdx('Name')), description:g(colIdx('Description')),
+          cookbooks:cbs, tags,
+          servings:parseInt(g(colIdx('Default Servings')))||2,
+          prepTime:parseInt(g(colIdx('Prep Time (mins)')))||0,
+          cookTime:parseInt(g(colIdx('Cook Time (mins)')))||0,
+          calories:parseFloat(g(colIdx('Calories Per Serving')))||null,
+          protein:parseFloat(g(colIdx('Protein Per Serving (g)')))||null,
+          fat:parseFloat(g(colIdx('Fat Per Serving (g)')))||null,
+          ingredients:g(colIdx('Ingredients')), method:g(colIdx('Method')),
+          rating:parseInt(g(colIdx('Rating')))||null,
+          cooked:g(colIdx('Cooked')).toUpperCase()==='Y',
+          notes:g(colIdx('Notes')),
+        };
+      });
+      if(!imported.length){ showToast('No valid recipes found in file'); return; }
+      const mode=confirm(`Import ${imported.length} recipe(s)?\n\nOK = Replace all existing recipes\nCancel = Merge (add new, update existing)`)
+        ?'replace':'merge';
+      if(mode==='replace'){ db=imported; }
+      else { imported.forEach(r=>{ const i=db.findIndex(x=>x.id===r.id); if(i>=0) db[i]=r; else db.push(r); }); }
+      renderGrid();
+      showToast(`Imported ${imported.length} recipe(s)`);
+    } catch(err){ alert('Error reading CSV: '+err.message); }
+    e.target.value='';
+  };
+  reader.readAsText(file);
+}
+
+function parseCSVLines(text){
+  const results=[]; let row=[]; let field=''; let inQuotes=false;
+  for(let i=0;i<text.length;i++){
+    const c=text[i], n=text[i+1];
+    if(inQuotes){ if(c==='"'&&n==='"'){field+='"';i++;} else if(c==='"'){inQuotes=false;} else field+=c; }
+    else if(c==='"'){inQuotes=true;}
+    else if(c===','){ row.push(field); field=''; }
+    else if(c==='\n'||c==='\r'){ row.push(field); if(row.some(f=>f)) results.push(row); row=[]; field=''; if(c==='\r'&&n==='\n') i++; }
+    else field+=c;
+  }
+  if(field||row.length){ row.push(field); if(row.some(f=>f)) results.push(row); }
+  return results;
+}
+
+function download(filename, content){
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(content);
+  a.download=filename; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+}
+
+// ════════════════════════════════════════════════════════════
+// MODAL UTILS
+// ════════════════════════════════════════════════════════════
+function closeModal(id){ document.getElementById(id).classList.add('hidden'); document.body.style.overflow=''; }
+function closeOnOverlay(e,id){ if(e.target===document.getElementById(id)) closeModal(id); }
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') document.querySelectorAll('.modal-overlay:not(.hidden)').forEach(m=>{ m.classList.add('hidden'); document.body.style.overflow=''; }); });
+
+function showToast(msg){
+  const t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+// ════════════════════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════════════════════
+renderCookbookFilters();
+renderGrid();
+</script>
+</body>
+</html>

@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meal Prep Planner</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@400;500;600;700;800&family=Barlow:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F5F2EE;--surface:#FFFFFF;--header-bg:#1A2E1F;
+  --text:#1C1C1C;--text-muted:#6B6B6B;--border:#E0DDD8;
+  --alh:#2D6A4F;--alh-light:#EAF4EF;--alh-header:#1B4332;
+  --ato:#1B3A6B;--ato-light:#EBF0FA;--ato-header:#0F2554;
+  --total:#B5451B;--total-light:#FEF0EA;--total-header:#8B3214;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+.header{background:var(--header-bg);padding:22px 36px 18px;color:white;}
+.header h1{font-family:'Barlow Semi Condensed',sans-serif;font-size:28px;font-weight:800;line-height:1;margin-bottom:4px;}
+.mode-bar{background:#F0EDE8;border-bottom:2px solid var(--border);padding:16px 36px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;}
+.mode-label{font-family:'Barlow Semi Condensed',sans-serif;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--header-bg);}
+.mode-toggle{display:flex;border-radius:10px;overflow:hidden;border:2px solid var(--border);background:var(--surface);}
+.mode-btn{padding:9px 20px;font-family:'Barlow Semi Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:0.4px;text-transform:uppercase;cursor:pointer;border:none;background:transparent;color:var(--text-muted);transition:background .15s,color .15s;}
+.mode-btn.active-same{background:var(--alh);color:white;}
+.mode-btn.active-diff{background:var(--ato);color:white;}
+.mode-hint{font-size:12px;color:var(--text-muted);font-style:italic;}
+.main{padding:28px 36px;max-width:1400px;margin:0 auto;}
+.section-title{font-family:'Barlow Semi Condensed',sans-serif;font-size:18px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:18px;color:var(--header-bg);display:flex;align-items:center;gap:12px;}
+.section-title .sub{font-size:13px;font-weight:500;text-transform:none;letter-spacing:0;color:var(--text-muted);}
+
+/* MEAL CARDS */
+.carb-group{margin-bottom:22px;}
+.carb-group-header{display:flex;align-items:center;gap:10px;font-family:'Barlow Semi Condensed',sans-serif;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--header-bg);margin-bottom:9px;padding-bottom:6px;border-bottom:2px solid var(--border);}
+.carb-count{font-size:11px;font-weight:500;color:var(--text-muted);text-transform:none;letter-spacing:0;margin-left:auto;}
+.meal-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:8px;}
+.meal-card{background:var(--bg);border:2px solid var(--border);border-radius:10px;padding:12px 13px;cursor:pointer;transition:border-color .15s,box-shadow .15s,transform .1s;user-select:none;position:relative;}
+.meal-card:hover{box-shadow:0 4px 14px rgba(45,106,79,.12);transform:translateY(-1px);}
+.meal-card.sel-both{border-color:#7B3FA0;background:#F5EFF9;}
+.meal-card.sel-alh{border-color:var(--alh);background:#F0F8F4;}
+.meal-card.sel-ato{border-color:var(--ato);background:#EEF3FB;}
+.meal-check{position:absolute;top:9px;right:10px;width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;color:transparent;background:var(--border);transition:background .15s,color .15s;}
+.meal-card.sel-alh .meal-check{background:var(--alh);color:white;}
+.meal-card.sel-ato .meal-check{background:var(--ato);color:white;}
+.meal-card.sel-both .meal-check{background:#7B3FA0;color:white;}
+.meal-id{font-family:'DM Mono',monospace;font-size:10px;color:var(--text-muted);margin-bottom:3px;}
+.meal-name{font-family:'Barlow Semi Condensed',sans-serif;font-size:14px;font-weight:700;line-height:1.25;margin-bottom:8px;padding-right:26px;}
+.meal-macros{display:flex;flex-direction:column;gap:3px;}
+.macro-row{display:flex;align-items:center;gap:5px;}
+.macro-who{font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px;min-width:28px;text-align:center;font-family:'Barlow Semi Condensed',sans-serif;letter-spacing:0.3px;}
+.macro-who.alh{background:var(--alh-light);color:var(--alh);}
+.macro-who.ato{background:var(--ato-light);color:var(--ato);}
+.macro-val{font-family:'DM Mono',monospace;font-size:10px;color:var(--text-muted);}
+.meal-note{font-size:10px;color:#92400E;background:#FEF3C7;border:1px solid rgba(245,158,11,.3);border-radius:4px;padding:2px 7px;margin-top:5px;font-style:italic;}
+.person-panels{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.person-panel{background:var(--surface);border-radius:12px;padding:18px;border:2px solid var(--border);}
+.person-panel.panel-alh{border-color:rgba(45,106,79,.35);}
+.person-panel.panel-ato{border-color:rgba(27,58,107,.35);}
+.panel-header{display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-bottom:10px;border-bottom:2px solid var(--border);}
+.panel-badge{font-family:'Barlow Semi Condensed',sans-serif;font-size:13px;font-weight:800;padding:4px 12px;border-radius:6px;letter-spacing:0.5px;}
+.panel-badge.alh{background:var(--alh-light);color:var(--alh-header);}
+.panel-badge.ato{background:var(--ato-light);color:var(--ato-header);}
+.panel-sel-count{font-family:'DM Mono',monospace;font-size:11px;color:var(--text-muted);margin-left:auto;}
+
+/* SHOPPING LIST */
+.divider{border:none;border-top:2px solid var(--border);margin:28px 0;}
+.shopping-empty{background:var(--surface);border:2px dashed var(--border);border-radius:10px;padding:40px 32px;text-align:center;color:var(--text-muted);}
+.shopping-empty p{font-size:16px;margin-bottom:6px;font-weight:500;}
+.shopping-empty small{font-size:13px;opacity:.7;}
+.shopping-header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:16px;}
+.selected-pills{display:flex;flex-wrap:wrap;gap:6px;}
+.selected-pill{font-size:11px;font-family:'DM Mono',monospace;font-weight:500;padding:3px 10px;border-radius:20px;background:var(--alh-light);color:var(--alh);border:1px solid rgba(45,106,79,.25);}
+.selected-pill.ato-pill{background:var(--ato-light);color:var(--ato);border-color:rgba(27,58,107,.25);}
+.actions{display:flex;gap:8px;}
+.btn{border:none;padding:9px 18px;border-radius:7px;font-family:'Barlow Semi Condensed',sans-serif;font-size:13px;font-weight:700;letter-spacing:.5px;cursor:pointer;transition:opacity .15s;text-transform:uppercase;}
+.btn:hover{opacity:.85;}
+.btn-print{background:var(--header-bg);color:white;}
+.btn-clear{background:#f0ece6;color:var(--text-muted);}
+.table-section{margin-bottom:6px;}
+.cat-header{font-family:'Barlow Semi Condensed',sans-serif;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;color:var(--header-bg);padding:10px 13px 8px;border-bottom:2px solid var(--header-bg);background:#EDEAE5;border-radius:8px 8px 0 0;}
+.shopping-table{width:100%;border-collapse:collapse;background:var(--surface);font-size:13px;border-radius:0 0 8px 8px;overflow:hidden;margin-bottom:14px;box-shadow:0 1px 4px rgba(0,0,0,.05);}
+.shopping-table th{padding:8px 12px;font-family:'Barlow Semi Condensed',sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap;}
+.th-check{background:#F8F7F4;width:38px;}.th-item{background:#F8F7F4;color:var(--text);min-width:180px;}
+.th-total{background:var(--total-light);color:var(--total-header);min-width:120px;}
+.th-ato{background:var(--ato-light);color:var(--ato-header);min-width:120px;}
+.th-alh{background:var(--alh-light);color:var(--alh-header);min-width:120px;}
+.th-tags{background:#F8F7F4;color:var(--text-muted);min-width:160px;}
+.shopping-table td{padding:8px 12px;border-bottom:1px solid #F0EDE8;vertical-align:middle;}
+.shopping-table tr:last-child td{border-bottom:none;}
+.shopping-table tr:hover td{background:rgba(0,0,0,.015);}
+.shopping-table tr.have-it .td-item,.shopping-table tr.have-it .td-total,.shopping-table tr.have-it .td-ato,.shopping-table tr.have-it .td-alh,.shopping-table tr.have-it .td-tags{opacity:.35;text-decoration:line-through;}
+.td-item{font-weight:500;}
+.td-total{font-family:'DM Mono',monospace;font-size:12px;color:var(--total);font-weight:500;background:var(--total-light);}
+.td-ato{font-family:'DM Mono',monospace;font-size:12px;color:var(--ato);background:var(--ato-light);}
+.td-alh{font-family:'DM Mono',monospace;font-size:12px;color:var(--alh);background:var(--alh-light);}
+.td-taste{font-style:italic;font-size:12px;color:var(--text-muted);}
+.td-check input{cursor:pointer;width:15px;height:15px;accent-color:var(--alh);}
+.tag{display:inline-block;font-size:10px;font-family:'DM Mono',monospace;font-weight:500;padding:2px 7px;border-radius:4px;border:1px solid;margin:2px 2px 2px 0;white-space:nowrap;}
+
+/* SHOP PLAN */
+.shop-plan-section{margin-top:32px;}
+.shop-plan-notice{background:#FFF8E1;border:1.5px solid #F0C040;border-radius:8px;padding:10px 14px;font-size:12.5px;color:#5A4000;margin-bottom:16px;line-height:1.5;}
+.shop-plan-notice strong{font-weight:700;}
+.shop-group{margin-bottom:14px;background:var(--surface);border-radius:10px;overflow:hidden;box-shadow:0 1px 6px rgba(0,0,0,.06);}
+.shop-group-header{padding:11px 16px;display:flex;align-items:center;justify-content:space-between;}
+.shop-group-name{font-family:'Barlow Semi Condensed',sans-serif;font-size:16px;font-weight:800;color:white;display:flex;align-items:center;gap:8px;letter-spacing:.3px;}
+.shop-group-count{font-family:'DM Mono',monospace;font-size:11px;color:rgba(255,255,255,.75);}
+.shop-plan-table{width:100%;border-collapse:collapse;font-size:13px;}
+.shop-plan-table td{padding:9px 14px;border-bottom:1px solid var(--bg);vertical-align:middle;}
+.shop-plan-table tr:last-child td{border-bottom:none;}
+.shop-plan-table tr:hover td{background:#FAFAF8;}
+.sp-name{font-weight:500;}
+.sp-desc{font-size:11px;color:var(--text-muted);font-style:italic;margin-top:2px;}
+.sp-qty{font-family:'DM Mono',monospace;font-size:12px;color:var(--text-muted);white-space:nowrap;text-align:right;padding-right:8px;}
+.sp-action{text-align:right;white-space:nowrap;}
+.btn-reassign{background:none;border:1.5px solid var(--border);border-radius:6px;padding:4px 10px;font-family:'Barlow Semi Condensed',sans-serif;font-size:11px;font-weight:700;color:var(--text-muted);cursor:pointer;letter-spacing:.3px;transition:border-color .15s,color .15s;}
+.btn-reassign:hover{border-color:var(--alh);color:var(--alh);}
+.sp-only{font-size:11px;color:#ccc;font-style:italic;}
+/* Shop colours */
+.sh-aldi{background:#00529F;} .sh-lidl{background:#003D8F;}
+.sh-ms{background:#2C0A4A;} .sh-tesco{background:#003D8F;}
+.sh-asda{background:#2B6200;} .sh-morrisons{background:#8A6200;}
+.sh-sains{background:#B83A00;} .sh-online{background:#3730A3;}
+
+/* PRINT */
+@media print{
+  .mode-bar,.actions,.selected-pills,.shop-plan-section{display:none!important;}
+  .header{padding:14px 20px;}.header h1{font-size:20px;}
+  .main{padding:12px 16px;}
+  .shopping-table{font-size:11px;box-shadow:none;}
+  .shopping-table td,.shopping-table th{padding:5px 8px;}
+  body{background:white;}
+}
+@media(max-width:900px){
+  .person-panels{grid-template-columns:1fr;}
+  .main{padding:16px;}.header{padding:16px;}.mode-bar{padding:12px 16px;flex-wrap:wrap;gap:10px;}
+  .shopping-table{display:block;overflow-x:auto;}
+  .shop-plan-table{display:block;overflow-x:auto;}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Meal Prep Planner</h1>
+</div>
+
+<div class="mode-bar">
+  <div class="mode-label">Prep Mode</div>
+  <div class="mode-toggle">
+    <button class="mode-btn active-same" id="btn-same" onclick="setMode('same')">⊙ Same Meals</button>
+    <button class="mode-btn" id="btn-diff" onclick="setMode('diff')">— Different Meals</button>
+  </div>
+  <div class="mode-hint" id="mode-hint">Both cooking the same meals — one selection applies to both</div>
+</div>
+
+<div class="main">
+
+  <!-- SELECT MEALS -->
+  <div class="section-title">Select Meals <span class="sub" id="sel-count-label"></span></div>
+  <div id="meal-selector"></div>
+
+  <hr class="divider">
+
+  <!-- SHOPPING LIST -->
+  <div class="section-title">Shopping List <span class="sub">Tick items you already have to cross them off</span></div>
+  <div id="empty-state" class="shopping-empty">
+    <p>No meals selected yet</p>
+    <small>Select meals above to generate your shopping list</small>
+  </div>
+  <div id="shopping-content" style="display:none">
+    <div class="shopping-header">
+      <div class="selected-pills" id="selected-pills"></div>
+      <div class="actions">
+        <button class="btn btn-clear" onclick="clearAll()">✕ Clear All</button>
+        <button class="btn btn-print" onclick="window.print()">🖨 Print List</button>
+      </div>
+    </div>
+    <div id="shopping-body"></div>
+  </div>
+
+  <!-- SHOP PLAN -->
+  <div class="shop-plan-section" id="shop-plan-section" style="display:none">
+    <hr class="divider" style="margin-top:0">
+    <div class="section-title">Shop Plan <span class="sub" id="shop-plan-sub">Based on what you still need to buy</span></div>
+    <div id="shop-plan-body"></div>
+  </div>
+
+</div>
+
+<script>
+// ─── FOOD DATABASE ─────────────────────────────────────────────────────────
+const FOOD_DB = {
+  "MEAT001":{name:"Chicken breast",desc:"",shops:{Aldi:"Y",Lidl:"Y","M&S":"Y",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
+  "MEAT002":{name:"Lean beef mince",desc:"",shops:{Aldi:"Y",Lidl:"Y","M&S":"Y",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
+  "MEAT003":{name:"Turkey mince",desc:"",shops:{Aldi:"Y",Lidl:"Y","M&S":"N",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
+  "MEAT004":{name:"Turkey breast strips",desc:"",shops:{Aldi:"Y",Lidl:"Y","M&S":"Y",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
+  "MEAT005":{name:"Bacon medallions",desc:"",shops:{Aldi:"Y",Lidl:"Y","M&S":"Y",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
+  "MEAT006":{name:"Salmon fillets",desc:"",shops:{Aldi:"Y",Lidl:"Y","M&S":"Y",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
+  "MEAT007":{name:"Pork mince",desc:"",shops:{Aldi:"Y",Lidl:"Y","M&S":"N",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
+  "MEAT008":{name:"Fresh cooking chorizo",desc:"",shops:{Aldi:"Y",Lidl:"N","M&S":"Y",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
+  "MEAT009":{name:"Minced chicken",desc:"",shops:{Aldi:"Y",Lidl:"N","M&S":"N",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
+  "PROD001":{name:"Spring onions",desc:"",shops:{Aldi:"Y",Lidl:"Y","M&S":"Y",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
+  "PROD002":{name:"Mixed peppers",desc:"",shops:{Aldi:"Y",Lidl:"Y","M&S":"Y",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
+  "PROD003":{name:"Red peppers",desc:"",shops:{Aldi:"Y",Lidl:"Y","M&S":"Y",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
+  "PROD004":{name:"White potatoes",desc:"",shops:{Aldi:"Y",Lidl:"Y","M&S":"Y",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
+  "PROD005":{name:"Sweet potato",desc:"",shops:{Aldi:"Y",Lidl:"Y","M&S":"Y",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
+  "PROD006":{name:"Spinach",desc:"",shops:{Aldi:"Y",Lidl:"Y","M&S":"Y",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
+  "PROD007":{name:"Fresh ginger",desc:"",shops:{Aldi:"Y",Lidl:"Y","M&S":"Y",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
+  "PROD008":{name:"Fresh coriander",desc:"",shops:{Aldi:"Y",Lidl:"Y","M&S":"Y",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
+  "PROD009":{name:"Fresh parsley",desc:"",shops:{Aldi:"Y",Lidl:"Y","M&S":"Y",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
+  "PROD010":{name:"Fresh garlic cloves",desc:"",shops:{Aldi:"Y",Lidl:"Y","M&S":"Y",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
+  "PROD011":{name:"Fresh red chilli",desc:"",shops:{Aldi:"Y",Lidl:"Y","M&S":"Y",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
+  "PROD012":{name:"Eggs",desc:"",shops:{Aldi:"Y",Lidl:"Y","M&S":"Y",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
+  "DAIR001":{name:"Butter",desc:"West Country",shops:{Aldi:"Y",Lidl:"N","M&S":"N",Tesco:"N",Asda:"N",Morrisons:"N","Sainsbury's":"N",Online:"N"}},
+  "DAIR002":{name:"Parmesan",desc:"",shops:{Aldi:"Y",Lidl:"Y","M&S":"Y",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
+  "DAIR003":{name:"Block cheddar",desc:"",shops:{Aldi:"Y",Lidl:"Y","M&S":"Y",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
+  "DAIR004":{name:"Crème fraîche",desc:"",shops:{Aldi:"Y",Lidl:"Y","M&S":"Y",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
+  "DAIR005":{name:"Semi-skimmed milk",desc:"",shops:{Aldi:"Y",Lidl:"Y","M&S":"Y",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
+  "DRY001":{name:"Wholewheat pasta",desc:"",shops:{Aldi:"Y",Lidl:"Y","M&S":"N",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
+  "DRY002":{name:"Orzo",desc:"",shops:{Aldi:"N",Lidl:"N","M&S":"Y",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
+  "DRY003":{name:"Long grain rice",desc:"",shops:{Aldi:"Y",Lidl:"Y","M&S":"Y",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
+  "DRY004":{name:"Jasmine rice",desc:"",shops:{Aldi:"N",Lidl:"Y","M&S":"N",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
+  "DRY005":{name:"Egg noodles",desc:"",shops:{Aldi:"Y",Lidl:"Y","M&S":"N",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
+  "DRY006":{name:"Udon noodles",desc:"",shops:{Aldi:"Y",Lidl:"N","M&S":"N",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"Y"}},
+  "DRY007":{name:"Rice noodles",desc:"",shops:{Aldi:"Y",Lidl:"Y","M&S":"N",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
+  "DRY008":{name:"Gnocchi",desc:"",shops:{Aldi:"Y",Lidl:"Y","M&S":"Y",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
+  "SAU001":{name:"Tomato passata",desc:"",shops:{Aldi:"Y",Lidl:"Y","M&S":"Y",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
+  "SAU002":{name:"Chopped tomatoes",desc:"",shops:{Aldi:"Y",Lidl:"Y","M&S":"Y",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
+  "SAU003":{name:"Tomato puree",desc:"",shops:{Aldi:"Y",Lidl:"Y","M&S":"Y",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
+  "SAU004":{name:"BBQ sauce",desc:"The Sauce Shop",shops:{Aldi:"N",Lidl:"N","M&S":"N",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"Y"}},
+  "SAU005":{name:"Soy sauce",desc:"Kikkoman",shops:{Aldi:"N",Lidl:"N","M&S":"N",Tesco:"N",Asda:"Y",Morrisons:"N","Sainsbury's":"N",Online:"Y"}},
+  "SAU006":{name:"Oyster sauce",desc:"",shops:{Aldi:"N",Lidl:"N","M&S":"Y",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
+  "SAU007":{name:"Sesame oil",desc:"",shops:{Aldi:"N",Lidl:"N","M&S":"N",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
+  "SAU008":{name:"Honey",desc:"Hilltop",shops:{Aldi:"Y",Lidl:"N","M&S":"Y",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
+  "SAU009":{name:"Chicken stock",desc:"M&S OB, Potts",shops:{Aldi:"N",Lidl:"N","M&S":"Y",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
+  "SAU010":{name:"Green pesto",desc:"Extra Special Pesto Alla Genovese",shops:{Aldi:"N",Lidl:"N","M&S":"N",Tesco:"N",Asda:"Y",Morrisons:"N","Sainsbury's":"N",Online:"N"}},
+  "SAU011":{name:"Thai green paste",desc:"",shops:{Aldi:"N",Lidl:"N","M&S":"Y",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
+  "SAU012":{name:"Hoisin sauce",desc:"Cottage Delight Chinese Hoisin Sauce",shops:{Aldi:"N",Lidl:"N","M&S":"N",Tesco:"N",Asda:"N",Morrisons:"N","Sainsbury's":"N",Online:"Y"}},
+  "SAU013":{name:"Teriyaki sauce",desc:"Teriyaki Sauce & Marinade",shops:{Aldi:"N",Lidl:"N","M&S":"Y",Tesco:"N",Asda:"N",Morrisons:"N","Sainsbury's":"N",Online:"N"}},
+  "SAU014":{name:"Light coconut milk",desc:"",shops:{Aldi:"N",Lidl:"N","M&S":"Y",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
+  "SAU015":{name:"Olive oil",desc:"",shops:{Aldi:"Y",Lidl:"Y","M&S":"Y",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
+  "SAU016":{name:"Wholegrain mustard",desc:"",shops:{Aldi:"Y",Lidl:"Y","M&S":"Y",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
+  "SAU017":{name:"Chipotle paste",desc:"",shops:{Aldi:"Y",Lidl:"N","M&S":"N",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"Y"}},
+  "SPI001":{name:"Smoked paprika",desc:"",shops:{Aldi:"Y",Lidl:"Y","M&S":"Y",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
+  "SPI002":{name:"Paprika (unsmoked)",desc:"",shops:{Aldi:"Y",Lidl:"Y","M&S":"Y",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
+  "SPI003":{name:"Cajun spice blend",desc:"",shops:{Aldi:"Y",Lidl:"Y","M&S":"N",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
+  "SPI004":{name:"Chilli powder",desc:"",shops:{Aldi:"Y",Lidl:"Y","M&S":"N",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
+  "SPI005":{name:"Ground cumin",desc:"",shops:{Aldi:"Y",Lidl:"Y","M&S":"N",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
+  "SPI006":{name:"Chilli flakes",desc:"",shops:{Aldi:"Y",Lidl:"Y","M&S":"Y",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
+  "SPI007":{name:"Italian herbs",desc:"",shops:{Aldi:"Y",Lidl:"Y","M&S":"Y",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
+  "SPI008":{name:"Sesame seeds",desc:"",shops:{Aldi:"Y",Lidl:"Y","M&S":"N",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
+  "SPI009":{name:"Garlic powder",desc:"",shops:{Aldi:"Y",Lidl:"Y","M&S":"N",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
+  "PAN002":{name:"Black pepper",desc:"",shops:{Aldi:"Y",Lidl:"Y","M&S":"Y",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
+  "MEAT010":{name:"Chicken thighs (boneless)",desc:"Skinless, boneless",shops:{Aldi:"Y",Lidl:"Y","M&S":"Y",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
+  "MEAT011":{name:"Low-cal pork sausages",desc:"Aim for ~70 kcal per sausage",shops:{Aldi:"Y",Lidl:"Y","M&S":"Y",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
+  "MEAT012":{name:"Braising beef",desc:"Chuck or brisket",shops:{Aldi:"Y",Lidl:"Y","M&S":"Y",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
+  "PROD013":{name:"Broccoli",desc:"",shops:{Aldi:"Y",Lidl:"Y","M&S":"Y",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
+  "PROD014":{name:"Onion",desc:"",shops:{Aldi:"Y",Lidl:"Y","M&S":"Y",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
+  "PROD015":{name:"Frozen peas",desc:"",shops:{Aldi:"Y",Lidl:"Y","M&S":"Y",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
+  "PROD016":{name:"Snap peas",desc:"",shops:{Aldi:"N",Lidl:"N","M&S":"Y",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
+  "DAIR006":{name:"Mozzarella",desc:"",shops:{Aldi:"Y",Lidl:"Y","M&S":"Y",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
+  "DAIR007":{name:"Single cream",desc:"",shops:{Aldi:"Y",Lidl:"Y","M&S":"Y",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
+  "SAU018":{name:"Worcestershire sauce",desc:"",shops:{Aldi:"Y",Lidl:"Y","M&S":"Y",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
+  "SAU019":{name:"Sweet chilli sauce",desc:"",shops:{Aldi:"Y",Lidl:"Y","M&S":"Y",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
+  "SAU020":{name:"Beef stock",desc:"",shops:{Aldi:"Y",Lidl:"Y","M&S":"Y",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
+  "SAU021":{name:"Sun-dried tomatoes",desc:"",shops:{Aldi:"Y",Lidl:"N","M&S":"Y",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
+};
+
+const KEY_TO_ID = {
+  "lean-beef-mince":"MEAT002","bacon-medallions":"MEAT005","minced-chicken":"MEAT009",
+  "chicken-breast":"MEAT001","turkey-mince":"MEAT003","turkey-breast-strips":"MEAT004",
+  "salmon-fillets":"MEAT006","pork-mince":"MEAT007","fresh-cooking-chorizo":"MEAT008",
+  "spring-onions":"PROD001","mixed-peppers":"PROD002","red-peppers":"PROD003",
+  "white-potatoes":"PROD004","sweet-potato":"PROD005","spinach":"PROD006",
+  "fresh-ginger":"PROD007","fresh-coriander":"PROD008","fresh-parsley":"PROD009",
+  "fresh-garlic-cloves":"PROD010","fresh-red-chilli":"PROD011","eggs":"PROD012",
+  "butter":"DAIR001","parmesan":"DAIR002","block-cheddar":"DAIR003",
+  "creme-fraiche":"DAIR004","semi-skimmed-milk":"DAIR005",
+  "wholewheat-pasta":"DRY001","fusilli-penne":"DRY001","orzo":"DRY002",
+  "long-grain-rice":"DRY003","jasmine-rice":"DRY004","egg-noodles":"DRY005",
+  "udon-noodles":"DRY006","rice-noodles":"DRY007","gnocchi":"DRY008",
+  "tomato-passata":"SAU001","chopped-tomatoes":"SAU002","tomato-puree":"SAU003",
+  "bbq-sauce":"SAU004","soy-sauce":"SAU005","oyster-sauce":"SAU006",
+  "sesame-oil":"SAU007","honey":"SAU008","chicken-stock":"SAU009",
+  "green-pesto":"SAU010","thai-green-paste":"SAU011","hoisin-sauce":"SAU012",
+  "teriyaki-sauce":"SAU013","light-coconut-milk":"SAU014","olive-oil":"SAU015",
+  "wholegrain-mustard":"SAU016","chipotle-chilli-powder":"SAU017",
+  "smoked-paprika":"SPI001","paprika":"SPI002","cajun-spice":"SPI003",
+  "chilli-powder":"SPI004","ground-cumin":"SPI005","chilli-flakes":"SPI006",
+  "italian-herbs":"SPI007","sesame-seeds":"SPI008","garlic-powder":"SPI009",
+  "black-pepper":"PAN002",
+  "chicken-thighs":"MEAT010","low-cal-sausages":"MEAT011","braising-beef":"MEAT012",
+  "broccoli":"PROD013","onion":"PROD014","frozen-peas":"PROD015","snap-peas":"PROD016",
+  "mozzarella":"DAIR006","single-cream":"DAIR007",
+  "worcestershire-sauce":"SAU018","sweet-chilli-sauce":"SAU019","beef-stock":"SAU020","sun-dried-tomatoes":"SAU021",
+};
+
+const SHOP_TIERS = [
+  {shops:["Aldi","Lidl"],   css:"sh-aldi",  emoji:"🧡"},
+  {shops:["M&S"],           css:"sh-ms",    emoji:"💜"},
+  {shops:["Tesco","Asda","Morrisons"], css:"sh-tesco", emoji:"🔷"},
+  {shops:["Sainsbury's"],   css:"sh-sains", emoji:"🟠"},
+  {shops:["Online"],        css:"sh-online",emoji:"📦"},
+];
+const SHOP_CSS = {Aldi:"sh-aldi",Lidl:"sh-lidl","M&S":"sh-ms",Tesco:"sh-tesco",Asda:"sh-asda",Morrisons:"sh-morrisons","Sainsbury's":"sh-sains",Online:"sh-online"};
+const SHOP_EMOJI = {Aldi:"🧡",Lidl:"🔵","M&S":"💜",Tesco:"🔷",Asda:"🟢",Morrisons:"🟡","Sainsbury's":"🟠",Online:"📦"};
+
+// ─── MEALS ─────────────────────────────────────────────────────────────────
+const MEALS=[
+  {id:"001",name:"Smoky Beef & Bacon Pasta Bake",short:"Pasta Bake",carbGroup:"pasta",color:"#C62828",
+   alhMacros:{kcal:500,p:31,c:36,f:24},atoMacros:{kcal:800,p:49,c:58,f:39},
+   ingredients:[
+    {key:"lean-beef-mince",name:"Lean beef mince",cat:"meat",alh:{v:400,u:"g"},ato:{v:650,u:"g"}},
+    {key:"bacon-medallions",name:"Bacon medallions",cat:"meat",alh:{v:120,u:"g"},ato:{v:200,u:"g"}},
+    {key:"wholewheat-pasta",name:"Wholewheat pasta",cat:"dry",alh:{v:240,u:"g"},ato:{v:390,u:"g"}},
+    {key:"tomato-passata",name:"Tomato passata",cat:"sauce",alh:{v:400,u:"ml"},ato:{v:650,u:"ml"}},
+    {key:"block-cheddar",name:"Block cheddar",cat:"dairy",alh:{v:120,u:"g"},ato:{v:200,u:"g"}},
+    {key:"smoked-paprika",name:"Smoked paprika",cat:"spice",alh:{v:2.5,u:"tsp"},ato:{v:4.5,u:"tsp"}},
+    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:3,u:"pcs"},ato:{v:4,u:"pcs"}},
+    {key:"italian-herbs",name:"Italian herbs",cat:"pantry",taste:true},
+    {key:"black-pepper",name:"Black pepper",cat:"pantry",taste:true},
+  ]},
+  {id:"002",name:"Harissa Turkey, Potato & Egg",short:"Harissa Turkey",carbGroup:"potato",color:"#7B1FA2",
+   alhMacros:{kcal:500,p:36,c:34,f:22},atoMacros:{kcal:800,p:58,c:55,f:34},
+   ingredients:[
+    {key:"turkey-mince",name:"Turkey mince",cat:"meat",alh:{v:430,u:"g"},ato:{v:690,u:"g"}},
+    {key:"white-potatoes",name:"White potatoes",cat:"produce",alh:{v:600,u:"g"},ato:{v:960,u:"g"}},
+    {key:"eggs",name:"Eggs",cat:"produce",alh:{v:4,u:"pcs"},ato:{v:7,u:"pcs"}},
+    {key:"tomato-puree",name:"Tomato puree",cat:"sauce",alh:{v:2.5,u:"tsp"},ato:{v:4.5,u:"tsp"}},
+    {key:"fresh-red-chilli",name:"Fresh red chilli",cat:"produce",alh:{v:1,u:"pcs"},ato:{v:2,u:"pcs"}},
+    {key:"smoked-paprika",name:"Smoked paprika",cat:"spice",alh:{v:1,u:"tsp"},ato:{v:1.5,u:"tsp"}},
+    {key:"ground-cumin",name:"Ground cumin",cat:"spice",alh:{v:1,u:"tsp"},ato:{v:1.5,u:"tsp"}},
+    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:3,u:"pcs"},ato:{v:4,u:"pcs"}},
+  ]},
+  {id:"003",name:"Chicken Meatballs with Creamy Mash",short:"Meatball Mash",carbGroup:"potato",color:"#1565C0",
+   alhMacros:{kcal:500,p:30,c:39,f:23},atoMacros:{kcal:800,p:47,c:63,f:37},
+   ingredients:[
+    {key:"minced-chicken",name:"Minced chicken",cat:"meat",alh:{v:410,u:"g"},ato:{v:650,u:"g"}},
+    {key:"white-potatoes",name:"White potatoes",cat:"produce",alh:{v:650,u:"g"},ato:{v:1050,u:"g"}},
+    {key:"creme-fraiche",name:"Crème fraîche",cat:"dairy",alh:{v:80,u:"g"},ato:{v:130,u:"g"}},
+    {key:"butter",name:"Butter",cat:"dairy",alh:{v:15,u:"g"},ato:{v:25,u:"g"}},
+    {key:"semi-skimmed-milk",name:"Semi-skimmed milk",cat:"dairy",alh:{v:40,u:"ml"},ato:{v:65,u:"ml"}},
+    {key:"wholegrain-mustard",name:"Wholegrain mustard",cat:"sauce",alh:{v:1,u:"tsp"},ato:{v:1.5,u:"tsp"}},
+    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:3,u:"pcs"},ato:{v:4,u:"pcs"}},
+    {key:"fresh-parsley",name:"Fresh parsley",cat:"pantry",taste:true},
+  ]},
+  {id:"004",name:"Sticky Noodle Bowl with Turkey & Bacon",short:"Sticky Noodles",carbGroup:"noodles",color:"#00897B",
+   alhMacros:{kcal:500,p:32,c:45,f:16},atoMacros:{kcal:800,p:51,c:73,f:26},
+   ingredients:[
+    {key:"turkey-breast-strips",name:"Turkey breast strips",cat:"meat",alh:{v:360,u:"g"},ato:{v:580,u:"g"}},
+    {key:"bacon-medallions",name:"Bacon medallions",cat:"meat",alh:{v:90,u:"g"},ato:{v:145,u:"g"}},
+    {key:"egg-noodles",name:"Egg noodles",cat:"dry",alh:{v:225,u:"g"},ato:{v:360,u:"g"}},
+    {key:"soy-sauce",name:"Soy sauce",cat:"sauce",alh:{v:5.5,u:"tsp"},ato:{v:9,u:"tsp"}},
+    {key:"honey",name:"Honey",cat:"sauce",alh:{v:2.5,u:"tsp"},ato:{v:4.5,u:"tsp"}},
+    {key:"sesame-oil",name:"Sesame oil",cat:"sauce",alh:{v:1,u:"tsp"},ato:{v:1.5,u:"tsp"}},
+    {key:"spring-onions",name:"Spring onions",cat:"produce",alh:{v:1,u:"pcs"},ato:{v:2,u:"pcs"}},
+    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:2,u:"pcs"},ato:{v:3,u:"pcs"}},
+    {key:"fresh-ginger",name:"Fresh ginger",cat:"pantry",taste:true},
+    {key:"sesame-seeds",name:"Sesame seeds",cat:"pantry",taste:true},
+  ]},
+  {id:"005",name:"Creamy Turkey & Bacon Pasta",short:"Creamy Pasta",carbGroup:"pasta",color:"#E91E63",
+   alhMacros:{kcal:500,p:33,c:37,f:19},atoMacros:{kcal:800,p:53,c:60,f:31},
+   ingredients:[
+    {key:"turkey-mince",name:"Turkey mince",cat:"meat",alh:{v:415,u:"g"},ato:{v:670,u:"g"}},
+    {key:"bacon-medallions",name:"Bacon medallions",cat:"meat",alh:{v:80,u:"g"},ato:{v:130,u:"g"}},
+    {key:"fusilli-penne",name:"Fusilli / Penne",cat:"dry",alh:{v:250,u:"g"},ato:{v:400,u:"g"}},
+    {key:"creme-fraiche",name:"Crème fraîche",cat:"dairy",alh:{v:125,u:"g"},ato:{v:200,u:"g"}},
+    {key:"parmesan",name:"Parmesan",cat:"dairy",alh:{v:40,u:"g"},ato:{v:65,u:"g"}},
+    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:2,u:"pcs"},ato:{v:4,u:"pcs"}},
+    {key:"black-pepper",name:"Black pepper",cat:"pantry",taste:true},
+    {key:"fresh-parsley",name:"Fresh parsley",cat:"pantry",taste:true},
+  ]},
+  {id:"006",name:"BBQ Chicken Breast & Potato Traybake",short:"BBQ Traybake",carbGroup:"potato",color:"#F57C00",
+   alhMacros:{kcal:500,p:33,c:32,f:17},atoMacros:{kcal:800,p:53,c:51,f:28},
+   ingredients:[
+    {key:"chicken-breast",name:"Chicken breast",cat:"meat",alh:{v:475,u:"g"},ato:{v:760,u:"g"}},
+    {key:"white-potatoes",name:"White potatoes",cat:"produce",alh:{v:550,u:"g"},ato:{v:890,u:"g"}},
+    {key:"mixed-peppers",name:"Mixed peppers",cat:"produce",alh:{v:1,u:"pcs"},ato:{v:2,u:"pcs"}},
+    {key:"bbq-sauce",name:"BBQ sauce",cat:"sauce",alh:{v:100,u:"g"},ato:{v:125,u:"g"}},
+    {key:"olive-oil",name:"Olive oil",cat:"sauce",alh:{v:2,u:"tsp"},ato:{v:4.5,u:"tsp"}},
+    {key:"smoked-paprika",name:"Smoked paprika",cat:"spice",alh:{v:1,u:"tsp"},ato:{v:1.5,u:"tsp"}},
+    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:2,u:"pcs"},ato:{v:3,u:"pcs"}},
+  ]},
+  {id:"007",name:"Asian Beef & Noodle Stir-Fry",short:"Beef Stir-Fry",carbGroup:"noodles",color:"#388E3C",
+   alhMacros:{kcal:500,p:30,c:41,f:20},atoMacros:{kcal:800,p:48,c:66,f:32},
+   ingredients:[
+    {key:"lean-beef-mince",name:"Lean beef mince",cat:"meat",alh:{v:400,u:"g"},ato:{v:630,u:"g"}},
+    {key:"egg-noodles",name:"Egg noodles",cat:"dry",alh:{v:200,u:"g"},ato:{v:320,u:"g"}},
+    {key:"soy-sauce",name:"Soy sauce",cat:"sauce",alh:{v:5,u:"tsp"},ato:{v:7.5,u:"tsp"}},
+    {key:"oyster-sauce",name:"Oyster sauce",cat:"sauce",alh:{v:5,u:"tsp"},ato:{v:7.5,u:"tsp"}},
+    {key:"sesame-oil",name:"Sesame oil",cat:"sauce",alh:{v:1,u:"tsp"},ato:{v:1.5,u:"tsp"}},
+    {key:"chilli-flakes",name:"Chilli flakes",cat:"spice",alh:{v:1,u:"tsp"},ato:{v:1.5,u:"tsp"}},
+    {key:"spring-onions",name:"Spring onions",cat:"produce",alh:{v:2,u:"pcs"},ato:{v:3,u:"pcs"}},
+    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:3,u:"pcs"},ato:{v:4,u:"pcs"}},
+    {key:"fresh-ginger",name:"Fresh ginger",cat:"pantry",taste:true},
+  ]},
+  {id:"008",name:"Cajun Chicken & Rice Bowl",short:"Cajun Chicken",carbGroup:"rice",color:"#5D4037",
+   alhMacros:{kcal:500,p:37,c:47,f:15},atoMacros:{kcal:800,p:60,c:75,f:24},
+   ingredients:[
+    {key:"chicken-breast",name:"Chicken breast",cat:"meat",alh:{v:510,u:"g"},ato:{v:810,u:"g"}},
+    {key:"long-grain-rice",name:"Long-grain rice",cat:"dry",alh:{v:255,u:"g"},ato:{v:400,u:"g"}},
+    {key:"chicken-stock",name:"Chicken stock",cat:"sauce",alh:{v:170,u:"ml"},ato:{v:270,u:"ml"}},
+    {key:"red-peppers",name:"Red peppers",cat:"produce",alh:{v:1,u:"pcs"},ato:{v:2,u:"pcs"}},
+    {key:"cajun-spice",name:"Cajun spice",cat:"spice",alh:{v:2.5,u:"tsp"},ato:{v:4.5,u:"tsp"}},
+    {key:"tomato-puree",name:"Tomato puree",cat:"sauce",alh:{v:2.5,u:"tsp"},ato:{v:4.5,u:"tsp"}},
+    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:2,u:"pcs"},ato:{v:4,u:"pcs"}},
+  ]},
+  {id:"009",name:"Teriyaki Turkey & Udon Stir-Fry",short:"Teriyaki Turkey",carbGroup:"noodles",color:"#0288D1",
+   alhMacros:{kcal:500,p:38,c:54,f:13},atoMacros:{kcal:800,p:60,c:86,f:21},
+   ingredients:[
+    {key:"turkey-breast-strips",name:"Turkey breast strips",cat:"meat",alh:{v:445,u:"g"},ato:{v:710,u:"g"}},
+    {key:"udon-noodles",name:"Udon noodles",cat:"dry",alh:{v:270,u:"g"},ato:{v:430,u:"g"}},
+    {key:"teriyaki-sauce",name:"Teriyaki sauce",cat:"sauce",alh:{v:80,u:"ml"},ato:{v:130,u:"ml"}},
+    {key:"sesame-oil",name:"Sesame oil",cat:"sauce",alh:{v:1,u:"tsp"},ato:{v:1.5,u:"tsp"}},
+    {key:"sesame-seeds",name:"Sesame seeds",cat:"spice",alh:{v:3,u:"tsp"},ato:{v:6,u:"tsp"}},
+    {key:"spring-onions",name:"Spring onions",cat:"produce",alh:{v:3,u:"pcs"},ato:{v:5,u:"pcs"}},
+    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:2,u:"pcs"},ato:{v:3,u:"pcs"}},
+    {key:"fresh-ginger",name:"Fresh ginger",cat:"pantry",taste:true},
+  ]},
+  {id:"010",name:"Beef & Sweet Potato Chilli",short:"Beef Chilli",carbGroup:"other",color:"#D81B60",
+   alhMacros:{kcal:500,p:33,c:45,f:16},atoMacros:{kcal:800,p:52,c:72,f:26},
+   ingredients:[
+    {key:"lean-beef-mince",name:"Lean beef mince",cat:"meat",alh:{v:410,u:"g"},ato:{v:660,u:"g"}},
+    {key:"sweet-potato",name:"Sweet potato",cat:"produce",alh:{v:325,u:"g"},ato:{v:525,u:"g"}},
+    {key:"chopped-tomatoes",name:"Chopped tomatoes",cat:"sauce",alh:{v:1,u:"cans"},ato:{v:1.5,u:"cans"}},
+    {key:"red-peppers",name:"Red peppers",cat:"produce",alh:{v:1,u:"pcs"},ato:{v:2,u:"pcs"}},
+    {key:"tomato-puree",name:"Tomato puree",cat:"sauce",alh:{v:2.5,u:"tsp"},ato:{v:4.5,u:"tsp"}},
+    {key:"chilli-powder",name:"Chilli powder",cat:"spice",alh:{v:2.5,u:"tsp"},ato:{v:4.5,u:"tsp"}},
+    {key:"ground-cumin",name:"Ground cumin",cat:"spice",alh:{v:1,u:"tsp"},ato:{v:1.5,u:"tsp"}},
+    {key:"paprika",name:"Paprika",cat:"spice",alh:{v:1,u:"tsp"},ato:{v:1.5,u:"tsp"}},
+    {key:"block-cheddar",name:"Block cheddar",cat:"dairy",alh:{v:40,u:"g"},ato:{v:65,u:"g"}},
+    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:3,u:"pcs"},ato:{v:4,u:"pcs"}},
+  ]},
+  {id:"011",name:"Garlic Butter Chicken Breast Gnocchi",short:"Chicken Gnocchi",carbGroup:"other",color:"#6A1B9A",
+   alhMacros:{kcal:500,p:36,c:39,f:17},atoMacros:{kcal:800,p:58,c:63,f:28},
+   ingredients:[
+    {key:"chicken-breast",name:"Chicken breast",cat:"meat",alh:{v:470,u:"g"},ato:{v:750,u:"g"}},
+    {key:"gnocchi",name:"Gnocchi",cat:"dry",alh:{v:390,u:"g"},ato:{v:625,u:"g"}},
+    {key:"butter",name:"Butter",cat:"dairy",alh:{v:20,u:"g"},ato:{v:35,u:"g"}},
+    {key:"parmesan",name:"Parmesan",cat:"dairy",alh:{v:25,u:"g"},ato:{v:40,u:"g"}},
+    {key:"spinach",name:"Spinach",cat:"produce",alh:{v:60,u:"g"},ato:{v:95,u:"g"}},
+    {key:"chicken-stock",name:"Chicken stock",cat:"sauce",alh:{v:80,u:"ml"},ato:{v:125,u:"ml"}},
+    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:3,u:"pcs"},ato:{v:4,u:"pcs"}},
+    {key:"fresh-parsley",name:"Fresh parsley",cat:"pantry",taste:true},
+  ]},
+  {id:"012",name:"Chipotle Pulled Chicken & Rice",short:"Chipotle Chicken",carbGroup:"rice",color:"#BF360C",
+   alhMacros:{kcal:500,p:37,c:48,f:13},atoMacros:{kcal:800,p:58,c:78,f:21},
+   ingredients:[
+    {key:"chicken-breast",name:"Chicken breast",cat:"meat",alh:{v:500,u:"g"},ato:{v:800,u:"g"}},
+    {key:"long-grain-rice",name:"Long-grain rice",cat:"dry",alh:{v:250,u:"g"},ato:{v:400,u:"g"}},
+    {key:"chicken-stock",name:"Chicken stock",cat:"sauce",alh:{v:165,u:"ml"},ato:{v:270,u:"ml"}},
+    {key:"chipotle-chilli-powder",name:"Chipotle paste",cat:"spice",alh:{v:1.5,u:"tsp"},ato:{v:2.5,u:"tsp"}},
+    {key:"red-peppers",name:"Red peppers",cat:"produce",alh:{v:1,u:"pcs"},ato:{v:2,u:"pcs"}},
+    {key:"smoked-paprika",name:"Smoked paprika",cat:"spice",alh:{v:1,u:"tsp"},ato:{v:1.5,u:"tsp"}},
+    {key:"tomato-puree",name:"Tomato puree",cat:"sauce",alh:{v:2.5,u:"tsp"},ato:{v:4.5,u:"tsp"}},
+    {key:"ground-cumin",name:"Ground cumin",cat:"spice",alh:{v:1,u:"tsp"},ato:{v:1.5,u:"tsp"}},
+    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:3,u:"pcs"},ato:{v:4,u:"pcs"}},
+  ]},
+  {id:"013",name:"Pesto Chicken & Orzo",short:"Pesto Orzo",carbGroup:"pasta",color:"#2E7D32",
+   alhMacros:{kcal:500,p:36,c:38,f:18},atoMacros:{kcal:800,p:58,c:61,f:29},
+   ingredients:[
+    {key:"chicken-breast",name:"Chicken breast",cat:"meat",alh:{v:490,u:"g"},ato:{v:790,u:"g"}},
+    {key:"orzo",name:"Orzo",cat:"dry",alh:{v:230,u:"g"},ato:{v:370,u:"g"}},
+    {key:"green-pesto",name:"Green pesto",cat:"sauce",alh:{v:60,u:"g"},ato:{v:80,u:"g"}},
+    {key:"parmesan",name:"Parmesan",cat:"dairy",alh:{v:35,u:"g"},ato:{v:55,u:"g"}},
+    {key:"spinach",name:"Spinach",cat:"produce",alh:{v:80,u:"g"},ato:{v:130,u:"g"}},
+    {key:"chicken-stock",name:"Chicken stock",cat:"sauce",alh:{v:165,u:"ml"},ato:{v:265,u:"ml"}},
+    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:2,u:"pcs"},ato:{v:3,u:"pcs"}},
+  ]},
+  {id:"014",name:"Honey Garlic Salmon & Rice",short:"Honey Salmon",carbGroup:"rice",color:"#00838F",
+   alhMacros:{kcal:500,p:35,c:43,f:15},atoMacros:{kcal:800,p:56,c:70,f:24},
+   ingredients:[
+    {key:"salmon-fillets",name:"Salmon fillets",cat:"meat",alh:{v:415,u:"g"},ato:{v:665,u:"g"}},
+    {key:"long-grain-rice",name:"Long-grain rice",cat:"dry",alh:{v:235,u:"g"},ato:{v:375,u:"g"}},
+    {key:"honey",name:"Honey",cat:"sauce",alh:{v:2.5,u:"tsp"},ato:{v:4.5,u:"tsp"}},
+    {key:"soy-sauce",name:"Soy sauce",cat:"sauce",alh:{v:3,u:"tsp"},ato:{v:6,u:"tsp"}},
+    {key:"sesame-oil",name:"Sesame oil",cat:"sauce",alh:{v:1,u:"tsp"},ato:{v:1.5,u:"tsp"}},
+    {key:"spring-onions",name:"Spring onions",cat:"produce",alh:{v:2,u:"pcs"},ato:{v:3,u:"pcs"}},
+    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:2,u:"pcs"},ato:{v:3,u:"pcs"}},
+    {key:"sesame-seeds",name:"Sesame seeds",cat:"pantry",taste:true},
+  ]},
+  {id:"015",name:"Soy Glazed Pork & Noodles",short:"Soy Pork",carbGroup:"noodles",color:"#6D4C41",
+   alhMacros:{kcal:500,p:33,c:44,f:16},atoMacros:{kcal:800,p:54,c:70,f:25},
+   ingredients:[
+    {key:"pork-mince",name:"Pork mince",cat:"meat",alh:{v:440,u:"g"},ato:{v:700,u:"g"}},
+    {key:"egg-noodles",name:"Egg noodles",cat:"dry",alh:{v:220,u:"g"},ato:{v:350,u:"g"}},
+    {key:"soy-sauce",name:"Soy sauce",cat:"sauce",alh:{v:4,u:"tsp"},ato:{v:6,u:"tsp"}},
+    {key:"hoisin-sauce",name:"Hoisin sauce",cat:"sauce",alh:{v:3,u:"tsp"},ato:{v:4.5,u:"tsp"}},
+    {key:"sesame-oil",name:"Sesame oil",cat:"sauce",alh:{v:1,u:"tsp"},ato:{v:1.5,u:"tsp"}},
+    {key:"spring-onions",name:"Spring onions",cat:"produce",alh:{v:2,u:"pcs"},ato:{v:3,u:"pcs"}},
+    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:2,u:"pcs"},ato:{v:3,u:"pcs"}},
+    {key:"fresh-ginger",name:"Fresh ginger",cat:"pantry",taste:true},
+  ]},
+  {id:"016",name:"Chicken & Chorizo Rice",short:"Chorizo Rice",carbGroup:"rice",color:"#AD1457",
+   alhMacros:{kcal:500,p:35,c:42,f:15},atoMacros:{kcal:800,p:57,c:68,f:23},
+   ingredients:[
+    {key:"chicken-breast",name:"Chicken breast",cat:"meat",alh:{v:400,u:"g"},ato:{v:650,u:"g"}},
+    {key:"fresh-cooking-chorizo",name:"Fresh cooking chorizo",cat:"meat",alh:{v:80,u:"g"},ato:{v:130,u:"g"}},
+    {key:"long-grain-rice",name:"Long-grain rice",cat:"dry",alh:{v:225,u:"g"},ato:{v:365,u:"g"}},
+    {key:"chopped-tomatoes",name:"Chopped tomatoes",cat:"sauce",alh:{v:1,u:"cans"},ato:{v:1.5,u:"cans"}},
+    {key:"red-peppers",name:"Red peppers",cat:"produce",alh:{v:1,u:"pcs"},ato:{v:2,u:"pcs"}},
+    {key:"chicken-stock",name:"Chicken stock",cat:"sauce",alh:{v:120,u:"ml"},ato:{v:200,u:"ml"}},
+    {key:"smoked-paprika",name:"Smoked paprika",cat:"spice",alh:{v:1,u:"tsp"},ato:{v:1.5,u:"tsp"}},
+    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:3,u:"pcs"},ato:{v:4,u:"pcs"}},
+  ]},
+  {id:"017",name:"Thai Green Turkey & Rice",short:"Thai Green",carbGroup:"rice",color:"#1B5E20",
+   alhMacros:{kcal:500,p:36,c:45,f:14},atoMacros:{kcal:800,p:58,c:72,f:21},
+   ingredients:[
+    {key:"turkey-breast-strips",name:"Turkey breast strips",cat:"meat",alh:{v:430,u:"g"},ato:{v:690,u:"g"}},
+    {key:"jasmine-rice",name:"Jasmine rice",cat:"dry",alh:{v:240,u:"g"},ato:{v:385,u:"g"}},
+    {key:"light-coconut-milk",name:"Light coconut milk",cat:"sauce",alh:{v:170,u:"ml"},ato:{v:275,u:"ml"}},
+    {key:"thai-green-paste",name:"Thai green paste",cat:"sauce",alh:{v:2,u:"tsp"},ato:{v:3,u:"tsp"}},
+    {key:"spring-onions",name:"Spring onions",cat:"produce",alh:{v:2,u:"pcs"},ato:{v:3,u:"pcs"}},
+    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:2,u:"pcs"},ato:{v:3,u:"pcs"}},
+    {key:"fresh-ginger",name:"Fresh ginger",cat:"pantry",taste:true},
+    {key:"fresh-coriander",name:"Fresh coriander",cat:"pantry",taste:true},
+  ]},
+  {id:"018",name:"Garlic Beef & Sweet Potato Noodles",short:"Beef SP Noodles",carbGroup:"noodles",color:"#558B2F",
+   alhMacros:{kcal:500,p:32,c:43,f:18},atoMacros:{kcal:800,p:51,c:69,f:29},
+   ingredients:[
+    {key:"lean-beef-mince",name:"Lean beef mince",cat:"meat",alh:{v:415,u:"g"},ato:{v:665,u:"g"}},
+    {key:"rice-noodles",name:"Rice noodles",cat:"dry",alh:{v:210,u:"g"},ato:{v:335,u:"g"}},
+    {key:"sweet-potato",name:"Sweet potato",cat:"produce",alh:{v:250,u:"g"},ato:{v:400,u:"g"}},
+    {key:"oyster-sauce",name:"Oyster sauce",cat:"sauce",alh:{v:3.5,u:"tsp"},ato:{v:5.5,u:"tsp"}},
+    {key:"sesame-oil",name:"Sesame oil",cat:"sauce",alh:{v:1,u:"tsp"},ato:{v:1.5,u:"tsp"}},
+    {key:"chilli-flakes",name:"Chilli flakes",cat:"spice",alh:{v:1,u:"tsp"},ato:{v:1.5,u:"tsp"}},
+    {key:"spring-onions",name:"Spring onions",cat:"produce",alh:{v:2,u:"pcs"},ato:{v:3,u:"pcs"}},
+    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:3,u:"pcs"},ato:{v:4,u:"pcs"}},
+  ]},
+  {id:"019",name:"Chicken & Spinach Pasta Bake",short:"Chicken Spinach Bake",carbGroup:"pasta",color:"#1976D2",
+   alhMacros:{kcal:600,p:43,c:63,f:14},atoMacros:{kcal:720,p:55,c:85,f:17},
+   ingredients:[
+    {key:"chicken-breast",name:"Chicken breast",cat:"meat",alh:{v:450,u:"g"},ato:{v:700,u:"g"}},
+    {key:"wholewheat-pasta",name:"Wholewheat pasta",cat:"dry",alh:{v:250,u:"g"},ato:{v:400,u:"g"}},
+    {key:"tomato-passata",name:"Tomato passata",cat:"sauce",alh:{v:400,u:"ml"},ato:{v:500,u:"ml"}},
+    {key:"spinach",name:"Spinach",cat:"produce",alh:{v:100,u:"g"},ato:{v:160,u:"g"}},
+    {key:"mozzarella",name:"Mozzarella",cat:"dairy",alh:{v:80,u:"g"},ato:{v:120,u:"g"}},
+    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:3,u:"pcs"},ato:{v:4,u:"pcs"}},
+    {key:"italian-herbs",name:"Italian herbs",cat:"pantry",taste:true},
+  ]},
+  {id:"020",name:"Chicken Arrabiata",short:"Chicken Arrabiata",carbGroup:"pasta",color:"#E53935",
+   alhMacros:{kcal:620,p:42,c:78,f:9},atoMacros:{kcal:740,p:57,c:94,f:11},
+   ingredients:[
+    {key:"chicken-breast",name:"Chicken breast",cat:"meat",alh:{v:470,u:"g"},ato:{v:740,u:"g"}},
+    {key:"wholewheat-pasta",name:"Wholewheat pasta",cat:"dry",alh:{v:260,u:"g"},ato:{v:400,u:"g"}},
+    {key:"chopped-tomatoes",name:"Chopped tomatoes",cat:"sauce",alh:{v:1,u:"cans"},ato:{v:1.5,u:"cans"}},
+    {key:"chilli-flakes",name:"Chilli flakes",cat:"spice",alh:{v:1.5,u:"tsp"},ato:{v:2.5,u:"tsp"}},
+    {key:"olive-oil",name:"Olive oil",cat:"sauce",alh:{v:1,u:"tsp"},ato:{v:2,u:"tsp"}},
+    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:3,u:"pcs"},ato:{v:5,u:"pcs"}},
+    {key:"black-pepper",name:"Black pepper",cat:"pantry",taste:true},
+  ]},
+  {id:"021",name:"Turkey Mince Pasta Bake",short:"Turkey Pasta Bake",carbGroup:"pasta",color:"#6D4C41",
+   alhMacros:{kcal:630,p:43,c:75,f:15},atoMacros:{kcal:710,p:55,c:85,f:16},
+   ingredients:[
+    {key:"turkey-mince",name:"Turkey mince",cat:"meat",alh:{v:420,u:"g"},ato:{v:670,u:"g"}},
+    {key:"wholewheat-pasta",name:"Wholewheat pasta",cat:"dry",alh:{v:250,u:"g"},ato:{v:400,u:"g"}},
+    {key:"tomato-passata",name:"Tomato passata",cat:"sauce",alh:{v:400,u:"ml"},ato:{v:500,u:"ml"}},
+    {key:"mixed-peppers",name:"Mixed peppers",cat:"produce",alh:{v:1,u:"pcs"},ato:{v:2,u:"pcs"}},
+    {key:"block-cheddar",name:"Block cheddar",cat:"dairy",alh:{v:60,u:"g"},ato:{v:90,u:"g"}},
+    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:3,u:"pcs"},ato:{v:4,u:"pcs"}},
+    {key:"italian-herbs",name:"Italian herbs",cat:"pantry",taste:true},
+  ]},
+  {id:"022",name:"Creamy Sausage & Sun-Dried Tomato Pasta",short:"Sausage SDT Pasta",carbGroup:"pasta",color:"#EF6C00",
+   note:"Aim for ~70 kcal per sausage (e.g. Heck chicken or light pork own-brand)",
+   alhMacros:{kcal:565,p:31,c:73,f:17},atoMacros:{kcal:775,p:37,c:95,f:23},
+   ingredients:[
+    {key:"low-cal-sausages",name:"Low-cal pork sausages",cat:"meat",alh:{v:8,u:"pcs"},ato:{v:10,u:"pcs"}},
+    {key:"wholewheat-pasta",name:"Wholewheat pasta",cat:"dry",alh:{v:225,u:"g"},ato:{v:360,u:"g"}},
+    {key:"sun-dried-tomatoes",name:"Sun-dried tomatoes",cat:"sauce",alh:{v:60,u:"g"},ato:{v:80,u:"g"}},
+    {key:"single-cream",name:"Single cream",cat:"dairy",alh:{v:100,u:"ml"},ato:{v:160,u:"ml"}},
+    {key:"parmesan",name:"Parmesan",cat:"dairy",alh:{v:30,u:"g"},ato:{v:50,u:"g"}},
+    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:3,u:"pcs"},ato:{v:4,u:"pcs"}},
+    {key:"italian-herbs",name:"Italian herbs",cat:"pantry",taste:true},
+  ]},
+  {id:"023",name:"Beef Mince Pasta Bake",short:"Beef Pasta Bake",carbGroup:"pasta",color:"#C62828",
+   alhMacros:{kcal:610,p:41,c:68,f:15},atoMacros:{kcal:770,p:50,c:85,f:18},
+   ingredients:[
+    {key:"lean-beef-mince",name:"Lean beef mince",cat:"meat",alh:{v:415,u:"g"},ato:{v:660,u:"g"}},
+    {key:"wholewheat-pasta",name:"Wholewheat pasta",cat:"dry",alh:{v:240,u:"g"},ato:{v:385,u:"g"}},
+    {key:"tomato-passata",name:"Tomato passata",cat:"sauce",alh:{v:400,u:"ml"},ato:{v:500,u:"ml"}},
+    {key:"smoked-paprika",name:"Smoked paprika",cat:"spice",alh:{v:1.5,u:"tsp"},ato:{v:2.5,u:"tsp"}},
+    {key:"mozzarella",name:"Mozzarella",cat:"dairy",alh:{v:70,u:"g"},ato:{v:110,u:"g"}},
+    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:3,u:"pcs"},ato:{v:4,u:"pcs"}},
+    {key:"italian-herbs",name:"Italian herbs",cat:"pantry",taste:true},
+  ]},
+  {id:"024",name:"Sweet Chilli Beef Noodles",short:"Sweet Chilli Beef",carbGroup:"noodles",color:"#F4511E",
+   alhMacros:{kcal:600,p:37,c:78,f:14},atoMacros:{kcal:785,p:52,c:91,f:19},
+   ingredients:[
+    {key:"lean-beef-mince",name:"Lean beef mince",cat:"meat",alh:{v:410,u:"g"},ato:{v:650,u:"g"}},
+    {key:"egg-noodles",name:"Egg noodles",cat:"dry",alh:{v:210,u:"g"},ato:{v:335,u:"g"}},
+    {key:"sweet-chilli-sauce",name:"Sweet chilli sauce",cat:"sauce",alh:{v:80,u:"ml"},ato:{v:100,u:"ml"}},
+    {key:"soy-sauce",name:"Soy sauce",cat:"sauce",alh:{v:3,u:"tsp"},ato:{v:4.5,u:"tsp"}},
+    {key:"sesame-oil",name:"Sesame oil",cat:"sauce",alh:{v:1,u:"tsp"},ato:{v:1.5,u:"tsp"}},
+    {key:"spring-onions",name:"Spring onions",cat:"produce",alh:{v:3,u:"pcs"},ato:{v:4,u:"pcs"}},
+    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:3,u:"pcs"},ato:{v:4,u:"pcs"}},
+    {key:"fresh-ginger",name:"Fresh ginger",cat:"pantry",taste:true},
+  ]},
+  {id:"025",name:"Honey Garlic Chicken Thighs, Rice & Broccoli",short:"Honey Garlic Thighs",carbGroup:"rice",color:"#F9A825",
+   alhMacros:{kcal:600,p:40,c:72,f:14},atoMacros:{kcal:790,p:52,c:95,f:19},
+   ingredients:[
+    {key:"chicken-thighs",name:"Chicken thighs (boneless)",cat:"meat",alh:{v:450,u:"g"},ato:{v:720,u:"g"}},
+    {key:"long-grain-rice",name:"Long-grain rice",cat:"dry",alh:{v:240,u:"g"},ato:{v:385,u:"g"}},
+    {key:"broccoli",name:"Broccoli",cat:"produce",alh:{v:200,u:"g"},ato:{v:320,u:"g"}},
+    {key:"honey",name:"Honey",cat:"sauce",alh:{v:2.5,u:"tsp"},ato:{v:4.5,u:"tsp"}},
+    {key:"soy-sauce",name:"Soy sauce",cat:"sauce",alh:{v:3,u:"tsp"},ato:{v:5,u:"tsp"}},
+    {key:"sesame-oil",name:"Sesame oil",cat:"sauce",alh:{v:1,u:"tsp"},ato:{v:1.5,u:"tsp"}},
+    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:4,u:"pcs"},ato:{v:6,u:"pcs"}},
+    {key:"fresh-ginger",name:"Fresh ginger",cat:"pantry",taste:true},
+    {key:"sesame-seeds",name:"Sesame seeds",cat:"pantry",taste:true},
+  ]},
+  {id:"026",name:"Turkey & Sweet Potato Chili",short:"Turkey SP Chili",carbGroup:"other",color:"#8E24AA",
+   alhMacros:{kcal:570,p:42,c:64,f:9},atoMacros:{kcal:720,p:54,c:82,f:12},
+   ingredients:[
+    {key:"turkey-mince",name:"Turkey mince",cat:"meat",alh:{v:420,u:"g"},ato:{v:670,u:"g"}},
+    {key:"sweet-potato",name:"Sweet potato",cat:"produce",alh:{v:320,u:"g"},ato:{v:510,u:"g"}},
+    {key:"chopped-tomatoes",name:"Chopped tomatoes",cat:"sauce",alh:{v:1,u:"cans"},ato:{v:1.5,u:"cans"}},
+    {key:"onion",name:"Onion",cat:"produce",alh:{v:1,u:"pcs"},ato:{v:2,u:"pcs"}},
+    {key:"tomato-puree",name:"Tomato puree",cat:"sauce",alh:{v:2,u:"tsp"},ato:{v:3,u:"tsp"}},
+    {key:"chilli-powder",name:"Chilli powder",cat:"spice",alh:{v:1.5,u:"tsp"},ato:{v:2.5,u:"tsp"}},
+    {key:"smoked-paprika",name:"Smoked paprika",cat:"spice",alh:{v:1.5,u:"tsp"},ato:{v:2.5,u:"tsp"}},
+    {key:"ground-cumin",name:"Ground cumin",cat:"spice",alh:{v:1,u:"tsp"},ato:{v:1.5,u:"tsp"}},
+    {key:"chicken-stock",name:"Chicken stock",cat:"sauce",alh:{v:150,u:"ml"},ato:{v:250,u:"ml"}},
+    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:3,u:"pcs"},ato:{v:4,u:"pcs"}},
+  ]},
+  {id:"027",name:"Slow Cooker Beef Ragu",short:"Beef Ragu",carbGroup:"pasta",color:"#4E342E",
+   alhMacros:{kcal:595,p:40,c:68,f:13},atoMacros:{kcal:760,p:51,c:88,f:17},
+   ingredients:[
+    {key:"braising-beef",name:"Braising beef",cat:"meat",alh:{v:420,u:"g"},ato:{v:670,u:"g"}},
+    {key:"wholewheat-pasta",name:"Wholewheat pasta",cat:"dry",alh:{v:240,u:"g"},ato:{v:385,u:"g"}},
+    {key:"chopped-tomatoes",name:"Chopped tomatoes",cat:"sauce",alh:{v:1,u:"cans"},ato:{v:1.5,u:"cans"}},
+    {key:"tomato-puree",name:"Tomato puree",cat:"sauce",alh:{v:2,u:"tsp"},ato:{v:3,u:"tsp"}},
+    {key:"beef-stock",name:"Beef stock",cat:"sauce",alh:{v:200,u:"ml"},ato:{v:300,u:"ml"}},
+    {key:"onion",name:"Onion",cat:"produce",alh:{v:1,u:"pcs"},ato:{v:2,u:"pcs"}},
+    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:3,u:"pcs"},ato:{v:4,u:"pcs"}},
+    {key:"italian-herbs",name:"Italian herbs",cat:"pantry",taste:true},
+  ]},
+  {id:"028",name:"Sausage & Pepper Bake with Rice",short:"Sausage Pepper Bake",carbGroup:"rice",color:"#2E7D32",
+   note:"Aim for ~70 kcal per sausage (e.g. Heck chicken or light pork own-brand)",
+   alhMacros:{kcal:560,p:33,c:61,f:16},atoMacros:{kcal:710,p:42,c:78,f:21},
+   ingredients:[
+    {key:"low-cal-sausages",name:"Low-cal pork sausages",cat:"meat",alh:{v:8,u:"pcs"},ato:{v:10,u:"pcs"}},
+    {key:"mixed-peppers",name:"Mixed peppers",cat:"produce",alh:{v:2,u:"pcs"},ato:{v:3,u:"pcs"}},
+    {key:"onion",name:"Onion",cat:"produce",alh:{v:1,u:"pcs"},ato:{v:2,u:"pcs"}},
+    {key:"long-grain-rice",name:"Long-grain rice",cat:"dry",alh:{v:220,u:"g"},ato:{v:355,u:"g"}},
+    {key:"smoked-paprika",name:"Smoked paprika",cat:"spice",alh:{v:1.5,u:"tsp"},ato:{v:2.5,u:"tsp"}},
+    {key:"olive-oil",name:"Olive oil",cat:"sauce",alh:{v:1,u:"tsp"},ato:{v:2,u:"tsp"}},
+  ]},
+  {id:"029",name:"Cottage Pie",short:"Cottage Pie",carbGroup:"potato",color:"#455A64",
+   alhMacros:{kcal:580,p:38,c:65,f:12},atoMacros:{kcal:730,p:48,c:82,f:16},
+   ingredients:[
+    {key:"lean-beef-mince",name:"Lean beef mince",cat:"meat",alh:{v:400,u:"g"},ato:{v:640,u:"g"}},
+    {key:"white-potatoes",name:"White potatoes",cat:"produce",alh:{v:700,u:"g"},ato:{v:1100,u:"g"}},
+    {key:"onion",name:"Onion",cat:"produce",alh:{v:1,u:"pcs"},ato:{v:2,u:"pcs"}},
+    {key:"frozen-peas",name:"Frozen peas",cat:"produce",alh:{v:100,u:"g"},ato:{v:160,u:"g"}},
+    {key:"beef-stock",name:"Beef stock",cat:"sauce",alh:{v:150,u:"ml"},ato:{v:250,u:"ml"}},
+    {key:"worcestershire-sauce",name:"Worcestershire sauce",cat:"sauce",alh:{v:1.5,u:"tsp"},ato:{v:2.5,u:"tsp"}},
+    {key:"tomato-puree",name:"Tomato puree",cat:"sauce",alh:{v:1.5,u:"tsp"},ato:{v:2.5,u:"tsp"}},
+    {key:"butter",name:"Butter",cat:"dairy",alh:{v:20,u:"g"},ato:{v:30,u:"g"}},
+    {key:"semi-skimmed-milk",name:"Semi-skimmed milk",cat:"dairy",alh:{v:50,u:"ml"},ato:{v:80,u:"ml"}},
+    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:2,u:"pcs"},ato:{v:3,u:"pcs"}},
+    {key:"black-pepper",name:"Black pepper",cat:"pantry",taste:true},
+  ]},
+  {id:"030",name:"Firecracker Ground Turkey & Rice Noodles",short:"Firecracker Turkey",carbGroup:"noodles",color:"#BF360C",
+   alhMacros:{kcal:590,p:42,c:70,f:11},atoMacros:{kcal:745,p:53,c:89,f:14},
+   ingredients:[
+    {key:"turkey-mince",name:"Turkey mince",cat:"meat",alh:{v:420,u:"g"},ato:{v:670,u:"g"}},
+    {key:"rice-noodles",name:"Rice noodles",cat:"dry",alh:{v:200,u:"g"},ato:{v:320,u:"g"}},
+    {key:"snap-peas",name:"Snap peas",cat:"produce",alh:{v:150,u:"g"},ato:{v:240,u:"g"}},
+    {key:"soy-sauce",name:"Soy sauce",cat:"sauce",alh:{v:3,u:"tsp"},ato:{v:5,u:"tsp"}},
+    {key:"honey",name:"Honey",cat:"sauce",alh:{v:2,u:"tsp"},ato:{v:3,u:"tsp"}},
+    {key:"sesame-oil",name:"Sesame oil",cat:"sauce",alh:{v:1,u:"tsp"},ato:{v:1.5,u:"tsp"}},
+    {key:"chilli-flakes",name:"Chilli flakes",cat:"spice",alh:{v:1.5,u:"tsp"},ato:{v:2.5,u:"tsp"}},
+    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:3,u:"pcs"},ato:{v:4,u:"pcs"}},
+    {key:"fresh-ginger",name:"Fresh ginger",cat:"pantry",taste:true},
+  ]},
+  {id:"031",name:"Korean-Style Ground Beef Bowls",short:"Korean Beef Bowls",carbGroup:"rice",color:"#D32F2F",
+   alhMacros:{kcal:600,p:39,c:70,f:14},atoMacros:{kcal:770,p:50,c:90,f:18},
+   ingredients:[
+    {key:"lean-beef-mince",name:"Lean beef mince",cat:"meat",alh:{v:415,u:"g"},ato:{v:660,u:"g"}},
+    {key:"jasmine-rice",name:"Jasmine rice",cat:"dry",alh:{v:235,u:"g"},ato:{v:375,u:"g"}},
+    {key:"soy-sauce",name:"Soy sauce",cat:"sauce",alh:{v:4,u:"tsp"},ato:{v:6,u:"tsp"}},
+    {key:"sesame-oil",name:"Sesame oil",cat:"sauce",alh:{v:1,u:"tsp"},ato:{v:1.5,u:"tsp"}},
+    {key:"honey",name:"Honey",cat:"sauce",alh:{v:2.5,u:"tsp"},ato:{v:4,u:"tsp"}},
+    {key:"spring-onions",name:"Spring onions",cat:"produce",alh:{v:3,u:"pcs"},ato:{v:4,u:"pcs"}},
+    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:3,u:"pcs"},ato:{v:4,u:"pcs"}},
+    {key:"fresh-ginger",name:"Fresh ginger",cat:"pantry",taste:true},
+    {key:"sesame-seeds",name:"Sesame seeds",cat:"pantry",taste:true},
+  ]},
+];
+
+const CARB_GROUPS=[
+  {key:"pasta",  emoji:"🍝",label:"Pasta & Orzo"},
+  {key:"rice",   emoji:"🍚",label:"Rice Dishes"},
+  {key:"potato", emoji:"🥔",label:"Potato & Mash"},
+  {key:"noodles",emoji:"🍜",label:"Noodles & Stir-Fry"},
+  {key:"other",  emoji:"🫕",label:"Gnocchi & Chilli"},
+];
+const CATEGORIES={
+  meat:   {label:"🥩 Meat & Protein",    order:1},
+  produce:{label:"🥦 Fresh Produce",      order:2},
+  dairy:  {label:"🥛 Dairy",              order:3},
+  dry:    {label:"🍝 Dry Goods",          order:4},
+  sauce:  {label:"🫙 Sauces & Condiments",order:5},
+  spice:  {label:"🧂 Spices",             order:6},
+  pantry: {label:"📦 Pantry / To Taste",  order:7},
+};
+
+// ─── STATE ─────────────────────────────────────────────────────────────────
+let mode='same';
+let selSame=new Set(), selAlh=new Set(), selAto=new Set();
+let haveRows=new Set(); // row keys that are ticked "have it"
+let overrides={}; // key → shop
+
+// ─── UTILS ─────────────────────────────────────────────────────────────────
+function fmtTsp(v){v=parseFloat(v.toFixed(1));if(v<3)return v+" tsp";const t=Math.floor(v/3),r=parseFloat((v%3).toFixed(1));return r===0?t+" tbsp":t+" tbsp +"+r+" tsp";}
+function fmt(v,u){v=parseFloat(v.toFixed(1));
+  if(u==="g")   return v>=1000?(v/1000).toFixed(1).replace(/\.0$/,"")+"kg":v+"g";
+  if(u==="ml")  return v>=1000?(v/1000).toFixed(1).replace(/\.0$/,"")+"L":v+"ml";
+  if(u==="tsp") return fmtTsp(v);
+  if(u==="pcs") return Math.round(v)+" pcs";
+  if(u==="cans"){const r=parseFloat(v.toFixed(1));return r+" can"+(r!==1?"s":"");}
+  if(u==="bunch") return Math.ceil(v)+" bunch";
+  return v+" "+u;
+}
+function tagHtml(mealId,who){
+  const m=MEALS.find(x=>x.id===mealId);if(!m)return"";
+  const c=m.color,wl=who==="alh"?" · ALH":who==="ato"?" · ATO":"";
+  return`<span class="tag" style="background:${c}18;color:${c};border-color:${c}50">${m.id} ${m.short}${wl}</span>`;
+}
+
+// ─── MEAL SELECTOR ─────────────────────────────────────────────────────────
+function renderMealSelector(){
+  const selCount=mode==="same"?selSame.size:Math.max(selAlh.size,selAto.size);
+  document.getElementById('sel-count-label').textContent=selCount>0?selCount+" selected":"";
+  if(mode==="same"){
+    let html="";
+    CARB_GROUPS.forEach(g=>{
+      const meals=MEALS.filter(m=>m.carbGroup===g.key);
+      const selCount=meals.filter(m=>selSame.has(m.id)).length;
+      html+=`<div class="carb-group">
+        <div class="carb-group-header">${g.emoji} ${g.label}
+          <span class="carb-count">${meals.length} meal${meals.length!==1?"s":""}${selCount>0?`, ${selCount} selected`:""}</span>
+        </div>
+        <div class="meal-grid">${meals.map(m=>mealCard(m,"same")).join("")}</div>
+      </div>`;
+    });
+    document.getElementById('meal-selector').innerHTML=html;
+  } else {
+    let html=`<div class="person-panels">`;
+    ["alh","ato"].forEach(who=>{
+      const sel=who==="alh"?selAlh:selAto;
+      const label=who==="alh"?"ALH — Ami":"ATO — Andy";
+      let inner="";
+      CARB_GROUPS.forEach(g=>{
+        const meals=MEALS.filter(m=>m.carbGroup===g.key);
+        inner+=`<div class="carb-group">
+          <div class="carb-group-header" style="font-size:12px">${g.emoji} ${g.label}
+            <span class="carb-count">${meals.filter(m=>sel.has(m.id)).length} sel.</span>
+          </div>
+          <div class="meal-grid compact">${meals.map(m=>mealCard(m,who)).join("")}</div>
+        </div>`;
+      });
+      html+=`<div class="person-panel panel-${who}">
+        <div class="panel-header">
+          <span class="panel-badge ${who}">${label}</span>
+          <span class="panel-sel-count">${sel.size}/4 selected</span>
+        </div>${inner}
+      </div>`;
+    });
+    html+="</div>";
+    document.getElementById('meal-selector').innerHTML=html;
+  }
+}
+
+function mealCard(m,who){
+  const inSame=selSame.has(m.id),inAlh=selAlh.has(m.id),inAto=selAto.has(m.id);
+  let cls="",chk="✓";
+  if(who==="same"){cls=inSame?"sel-both":"";}
+  else if(who==="alh"){cls=inAlh?(inAto?"sel-both":"sel-alh"):"";if(!inAlh)chk="";}
+  else{cls=inAto?(inAlh?"sel-both":"sel-ato"):"";if(!inAto)chk="";}
+  return`<div class="meal-card ${cls}" onclick="toggleMeal('${m.id}','${who}')">
+    <div class="meal-check">${cls?chk:""}</div>
+    <div class="meal-id">${m.id}</div>
+    <div class="meal-name">${m.name}</div>
+    ${m.note?`<div class="meal-note">🌭 ${m.note}</div>`:""}
+    <div class="meal-macros">
+      <div class="macro-row"><span class="macro-who alh">ALH</span><span class="macro-val">${m.alhMacros.kcal} kcal · ${m.alhMacros.p}p · ${m.alhMacros.c}c · ${m.alhMacros.f}f</span></div>
+      <div class="macro-row"><span class="macro-who ato">ATO</span><span class="macro-val">${m.atoMacros.kcal} kcal · ${m.atoMacros.p}p · ${m.atoMacros.c}c · ${m.atoMacros.f}f</span></div>
+    </div>
+  </div>`;
+}
+
+function toggleMeal(id,who){
+  if(who==="same"){selSame.has(id)?selSame.delete(id):selSame.size<4&&selSame.add(id);}
+  else if(who==="alh"){selAlh.has(id)?selAlh.delete(id):selAlh.size<4&&selAlh.add(id);}
+  else{selAto.has(id)?selAto.delete(id):selAto.size<4&&selAto.add(id);}
+  overrides={};
+  renderAll();
+}
+
+function setMode(m){
+  mode=m;
+  document.getElementById('btn-same').className='mode-btn'+(m==='same'?' active-same':'');
+  document.getElementById('btn-diff').className='mode-btn'+(m==='diff'?' active-diff':'');
+  document.getElementById('mode-hint').textContent=m==='same'
+    ?'Both cooking the same meals — one selection applies to both'
+    :'Select meals independently for each person';
+  overrides={};
+  renderAll();
+}
+
+// ─── SHOPPING LIST ─────────────────────────────────────────────────────────
+function hasAnySelected(){return mode==="same"?selSame.size>0:(selAlh.size+selAto.size)>0;}
+
+function buildShoppingList(){
+  const measured={},pantry={};
+  function addIng(meal,who){
+    meal.ingredients.forEach(ing=>{
+      if(ing.taste){
+        if(!pantry[ing.key])pantry[ing.key]={name:ing.name,cat:ing.cat,tags:[],key:ing.key};
+        pantry[ing.key].tags.push({id:meal.id,who});
+      } else {
+        const k=ing.key+"|"+ing.alh.u;
+        if(!measured[k])measured[k]={name:ing.name,cat:ing.cat,u:ing.alh.u,alh:0,ato:0,tags:[],rowKey:k,key:ing.key};
+        if(who==="alh"||who==="both")measured[k].alh+=ing.alh.v;
+        if(who==="ato"||who==="both")measured[k].ato+=ing.ato.v;
+        measured[k].tags.push({id:meal.id,who});
+      }
+    });
+  }
+  if(mode==="same"){
+    selSame.forEach(id=>{const m=MEALS.find(x=>x.id===id);if(m)addIng(m,"both");});
+  } else {
+    selAlh.forEach(id=>{const m=MEALS.find(x=>x.id===id);if(m)addIng(m,selAto.has(id)?"both":"alh");});
+    selAto.forEach(id=>{if(!selAlh.has(id)){const m=MEALS.find(x=>x.id===id);if(m)addIng(m,"ato");}});
+  }
+  const byCat={};
+  Object.values(measured).forEach(item=>{if(!byCat[item.cat])byCat[item.cat]=[];byCat[item.cat].push(item);});
+  if(Object.keys(pantry).length)byCat.pantry=Object.values(pantry).map(v=>({...v,isPantry:true,rowKey:"p-"+v.name}));
+  return byCat;
+}
+
+function renderShopping(){
+  if(!hasAnySelected()){
+    document.getElementById('empty-state').style.display='block';
+    document.getElementById('shopping-content').style.display='none';
+    document.getElementById('shop-plan-section').style.display='none';
+    return;
+  }
+  document.getElementById('empty-state').style.display='none';
+  document.getElementById('shopping-content').style.display='block';
+  document.getElementById('shop-plan-section').style.display='block';
+
+  // Pills
+  let pillsHtml="";
+  if(mode==="same"){
+    pillsHtml=[...selSame].map(id=>{const m=MEALS.find(x=>x.id===id);return m?`<span class="selected-pill">${m.id} ${m.short}</span>`:""}).join("");
+  } else {
+    pillsHtml=[...selAlh].map(id=>{const m=MEALS.find(x=>x.id===id);return m?`<span class="selected-pill">${m.id} ${m.short}</span>`:""}).join("")+
+              [...selAto].map(id=>{const m=MEALS.find(x=>x.id===id);return m?`<span class="selected-pill ato-pill">${m.id} ${m.short}</span>`:""}).join("");
+  }
+  document.getElementById('selected-pills').innerHTML=pillsHtml;
+
+  const byCat=buildShoppingList();
+  const sortedCats=Object.keys(byCat).sort((a,b)=>(CATEGORIES[a]?.order||99)-(CATEGORIES[b]?.order||99));
+  let html="";
+  sortedCats.forEach(cat=>{
+    const items=byCat[cat];
+    html+=`<div class="table-section"><div class="cat-header">${CATEGORIES[cat].label}</div>
+    <table class="shopping-table"><thead><tr>
+      <th class="th-check"></th><th class="th-item">Ingredient</th>
+      <th class="th-total">Total to Buy</th><th class="th-ato">ATO (5 servings)</th>
+      <th class="th-alh">ALH (5 servings)</th><th class="th-tags">Meals</th>
+    </tr></thead><tbody>`;
+    items.forEach(item=>{
+      const rk=(item.rowKey||item.name).replace(/[^a-zA-Z0-9-]/g,"_");
+      const tagsHtml=(item.tags||[]).map(t=>tagHtml(t.id,t.who)).join("");
+      const haveCls=haveRows.has(rk)?" have-it":"";
+      if(item.isPantry){
+        html+=`<tr id="r-${rk}" class="${haveCls}">
+          <td class="td-check"><input type="checkbox" ${haveRows.has(rk)?"checked":""} onchange="toggleHave('${rk}')"></td>
+          <td class="td-item">${item.name}</td>
+          <td class="td-total td-taste">To taste</td>
+          <td class="td-ato td-taste">To taste</td>
+          <td class="td-alh td-taste">To taste</td>
+          <td>${tagsHtml}</td></tr>`;
+      } else {
+        const total=fmt(item.alh+item.ato,item.u);
+        const ato=item.ato>0?fmt(item.ato,item.u):`<span class="td-none">—</span>`;
+        const alh=item.alh>0?fmt(item.alh,item.u):`<span class="td-none">—</span>`;
+        html+=`<tr id="r-${rk}" class="${haveCls}">
+          <td class="td-check"><input type="checkbox" ${haveRows.has(rk)?"checked":""} onchange="toggleHave('${rk}')"></td>
+          <td class="td-item">${item.name}</td>
+          <td class="td-total">${total}</td>
+          <td class="td-ato">${ato}</td>
+          <td class="td-alh">${alh}</td>
+          <td>${tagsHtml}</td></tr>`;
+      }
+    });
+    html+=`</tbody></table></div>`;
+  });
+  document.getElementById('shopping-body').innerHTML=html;
+  renderShopPlan(byCat);
+}
+
+function toggleHave(rk){
+  haveRows.has(rk)?haveRows.delete(rk):haveRows.add(rk);
+  overrides={};
+  renderShopping();
+}
+
+// ─── SHOP PLAN ─────────────────────────────────────────────────────────────
+function canSupply(key,shop){
+  const dbId=KEY_TO_ID[key];
+  if(!dbId||!FOOD_DB[dbId])return false;
+  return FOOD_DB[dbId].shops[shop]==="Y";
+}
+function isOnlineOnly(key){
+  const dbId=KEY_TO_ID[key];
+  if(!dbId||!FOOD_DB[dbId])return false;
+  const s=FOOD_DB[dbId].shops;
+  return s.Aldi==="N"&&s.Lidl==="N"&&s["M&S"]==="N"&&s.Tesco==="N"&&s.Asda==="N"&&s.Morrisons==="N"&&s["Sainsbury's"]==="N"&&s.Online==="Y";
+}
+function getNextShop(key,currentShop,currentAssignments){
+  const dbId=KEY_TO_ID[key];
+  if(!dbId||!FOOD_DB[dbId])return null;
+  const s=FOOD_DB[dbId].shops;
+  // Build ordered list of available shops for this item
+  const ordered=[];
+  SHOP_TIERS.forEach(tier=>tier.shops.forEach(sh=>{if(s[sh]==="Y")ordered.push(sh);}));
+  const idx=ordered.indexOf(currentShop);
+  if(idx===-1)return null;
+  const remaining=ordered.slice(idx+1);
+  if(!remaining.length)return null;
+  // Prefer a shop we're already visiting
+  const visiting=new Set(Object.values(currentAssignments||{}));
+  const alreadyThere=remaining.find(sh=>visiting.has(sh));
+  return alreadyThere||remaining[0];
+}
+function assignShops(items){
+  const assignments={};
+  // Online-only first
+  items.forEach(item=>{if(isOnlineOnly(item.key))assignments[item.key]="Online";});
+  let left=items.filter(i=>!assignments[i.key]);
+  SHOP_TIERS.filter(t=>!t.shops.includes("Online")).forEach(tier=>{
+    if(!left.length)return;
+    let eligible=left.filter(i=>tier.shops.some(s=>canSupply(i.key,s)));
+    if(!eligible.length)return;
+    let rem=[...eligible];
+    while(rem.length){
+      let best=null,bestN=0;
+      tier.shops.forEach(s=>{const n=rem.filter(i=>canSupply(i.key,s)).length;if(n>bestN){bestN=n;best=s;}});
+      if(!best)break;
+      rem.filter(i=>canSupply(i.key,best)).forEach(i=>{assignments[i.key]=best;});
+      rem=rem.filter(i=>!assignments[i.key]);
+    }
+    left=left.filter(i=>!assignments[i.key]);
+  });
+  left.forEach(i=>{if(!assignments[i.key])assignments[i.key]="?";});
+  return assignments;
+}
+
+function renderShopPlan(byCat){
+  // Collect all items NOT ticked as "have it"
+  const allItems=[];
+  Object.values(byCat).forEach(items=>{
+    items.forEach(item=>{
+      const rk=(item.rowKey||item.name).replace(/[^a-zA-Z0-9-]/g,"_");
+      if(!haveRows.has(rk)){
+        allItems.push({key:item.key,name:item.name,cat:item.cat,taste:item.isPantry||false,alh:item.alh||0,ato:item.ato||0,unit:item.u||null});
+      }
+    });
+  });
+
+  if(!allItems.length){
+    document.getElementById('shop-plan-body').innerHTML=`<div class="shopping-empty"><p>🎉 Nothing to buy!</p><small>You've ticked everything off already.</small></div>`;
+    return;
+  }
+
+  // Apply manual overrides, assign the rest
+  const forAssign=allItems.filter(i=>!overrides[i.key]);
+  const base=assignShops(forAssign);
+  const assignments={...base,...overrides};
+
+  // Check if online needed
+  const hasOnline=allItems.some(i=>assignments[i.key]==="Online");
+
+  // Group by shop in tier order
+  const byShop={};
+  allItems.forEach(i=>{
+    const shop=assignments[i.key]||"?";
+    if(!byShop[shop])byShop[shop]=[];
+    byShop[shop].push(i);
+  });
+  const CAT_ORDER={meat:1,produce:2,dairy:3,dry:4,sauce:5,spice:6,pantry:7};
+  const shopOrder=[];
+  SHOP_TIERS.forEach(tier=>tier.shops.forEach(s=>{if(byShop[s])shopOrder.push(s);}));
+  if(byShop["?"])shopOrder.push("?");
+
+  let html="";
+  if(hasOnline){
+    html+=`<div class="shop-plan-notice">📦 <strong>Online order needed</strong> — one or more items below are only available online. Place that order separately before your shop trip.</div>`;
+  }
+
+  shopOrder.forEach(shop=>{
+    const items=byShop[shop];
+    if(!items||!items.length)return;
+    items.sort((a,b)=>(CAT_ORDER[a.cat]||9)-(CAT_ORDER[b.cat]||9)||a.name.localeCompare(b.name));
+    const css=SHOP_CSS[shop]||"sh-online";
+    const emoji=SHOP_EMOJI[shop]||"🛒";
+    html+=`<div class="shop-group">
+      <div class="shop-group-header ${css}">
+        <div class="shop-group-name">${emoji} ${shop}</div>
+        <div class="shop-group-count">${items.length} item${items.length!==1?"s":""}</div>
+      </div>
+      <table class="shop-plan-table"><tbody>`;
+    items.forEach(item=>{
+      const dbId=KEY_TO_ID[item.key];
+      const desc=dbId&&FOOD_DB[dbId]?FOOD_DB[dbId].desc:"";
+      const qty=item.taste?"to taste":fmt(item.alh+item.ato,item.unit);
+      const next=getNextShop(item.key,shop,assignments);
+      html+=`<tr>
+        <td><div class="sp-name">${item.name}</div>${desc?`<div class="sp-desc">${desc}</div>`:""}</td>
+        <td class="sp-qty">${qty}</td>
+        <td class="sp-action">${next
+          ?`<button class="btn-reassign" onclick="reassign('${item.key}','${next}')">Not here → ${next}</button>`
+          :`<span class="sp-only">only here</span>`
+        }</td>
+      </tr>`;
+    });
+    html+=`</tbody></table></div>`;
+  });
+  document.getElementById('shop-plan-body').innerHTML=html;
+  document.getElementById('shop-plan-sub').textContent=`Based on ${allItems.length} item${allItems.length!==1?"s":""} still to buy`;
+}
+
+function reassign(key,newShop){overrides[key]=newShop;renderShopping();}
+function clearAll(){selSame.clear();selAlh.clear();selAto.clear();haveRows.clear();overrides={};renderAll();}
+function renderAll(){renderMealSelector();renderShopping();}
+renderAll();
+</script>
+</body>
+</html>

@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Food Database</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cream:    #F7F3EC;
+    --parchment:#EDE7D9;
+    --sand:     #D9CFBD;
+    --bark:     #9E8E76;
+    --soil:     #5C4A32;
+    --forest:   #2D5016;
+    --leaf:     #4A7C28;
+    --score-red:   #C0392B;
+    --score-amber: #B8780A;
+    --score-green: #2D6A1A;
+    --radius:   14px;
+    --shadow:   0 2px 18px rgba(92,74,50,0.10);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--cream); font-family: 'DM Sans', sans-serif; color: var(--soil); min-height: 100vh; }
+  body::before {
+    content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
+    opacity: 0.4;
+  }
+  .app { position: relative; z-index: 1; max-width: 680px; margin: 0 auto; padding: 0 16px 60px; }
+
+  header { padding: 32px 0 24px; display: flex; align-items: center; gap: 12px; }
+  header h1 { font-family: 'DM Serif Display', serif; font-size: 26px; color: var(--forest); letter-spacing: -0.3px; }
+  header h1 span { color: var(--bark); font-style: italic; }
+
+  .price-note { font-size: 11px; color: var(--bark); font-style: italic; margin-left: 2px; }
+
+  .search-wrap { position: relative; margin-bottom: 12px; }
+  .search-wrap svg { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--bark); pointer-events: none; }
+  #searchInput { width: 100%; padding: 13px 16px 13px 44px; background: #fff; border: 1.5px solid var(--sand); border-radius: var(--radius); font-family: 'DM Sans', sans-serif; font-size: 15px; color: var(--soil); outline: none; transition: border-color .2s, box-shadow .2s; box-shadow: var(--shadow); }
+  #searchInput:focus { border-color: var(--leaf); box-shadow: 0 0 0 3px rgba(74,124,40,.12); }
+  #searchInput::placeholder { color: var(--bark); }
+
+  .browse-section { background: #fff; border: 1.5px solid var(--sand); border-radius: var(--radius); box-shadow: var(--shadow); margin-bottom: 20px; overflow: hidden; }
+  .browse-header { padding: 12px 16px; font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--bark); background: var(--parchment); border-bottom: 1px solid var(--sand); display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; }
+  .browse-header .chevron { margin-left: auto; transition: transform .2s; }
+  .browse-header.open .chevron { transform: rotate(180deg); }
+  .category-grid { display: none; grid-template-columns: repeat(2,1fr); gap: 1px; background: var(--sand); }
+  .category-grid.visible { display: grid; }
+  .cat-btn { background: #fff; border: none; padding: 12px 14px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; color: var(--soil); cursor: pointer; text-align: left; transition: background .15s, color .15s; display: flex; align-items: center; justify-content: space-between; }
+  .cat-btn:hover, .cat-btn.active { background: var(--forest); color: #fff; }
+  .cat-count { font-size: 11px; font-weight: 400; background: var(--parchment); color: var(--bark); padding: 2px 7px; border-radius: 20px; }
+  .cat-btn.active .cat-count, .cat-btn:hover .cat-count { background: rgba(255,255,255,.2); color: rgba(255,255,255,.8); }
+  .item-pills { display: none; flex-wrap: wrap; gap: 8px; padding: 14px 16px; border-top: 1px solid var(--sand); background: var(--cream); animation: fadeIn .2s ease; }
+  .item-pills.visible { display: flex; }
+  .item-pill { padding: 6px 14px; background: var(--parchment); border: 1.5px solid var(--sand); border-radius: 20px; font-size: 13px; font-weight: 500; color: var(--soil); cursor: pointer; transition: all .15s; }
+  .item-pill:hover, .item-pill.active { background: var(--forest); border-color: var(--forest); color: #fff; }
+
+  .filter-chip { display: none; align-items: center; gap: 6px; background: var(--forest); color: #fff; padding: 5px 12px; border-radius: 20px; font-size: 13px; font-weight: 500; margin-bottom: 16px; width: fit-content; }
+  .filter-chip.visible { display: flex; }
+  .filter-chip button { background: none; border: none; color: #fff; cursor: pointer; font-size: 16px; line-height: 1; padding: 0 0 0 2px; opacity: .8; }
+  .filter-chip button:hover { opacity: 1; }
+
+  .results-header { font-size: 12px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--bark); margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; }
+  .results-header span { color: var(--soil); font-weight: 400; font-size: 13px; text-transform: none; letter-spacing: 0; }
+
+  .legend { display: flex; gap: 12px; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--bark); font-weight: 500; }
+  .legend-swatch { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+  .swatch-green { background: var(--score-green); }
+  .swatch-amber { background: var(--score-amber); }
+  .swatch-red   { background: var(--score-red); }
+
+  #resultsList { display: flex; flex-direction: column; }
+  .item-group { margin-bottom: 20px; }
+  .item-group-label { font-family: 'DM Serif Display', serif; font-size: 18px; color: var(--soil); margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1.5px solid var(--sand); display: flex; align-items: baseline; gap: 10px; }
+  .item-group-label small { font-family: 'DM Sans', sans-serif; font-size: 11px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--bark); }
+
+  /* ── Product card — whole card coloured by IVY score ── */
+  .product-card {
+    border-radius: var(--radius); padding: 14px 16px; margin-bottom: 8px;
+    box-shadow: var(--shadow); display: grid; grid-template-columns: 1fr auto;
+    gap: 10px; animation: slideUp .25s ease both;
+    transition: transform .15s, box-shadow .15s;
+    border-left-width: 4px; border-left-style: solid;
+    border-top-width: 1px; border-top-style: solid;
+    border-right-width: 1px; border-right-style: solid;
+    border-bottom-width: 1px; border-bottom-style: solid;
+  }
+  .product-card:hover { transform: translateY(-1px); box-shadow: 0 4px 24px rgba(92,74,50,.14); }
+
+  .product-card.score-green { background: #F1F8ED; border-left-color: var(--score-green); border-top-color: #CDEAC4; border-right-color: #CDEAC4; border-bottom-color: #CDEAC4; }
+  .product-card.score-amber { background: #FEF8EC; border-left-color: var(--score-amber); border-top-color: #EDD9A3; border-right-color: #EDD9A3; border-bottom-color: #EDD9A3; }
+  .product-card.score-red   { background: #FEF0EF; border-left-color: var(--score-red);   border-top-color: #EEC8C4; border-right-color: #EEC8C4; border-bottom-color: #EEC8C4; }
+  .product-card.score-none  { background: #fff;    border-left-color: var(--sand);         border-top-color: var(--sand); border-right-color: var(--sand); border-bottom-color: var(--sand); }
+
+  @keyframes slideUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+  @keyframes fadeIn  { from { opacity:0; } to { opacity:1; } }
+
+  /* ── Card content ── */
+  .card-left { min-width: 0; }
+
+  /* Branded: "Brand Name" with colour split */
+  .card-title { font-size: 14px; line-height: 1.4; margin-bottom: 8px; }
+  .t-brand    { font-weight: 500; color: var(--bark); }
+  .t-name     { font-weight: 700; color: var(--soil); }
+  /* Own brand: name only */
+  .t-own-name { font-weight: 700; color: var(--soil); }
+
+  .card-meta { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .price-tag { font-size: 13px; font-weight: 600; color: var(--forest); background: rgba(45,80,22,.1); padding: 3px 9px; border-radius: 6px; }
+
+  /* ── Store tags ── */
+  .store-tag { font-size: 11px; font-weight: 700; padding: 3px 8px; border-radius: 6px; white-space: nowrap; letter-spacing: .01em; }
+  .store-aldi { background: #0066CC; color: #fff; }
+  .store-lidl { background: #003FA5; color: #FFD700; }
+  .store-tesc { background: #005BAB; color: #fff; }
+  .store-asda { background: #78BE20; color: #fff; }
+  .store-morr { background: #FEC10B; color: #2A1900; }
+  .store-sain { background: #EC6709; color: #fff; }
+  .store-ms   { background: #1A1A1A; color: #fff; }
+  .store-hb   { background: #1B5E20; color: #fff; }
+  .store-ocad { background: #5E1F8C; color: #fff; }
+  .store-web  { background: #6B7280; color: #fff; }
+  .store-amzn { background: #1A1A1A; color: #FF9900; }
+
+  /* ── IVY score column ── */
+  .ivy-score-col { display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 42px; }
+  .ivy-num { font-family: 'DM Serif Display', serif; font-size: 28px; line-height: 1; }
+  .ivy-lbl { font-family: 'DM Sans', sans-serif; font-size: 9px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; margin-top: 1px; opacity: .8; }
+  .score-green .ivy-num, .score-green .ivy-lbl { color: var(--score-green); }
+  .score-amber .ivy-num, .score-amber .ivy-lbl { color: var(--score-amber); }
+  .score-red   .ivy-num, .score-red   .ivy-lbl { color: var(--score-red); }
+  .score-none  .ivy-num, .score-none  .ivy-lbl { color: var(--bark); }
+
+  .empty-state { text-align: center; padding: 48px 24px; color: var(--bark); display: none; }
+  .empty-state.visible { display: block; }
+  .empty-state p { font-size: 15px; }
+
+  /* ── Add section ── */
+  .add-section { margin-top: 32px; background: #fff; border: 1.5px solid var(--sand); border-radius: var(--radius); overflow: hidden; box-shadow: var(--shadow); }
+  .add-header { padding: 14px 16px; background: var(--parchment); border-bottom: 1px solid var(--sand); display: flex; align-items: center; justify-content: space-between; cursor: pointer; user-select: none; }
+  .add-header h3 { font-family: 'DM Serif Display', serif; font-size: 16px; color: var(--forest); display: flex; align-items: center; gap: 8px; }
+  .add-header .chevron { transition: transform .2s; color: var(--bark); }
+  .add-header.open .chevron { transform: rotate(180deg); }
+  .add-form { display: none; padding: 18px 16px; }
+  .add-form.visible { display: block; animation: fadeIn .2s ease; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .form-group { display: flex; flex-direction: column; gap: 5px; }
+  .form-group.full { grid-column: 1 / -1; }
+  .form-group label { font-size: 11px; font-weight: 600; letter-spacing: .07em; text-transform: uppercase; color: var(--bark); }
+  .form-group input, .form-group select { padding: 10px 12px; background: var(--cream); border: 1.5px solid var(--sand); border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 14px; color: var(--soil); outline: none; transition: border-color .2s; }
+  .form-group input:focus, .form-group select:focus { border-color: var(--leaf); background: #fff; }
+  .store-checkboxes { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 2px; }
+  .store-cb { display: none; }
+  .store-cb-label { padding: 5px 11px; background: var(--parchment); border: 1.5px solid var(--sand); border-radius: 6px; font-size: 12px; font-weight: 500; color: var(--soil); cursor: pointer; transition: all .15s; user-select: none; }
+  .store-cb:checked + .store-cb-label { background: var(--forest); border-color: var(--forest); color: #fff; }
+  .form-actions { display: flex; gap: 10px; margin-top: 16px; }
+  .btn-add { flex: 1; padding: 12px; background: var(--forest); color: #fff; border: none; border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 14px; font-weight: 600; cursor: pointer; transition: background .15s; }
+  .btn-add:hover { background: var(--leaf); }
+  .btn-export { padding: 12px 18px; background: var(--parchment); color: var(--soil); border: 1.5px solid var(--sand); border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 600; cursor: pointer; transition: all .15s; white-space: nowrap; }
+  .btn-export:hover { background: var(--sand); }
+
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--forest); color: #fff; padding: 10px 20px; border-radius: 20px; font-size: 13px; font-weight: 500; opacity: 0; transition: all .3s; pointer-events: none; z-index: 100; }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <header>
+    <h1>Food <span>Database</span></h1>
+  </header>
+
+  <div class="search-wrap">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input id="searchInput" type="text" placeholder="Search items, brands or names…" autocomplete="off">
+  </div>
+
+  <div class="browse-section">
+    <div class="browse-header" id="browseToggle">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+      Browse by Category
+      <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+    </div>
+    <div class="category-grid" id="categoryGrid"></div>
+    <div class="item-pills" id="itemPills"></div>
+  </div>
+
+  <div class="filter-chip" id="filterChip">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22C6 16 4 10 6 5c3 0 6 2 6 6 0-4 3-6 6-6 2 5 0 11-6 17z"/></svg>
+    <span id="filterChipText"></span>
+    <button id="clearFilter">×</button>
+  </div>
+
+  <div class="results-header" id="resultsHeader" style="display:none">Results <span id="resultsCount"></span></div>
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-swatch swatch-green"></div> 70–100 Good</div>
+    <div class="legend-item"><div class="legend-swatch swatch-amber"></div> 40–69 OK</div>
+    <div class="legend-item"><div class="legend-swatch swatch-red"></div> 0–39 Poor</div>
+    <span class="price-note">· Prices are estimates and may vary</span>
+  </div>
+
+  <div id="resultsList"></div>
+  <div class="empty-state" id="emptyState"><p>No items found — try a different search.</p></div>
+
+  <div class="add-section">
+    <div class="add-header" id="addToggle">
+      <h3>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg>
+        Add New Item
+      </h3>
+      <svg class="chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+    </div>
+    <div class="add-form" id="addForm">
+      <div class="form-grid">
+        <div class="form-group"><label>Item Type</label><input type="text" id="f_item" placeholder="e.g. BBQ Sauce"></div>
+        <div class="form-group"><label>Category</label><select id="f_category"></select></div>
+        <div class="form-group"><label>Brand</label><input type="text" id="f_brand" placeholder="e.g. Dr Wills"></div>
+        <div class="form-group"><label>Est. Price (£)</label><input type="number" id="f_price" placeholder="3.50" step="0.01" min="0"></div>
+        <div class="form-group full"><label>Product Name (as on packaging)</label><input type="text" id="f_name" placeholder="e.g. Avocado Oil Mayo Classic"></div>
+        <div class="form-group full"><label>IVY Score (0–100)</label><input type="number" id="f_ivy" placeholder="Leave blank if unknown" min="0" max="100"></div>
+        <div class="form-group full"><label>Available At</label><div class="store-checkboxes" id="storeCheckboxes"></div></div>
+      </div>
+      <div class="form-actions">
+        <button class="btn-add" id="btnAdd">Add to Database</button>
+        <button class="btn-export" id="btnExport">⬇ Export CSV</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const STORE_MAP = {
+  'ALDI':'Aldi','LIDL':'Lidl','ASDA':'Asda','TESC':'Tesco',
+  'MORR':'Morrisons','SAIN':"Sainsbury's",'M&S':'M&S',
+  'H&B':'H&B','OCAD':'Ocado','WEB':'Website','AMZN':'Amazon'
+};
+
+const STORE_CSS = {
+  'ALDI':'store-aldi','LIDL':'store-lidl','TESC':'store-tesc','ASDA':'store-asda',
+  'MORR':'store-morr','SAIN':'store-sain','M&S':'store-ms','H&B':'store-hb',
+  'OCAD':'store-ocad','WEB':'store-web','AMZN':'store-amzn'
+};
+
+// Brand → store code for own-brand detection
+const OWN_BRAND_CODES = {
+  'aldi':'ALDI','lidl':'LIDL','asda':'ASDA','tesco':'TESC',
+  'morrisons':'MORR',"sainsbury's":'SAIN','sainsburys':'SAIN',
+  'm&s':'M&S','marks & spencer':'M&S','ocado':'OCAD'
+};
+
+const CATEGORIES = [
+  'Bakery','Baking & Cooking','Cereals & Breakfast','Dairy & Eggs',
+  'Deli & Charcuterie','Drinks - Alcohol','Drinks - Soft','Fish & Seafood',
+  'Frozen','Fruit & Vegetables','Meat & Poultry','Meats','Oils & Vinegars',
+  'Pasta, Rice & Grains','Ready Meals','Sauces & Condiments',
+  'Snacks & Crisps','Spreads','Sweet Treats & Biscuits',
+  'Tea & Coffee','Tinned & Canned'
+];
+
+let db = [
+  {item:"BBQ Sauce",category:"Sauces & Condiments",brand:"The Sauce Shop",name:"Original BBQ Sauce",price:3.00,where:"SAIN,TESC,ASDA,MORR",ivy:69},
+  {item:"BBQ Sauce",category:"Sauces & Condiments",brand:"Hunter & Gather",name:"Unsweetened BBQ Smokey Classic",price:4.00,where:"WEB,OCAD,AMZN",ivy:91},
+  {item:"Mayonnaise",category:"Sauces & Condiments",brand:"Hunter & Gather",name:"Avocado Oil Mayo Classic",price:6.00,where:"WEB,H&B,TESC,OCAD,AMZN",ivy:91},
+  {item:"Mayonnaise",category:"Sauces & Condiments",brand:"Dr Wills",name:"Avocado Oil Mayo",price:4.00,where:"WEB,TESC,SAIN",ivy:91},
+  {item:"Tomato Sauce",category:"Sauces & Condiments",brand:"Dr Wills",name:"Tomato Ketchup",price:4.00,where:"WEB,TESC,SAIN",ivy:91},
+  {item:"Sourdough",category:"Bakery",brand:"Aldi",name:"White Sourdough Sliced Loaf",price:1.89,where:"ALDI",ivy:86},
+  {item:"Bagels",category:"Bakery",brand:"M&S",name:"Plain Bagels",price:2.75,where:"M&S",ivy:78},
+  {item:"Bagels",category:"Bakery",brand:"M&S",name:"Sesame Bagels",price:2.75,where:"M&S",ivy:71},
+  {item:"Green Pesto",category:"Sauces & Condiments",brand:"ASDA",name:"Extra Special Pesto Alla Genovese",price:3.00,where:"ASDA",ivy:83},
+  {item:"Teriyaki Sauce",category:"Sauces & Condiments",brand:"M&S",name:"Teriyaki Sauce & Marinade",price:2.00,where:"M&S",ivy:65},
+  {item:"Hoisin Sauce",category:"Sauces & Condiments",brand:"Cottage Delight",name:"Chinese Hoisin Sauce",price:4.00,where:"AMZN",ivy:71},
+  {item:"Soy Sauce",category:"Sauces & Condiments",brand:"Kikkoman",name:"Kikkoman Soy Sauce",price:3.00,where:"AMZN,ASDA",ivy:91},
+  {item:"Sausages",category:"Meat & Poultry",brand:"Finnebrogue",name:"Naked Pork Sausages",price:4.00,where:"ASDA,TESC,SAIN",ivy:75},
+  {item:"Sausages",category:"Meat & Poultry",brand:"ASDA",name:"Welsh Cheddar & Smoked Bacon",price:4.00,where:"ASDA",ivy:91},
+  {item:"Sausages",category:"Meat & Poultry",brand:"M&S",name:"Heritage Gold Pork",price:4.20,where:"M&S",ivy:91},
+  {item:"Parmesan",category:"Dairy & Eggs",brand:"Aldi",name:"Grana Padano Grated Cheese",price:2.00,where:"ALDI",ivy:86},
+  {item:"Natural Yoghurt",category:"Dairy & Eggs",brand:"Aldi",name:"Fat Free Natural Yoghurt",price:2.00,where:"ALDI",ivy:100},
+  {item:"Crème Fraîche",category:"Dairy & Eggs",brand:"Aldi",name:"Fresh British Crème Fraîche",price:2.00,where:"ALDI",ivy:100},
+  {item:"Bacon",category:"Meats",brand:"Aldi",name:"Smoked Bacon Medallions",price:2.00,where:"ALDI",ivy:72},
+  {item:"Stock",category:"Tinned & Canned",brand:"Potts",name:"Potts Stock Cans (Various)",price:3.00,where:"TESC,ASDA",ivy:75},
+  {item:"Baked Beans",category:"Tinned & Canned",brand:"M&S",name:"M&S Food Baked Beans",price:0.45,where:"M&S",ivy:76},
+  {item:"Baked Beans",category:"Tinned & Canned",brand:"M&S",name:"Only 7 Ingredients Baked Beans",price:0.75,where:"M&S",ivy:91},
+  {item:"Peanut Butter",category:"Spreads",brand:"Meridian",name:"Smooth/Crunchy",price:3.50,where:"TESC,SAIN,ASDA,MORR,H&B",ivy:100},
+  {item:"Peanut Butter",category:"Spreads",brand:"Pip & Nut",name:"Smooth/Crunchy",price:3.50,where:"TESC,SAIN,ASDA,MORR,H&B",ivy:91},
+  {item:"Almond Butter",category:"Spreads",brand:"Meridian",name:"Smooth/Crunchy",price:3.50,where:"TESC,SAIN,ASDA,MORR,H&B",ivy:100},
+  {item:"Almond Butter",category:"Spreads",brand:"Pip & Nut",name:"Smooth/Crunchy",price:3.50,where:"TESC,SAIN,ASDA,MORR,H&B",ivy:91},
+];
+
+let activeCategory = null, activeItem = null, searchQuery = '';
+
+function ivyClass(score) {
+  if (score == null || score === '') return 'none';
+  if (score >= 70) return 'green';
+  if (score >= 40) return 'amber';
+  return 'red';
+}
+
+function parsedStores(whereStr) {
+  return whereStr ? whereStr.split(',').map(s => s.trim()).filter(Boolean) : [];
+}
+
+function storeTagHTML(code) {
+  const name = STORE_MAP[code] || code;
+  const cls  = STORE_CSS[code] || '';
+  return `<span class="store-tag ${cls}">${name}</span>`;
+}
+
+function isOwnBrand(row) {
+  const stores = parsedStores(row.where);
+  if (stores.length !== 1) return false;
+  const expected = OWN_BRAND_CODES[row.brand.toLowerCase()];
+  return expected && stores[0] === expected;
+}
+
+function cardTitleHTML(row) {
+  if (isOwnBrand(row)) {
+    return `<div class="card-title"><span class="t-own-name">${row.name}</span></div>`;
+  }
+  return `<div class="card-title"><span class="t-brand">${row.brand} </span><span class="t-name">${row.name}</span></div>`;
+}
+
+function buildCategoryGrid() {
+  const grid = document.getElementById('categoryGrid');
+  const cats = [...new Set(db.map(r => r.category))].sort();
+  grid.innerHTML = '';
+  cats.forEach(cat => {
+    const count = [...new Set(db.filter(r => r.category === cat).map(r => r.item))].length;
+    const btn = document.createElement('button');
+    btn.className = 'cat-btn' + (activeCategory === cat ? ' active' : '');
+    btn.innerHTML = `${cat}<span class="cat-count">${count}</span>`;
+    btn.addEventListener('click', () => selectCategory(cat));
+    grid.appendChild(btn);
+  });
+}
+
+function buildItemPills(category) {
+  const pills = document.getElementById('itemPills');
+  const items = [...new Set(db.filter(r => r.category === category).map(r => r.item))].sort();
+  pills.innerHTML = '';
+  items.forEach(item => {
+    const pill = document.createElement('button');
+    pill.className = 'item-pill' + (activeItem === item ? ' active' : '');
+    pill.textContent = item;
+    pill.addEventListener('click', () => selectItem(item));
+    pills.appendChild(pill);
+  });
+  pills.classList.add('visible');
+}
+
+function selectCategory(cat) {
+  activeCategory = cat; activeItem = null; searchQuery = '';
+  document.getElementById('searchInput').value = '';
+  buildCategoryGrid(); buildItemPills(cat); render();
+}
+
+function selectItem(item) {
+  activeItem = item; buildItemPills(activeCategory); updateFilterChip(); render();
+}
+
+function updateFilterChip() {
+  const chip = document.getElementById('filterChip');
+  const text = document.getElementById('filterChipText');
+  const label = activeItem || activeCategory;
+  if (label) { text.textContent = label; chip.classList.add('visible'); }
+  else chip.classList.remove('visible');
+}
+
+function render() {
+  const list = document.getElementById('resultsList');
+  const empty = document.getElementById('emptyState');
+  const header = document.getElementById('resultsHeader');
+  const countEl = document.getElementById('resultsCount');
+
+  let filtered = [...db];
+  if (searchQuery) {
+    const q = searchQuery.toLowerCase();
+    filtered = filtered.filter(r =>
+      r.item.toLowerCase().includes(q) || r.brand.toLowerCase().includes(q) ||
+      r.name.toLowerCase().includes(q) || r.category.toLowerCase().includes(q)
+    );
+  } else if (activeItem) {
+    filtered = filtered.filter(r => r.item === activeItem);
+  } else if (activeCategory) {
+    filtered = filtered.filter(r => r.category === activeCategory);
+  }
+
+  filtered.sort((a, b) => (b.ivy ?? -1) - (a.ivy ?? -1));
+
+  const groups = {};
+  filtered.forEach(r => {
+    if (!groups[r.item]) groups[r.item] = { category: r.category, rows: [] };
+    groups[r.item].rows.push(r);
+  });
+
+  list.innerHTML = ''; updateFilterChip();
+
+  if (filtered.length === 0) {
+    empty.classList.add('visible'); header.style.display = 'none'; return;
+  }
+  empty.classList.remove('visible'); header.style.display = 'flex';
+  countEl.textContent = `${filtered.length} product${filtered.length !== 1 ? 's' : ''} across ${Object.keys(groups).length} item${Object.keys(groups).length !== 1 ? 's' : ''}`;
+
+  let delay = 0;
+  Object.entries(groups).forEach(([itemName, { category, rows }]) => {
+    const group = document.createElement('div');
+    group.className = 'item-group';
+    const lbl = document.createElement('div');
+    lbl.className = 'item-group-label';
+    lbl.innerHTML = `${itemName} <small>${category}</small>`;
+    group.appendChild(lbl);
+
+    rows.forEach(row => {
+      const cls = ivyClass(row.ivy);
+      const card = document.createElement('div');
+      card.className = `product-card score-${cls}`;
+      card.style.animationDelay = `${delay++ * 40}ms`;
+
+      const storeTags = parsedStores(row.where).map(storeTagHTML).join('');
+      const priceStr  = row.price != null ? `£${Number(row.price).toFixed(2)}` : '—';
+      const scoreNum  = row.ivy != null ? row.ivy : '?';
+
+      card.innerHTML = `
+        <div class="card-left">
+          ${cardTitleHTML(row)}
+          <div class="card-meta">
+            <span class="price-tag">${priceStr}</span>
+            ${storeTags}
+          </div>
+        </div>
+        <div class="ivy-score-col">
+          <span class="ivy-num">${scoreNum}</span>
+          <span class="ivy-lbl">IVY</span>
+        </div>`;
+      group.appendChild(card);
+    });
+    list.appendChild(group);
+  });
+}
+
+// Events
+document.getElementById('browseToggle').addEventListener('click', function() {
+  const grid = document.getElementById('categoryGrid');
+  const nowOpen = !grid.classList.contains('visible');
+  grid.classList.toggle('visible', nowOpen);
+  this.classList.toggle('open', nowOpen);
+  if (!nowOpen) document.getElementById('itemPills').classList.remove('visible');
+});
+
+document.getElementById('clearFilter').addEventListener('click', () => {
+  activeCategory = null; activeItem = null; searchQuery = '';
+  document.getElementById('searchInput').value = '';
+  document.getElementById('itemPills').classList.remove('visible');
+  buildCategoryGrid(); updateFilterChip(); render();
+});
+
+document.getElementById('searchInput').addEventListener('input', function() {
+  searchQuery = this.value.trim();
+  if (searchQuery) { activeCategory = null; activeItem = null; document.getElementById('itemPills').classList.remove('visible'); buildCategoryGrid(); }
+  render();
+});
+
+document.getElementById('addToggle').addEventListener('click', function() {
+  const form = document.getElementById('addForm');
+  const nowOpen = !form.classList.contains('visible');
+  form.classList.toggle('visible', nowOpen);
+  this.classList.toggle('open', nowOpen);
+});
+
+// Populate category select
+const catSel = document.getElementById('f_category');
+CATEGORIES.forEach(c => { const o = document.createElement('option'); o.value = c; o.textContent = c; catSel.appendChild(o); });
+
+// Populate store checkboxes
+const scWrap = document.getElementById('storeCheckboxes');
+Object.entries(STORE_MAP).forEach(([code, name]) => {
+  const id = 'cb_' + code.replace(/[^a-z0-9]/gi,'_');
+  scWrap.innerHTML += `<input type="checkbox" class="store-cb" id="${id}" value="${code}"><label class="store-cb-label" for="${id}">${name}</label>`;
+});
+
+document.getElementById('btnAdd').addEventListener('click', () => {
+  const item  = document.getElementById('f_item').value.trim();
+  const cat   = document.getElementById('f_category').value;
+  const brand = document.getElementById('f_brand').value.trim();
+  const name  = document.getElementById('f_name').value.trim();
+  const price = document.getElementById('f_price').value;
+  const ivy   = document.getElementById('f_ivy').value;
+  const stores = [...document.querySelectorAll('.store-cb:checked')].map(cb => cb.value);
+  if (!item || !brand || !name) { showToast('Please fill in Item, Brand and Name at minimum.'); return; }
+  db.push({ item, category: cat, brand, name, price: price ? parseFloat(price) : null, where: stores.join(','), ivy: ivy !== '' ? parseInt(ivy) : null });
+  ['f_item','f_brand','f_name','f_price','f_ivy'].forEach(id => document.getElementById(id).value = '');
+  document.querySelectorAll('.store-cb:checked').forEach(cb => cb.checked = false);
+  render(); showToast('✓ Item added successfully');
+});
+
+document.getElementById('btnExport').addEventListener('click', () => {
+  const hdr = ['Item','Category','Brand','Name','Est. Price (£)','Where','IVY Score'];
+  const rows = db.map(r => [r.item, r.category, r.brand, r.name, r.price ?? '', r.where, r.ivy ?? '']);
+  const csv = [hdr, ...rows].map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(new Blob([csv],{type:'text/csv'})), download:'Food_Swaps_Database.csv' });
+  a.click(); showToast('✓ CSV exported');
+});
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+buildCategoryGrid();
+render();
+</script>
+</body>
+</html>

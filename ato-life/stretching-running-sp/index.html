@@ -1,0 +1,830 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ATO Run Ref">
+<title>Stretching, Running, Strength&amp; Plyometrics </title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#0c0e0d;--card:#141714;--card2:#1c201c;
+  --border:#222822;--border2:#2e362e;
+  --green:#3ddc84;--green-bg:rgba(61,220,132,0.08);--green-border:rgba(61,220,132,0.22);
+  --gold:#C59100;--gold-bg:rgba(197,145,0,0.08);--gold-border:rgba(197,145,0,0.22);
+  --amber:#f0b429;--amber-bg:rgba(240,180,41,0.09);--amber-border:rgba(240,180,41,0.18);
+  --red:#ff5757;--red-bg:rgba(255,87,87,0.08);--red-border:rgba(255,87,87,0.18);
+  --blue:#4a9eff;--blue-bg:rgba(74,158,255,0.08);
+  --orange:#f97316;
+  --text:#dde6df;--muted:#586860;--muted2:#3a4440;
+  --mono:'DM Mono',monospace;--head:'Syne',sans-serif;
+}
+html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:var(--mono);-webkit-font-smoothing:antialiased}
+.app{max-width:420px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
+
+/* Header */
+.hdr{padding:52px 24px 20px}
+.hdr-eyebrow{font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.hdr-title{font-family:var(--head);font-size:36px;font-weight:800;line-height:1.02;letter-spacing:-0.02em;color:var(--text)}
+.hdr-title span{color:var(--gold)}
+
+/* Main Tab bar */
+.tab-bar{display:flex;gap:0;padding:0 24px 0;margin-bottom:4px}
+.tab-btn{flex:1;padding:10px 6px;border:none;background:transparent;color:var(--muted);font-family:var(--mono);font-size:12px;font-weight:500;letter-spacing:0.04em;cursor:pointer;border-bottom:2px solid var(--border2);transition:color 0.15s,border-color 0.15s}
+.tab-btn.active{color:var(--gold);border-bottom-color:var(--gold)}
+
+/* Sub tab bar */
+.sub-tab-bar{display:flex;gap:0;padding:0 24px 12px;background:var(--bg)}
+.sub-tab-btn{flex:1;padding:8px 6px;border:none;background:transparent;color:var(--muted);font-family:var(--mono);font-size:11.5px;font-weight:500;letter-spacing:0.04em;cursor:pointer;border-bottom:2px solid var(--border2);transition:all 0.15s}
+.sub-tab-btn.active{color:var(--gold);border-bottom-color:var(--gold)}
+
+/* Views */
+.view{display:none;padding:0 24px 80px}
+.view.active{display:block}
+
+/* Sub-views inside Running and S&P */
+.subview{display:none}
+.subview.active{display:block}
+
+/* Section label */
+.sec-lbl{font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);margin:20px 0 10px}
+.sec-lbl:first-child{margin-top:16px}
+
+/* Note blocks */
+.note{border-left:2px solid var(--amber);padding:11px 14px;font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:18px;border-radius:0 9px 9px 0;background:var(--amber-bg)}
+.note strong{color:var(--amber)}
+.note-green{border-left:2px solid var(--gold);padding:11px 14px;font-size:13px;color:var(--muted);line-height:1.7;margin-bottom:18px;border-radius:0 9px 9px 0;background:var(--gold-bg)}
+.note-green strong{color:var(--gold)}
+.note-red{border-left:2px solid var(--red);padding:11px 14px;font-size:13px;color:var(--red);line-height:1.7;margin-bottom:18px;border-radius:0 9px 9px 0;background:var(--red-bg)}
+.note-red strong{color:var(--red)}
+
+/* Divider */
+.divider{height:1px;background:var(--border);margin:22px 0}
+
+/* Step cards */
+.step-card{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:14px 15px;margin-bottom:8px;display:flex;align-items:flex-start;gap:13px}
+.step-num{width:32px;height:32px;border-radius:50%;background:var(--muted2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;color:var(--muted)}
+.step-body{flex:1;min-width:0}
+.step-title{font-size:14px;font-weight:500;color:var(--text);margin-bottom:3px}
+.step-detail{font-size:12px;color:var(--muted);line-height:1.55}
+
+/* === UNIFIED BADGE STYLE (REPS + WEIGHT) - perfectly matched === */
+.rpe-tag{font-size:11px;font-weight:500;letter-spacing:0.07em;padding:4px 12px;border-radius:6px;align-self:flex-start;flex-shrink:0;white-space:nowrap;text-transform:uppercase;min-width:88px;text-align:center}
+.tag-timeBadge{background:rgba(61,220,132,0.3);color:#3ddc84}
+.weight-badge{background:var(--amber-bg);color:var(--amber);font-size:11px;font-weight:500;letter-spacing:0.07em;padding:4px 12px;border-radius:6px;white-space:nowrap;text-transform:uppercase;min-width:88px;text-align:center}
+
+/* RPE badge for stretching */
+.rpe-badge{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;color:var(--muted);flex-shrink:0}
+.rpe-1{background:rgba(61,220,132,0.9);color:#0c0e0d}
+
+.phase-label{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.1em;color:var(--amber);margin:18px 0 8px}
+.phase-label:first-of-type{margin-top:0}
+
+
+/* RPE rows */
+.rpe-row{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:7px;display:flex;align-items:flex-start;gap:12px}
+.rpe-badge{width:38px;height:38px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:500;flex-shrink:0;font-family:var(--head)}
+.rpe-body{flex:1;min-width:0}
+.rpe-title{font-size:13px;font-weight:500;color:var(--text);margin-bottom:2px}
+.rpe-desc{font-size:12px;color:var(--muted);line-height:1.55}
+.rpe-desc strong{color:var(--text)}
+
+/* RPE badge colours */
+.rpe-1{background:rgba(39,80,10,0.4);color:#c0dd97}
+.rpe-2{background:rgba(39,80,10,0.55);color:#c0dd97}
+.rpe-3{background:rgba(61,109,17,0.55);color:#97C459}
+.rpe-4{background:rgba(99,152,34,0.4);color:#97C459}
+.rpe-5{background:rgba(186,117,23,0.35);color:#FAC775}
+.rpe-6{background:rgba(240,159,39,0.3);color:#f0b429}
+.rpe-7{background:rgba(216,90,48,0.35);color:#f97316}
+.rpe-8{background:rgba(216,90,48,0.5);color:#ff7a50}
+.rpe-9{background:rgba(163,45,45,0.45);color:#ff5757}
+.rpe-10{background:rgba(163,45,45,0.65);color:#ff5757}
+.ssp-1{background:rgba(240,159,39,0.3);color:#C59100}
+
+/* RPE tags */
+.tag-recovery{background:rgba(39,80,10,0.3);color:#3ddc84}
+.tag-easy{background:rgba(61,109,17,0.3);color:#97C459}
+.tag-race{background:rgba(186,117,23,0.3);color:var(--amber)}
+.tag-threshold{background:rgba(216,90,48,0.25);color:var(--orange)}
+.tag-max{background:rgba(163,45,45,0.3);color:var(--red)}
+.tag-timeBadge{background:rgba(61,220,132,0.3);color:#3ddc84}
+
+/* Pace cards */
+.pace-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin-bottom:20px}
+.pace-card{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:13px 14px}
+.pace-card-label{font-size:10px;font-weight:500;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:6px}
+.pace-card-val{font-size:20px;font-weight:500;margin-bottom:3px;font-family:var(--head)}
+.pace-card-rpe{font-size:12px;color:var(--muted)}
+.dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:5px;vertical-align:middle}
+
+/* Breathing cards */
+.breath-card{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:14px;margin-bottom:8px;display:flex;align-items:center;gap:13px}
+.breath-rhythm{font-size:24px;font-weight:500;font-family:var(--head);color:var(--blue);min-width:52px;text-align:center;letter-spacing:0.04em}
+.breath-body{flex:1}
+.breath-title{font-size:13px;font-weight:500;color:var(--text);margin-bottom:3px}
+.breath-desc{font-size:12px;color:var(--muted);line-height:1.5}
+
+/* Targets row */
+.targets-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:20px}
+.t-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px 8px;text-align:center}
+.t-val{font-size:14px;font-weight:500;font-family:var(--head)}
+.t-lbl{font-size:11px;color:var(--muted);margin-top:4px}
+
+.strength-set{margin:18px 0 8px;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--amber);font-weight:500}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="hdr">
+    <div class="hdr-title">STRETCHING RUNNING<br><span>S&amp;P</span></div>
+  </div>
+
+  <!-- Main Tabs -->
+  <div class="tab-bar">
+    <button class="tab-btn active" onclick="switchMainTab(0,this)">Stretching</button>
+    <button class="tab-btn" onclick="switchMainTab(1,this)">Running</button>
+    <button class="tab-btn" onclick="switchMainTab(2,this)">S&amp;P</button>
+  </div>
+
+  <!-- ====================== STRETCHING ====================== -->
+  <div class="view active" id="view-stretching">
+    <div class="note" style="margin-top:16px">
+      <strong>every day, no excuses</strong> takes ~20 minutes
+    </div>
+
+    <div class="step-card">
+      <div class="rpe-badge ssp-1">1</div>
+      <div class="step-body">
+        <div class="step-title">Cat Cow</div>
+        <div class="step-detail">meow moo</div>
+      </div>
+      <div class="rpe-tag tag-timeBadge">10</div>
+    </div>
+
+    <div class="step-card">
+      <div class="rpe-badge ssp-1">2</div>
+      <div class="step-body">
+        <div class="step-title">Downward Dog to Cobra Flow</div>
+        <div class="step-detail">n to v</div>
+      </div>
+      <div class="rpe-tag tag-timeBadge">10</div>
+    </div>
+
+    <div class="step-card">
+      <div class="rpe-badge ssp-1">3</div>
+      <div class="step-body">
+        <div class="step-title">Worlds Greatest Stretch</div>
+        <div class="step-detail">WGS for a reason, is Bobby fighting you yet?</div>
+      </div>
+      <div class="rpe-tag tag-timeBadge">8 ES</div>
+    </div>
+
+    <div class="step-card">
+      <div class="rpe-badge ssp-1">4</div>
+      <div class="step-body">
+        <div class="step-title">Seated Forward Fold</div>
+        <div class="step-detail">one step closer to touching your toes</div>
+      </div>
+      <div class="rpe-tag tag-timeBadge">1 MIN</div>
+    </div>
+
+    <div class="step-card">
+      <div class="rpe-badge ssp-1">5</div>
+      <div class="step-body">
+        <div class="step-title">Glute Bridge Hold</div>
+        <div class="step-detail">set the 1 minute timer</div>
+      </div>
+      <div class="rpe-tag tag-timeBadge">1 MIN</div>
+    </div>
+
+    <div class="step-card">
+      <div class="rpe-badge ssp-1">6</div>
+      <div class="step-body">
+        <div class="step-title">90/90 Hip Rotations</div>
+        <div class="step-detail">Bobby still fighting you?</div>
+      </div>
+      <div class="rpe-tag tag-timeBadge">10 ES</div>
+    </div>
+
+    <div class="step-card">
+      <div class="rpe-badge ssp-1">7</div>
+      <div class="step-body">
+        <div class="step-title">Pigeon &amp; Fold</div>
+        <div class="step-detail">lift that leg up at the end</div>
+      </div>
+      <div class="rpe-tag tag-timeBadge">1 MIN ES</div>
+    </div>
+
+    <div class="step-card">
+      <div class="rpe-badge ssp-1">8</div>
+      <div class="step-body">
+        <div class="step-title">Frog Stretch</div>
+        <div class="step-detail">this one looks wierd</div>
+      </div>
+      <div class="rpe-tag tag-timeBadge">45 SEC</div>
+    </div>
+
+    <div class="step-card">
+      <div class="rpe-badge ssp-1">9</div>
+      <div class="step-body">
+        <div class="step-title">Doorway Chest Stretch</div>
+        <div class="step-detail">do not stop, carry on</div>
+      </div>
+      <div class="rpe-tag tag-timeBadge">1 MIN</div>
+    </div>
+
+    <div class="step-card">
+      <div class="rpe-badge ssp-1">10</div>
+      <div class="step-body">
+        <div class="step-title">Standing Wall Angels</div>
+        <div class="step-detail">nearly finished</div>
+      </div>
+      <div class="rpe-tag tag-timeBadge">1 MIN</div>
+    </div>
+
+    <div class="step-card">
+      <div class="rpe-badge ssp-1">11</div>
+      <div class="step-body">
+        <div class="step-title">Deep Squat Hold</div>
+        <div class="step-detail">DEEPER</div>
+      </div>
+      <div class="rpe-tag tag-timeBadge">1 MIN</div>
+    </div>
+
+    <div class="step-card">
+      <div class="rpe-badge ssp-1">12</div>
+      <div class="step-body">
+        <div class="step-title">Elephant Stretch</div>
+        <div class="step-detail">cheat code for touching your toes apparently</div>
+      </div>
+      <div class="rpe-tag tag-timeBadge">1 MIN</div>
+    </div>
+
+    <div class="step-card">
+      <div class="rpe-badge ssp-1">13</div>
+      <div class="step-body">
+        <div class="step-title">Couch Stretch</div>
+        <div class="step-detail">and we are done</div>
+      </div>
+      <div class="rpe-tag tag-timeBadge">1 MIN ES</div>
+    </div>
+  </div>
+
+  <!-- ====================== RUNNING ====================== -->
+  <div class="view" id="view-running">
+    <div class="sub-tab-bar" id="running-subtabs">
+      <button class="sub-tab-btn active" onclick="switchRunningSub(0,this)">Warm-Up</button>
+      <button class="sub-tab-btn" onclick="switchRunningSub(1,this)">RPE</button>
+      <button class="sub-tab-btn" onclick="switchRunningSub(2,this)">Paces</button>
+    </div>
+
+    <!-- Warm-Up -->
+    <div class="subview active" id="run-warmup">
+      <div class="note" style="margin-top:16px">
+        <strong>every run, every time </strong> takes 6–8 minutes <br>do not skip on race days
+      </div>
+
+      <div class="phase-label">Mobility — joints &amp; range</div>
+
+      <div class="step-card">
+        <div class="rpe-badge ssp-1">1</div>
+        <div class="step-body">
+          <div class="step-title">Neck Rolls</div>
+          <div class="step-detail">Slow, controlled circles in each direction. Release any tension from sitting or sleeping. Do not force range</div>
+        </div>
+        <div class="rpe-tag tag-timeBadge">30S</div>
+      </div>
+
+      <div class="step-card">
+        <div class="rpe-badge ssp-1">2</div>
+        <div class="step-body">
+          <div class="step-title">Arm Circles &amp; Shoulder Openers</div>
+          <div class="step-detail">Large circles forward then backward. Follow with cross-body arm swings to open the chest. Loosen the upper back</div>
+        </div>
+        <div class="rpe-tag tag-timeBadge">30S</div>
+      </div>
+
+      <div class="step-card">
+        <div class="rpe-badge ssp-1">3</div>
+        <div class="step-body">
+          <div class="step-title">Hip Circles</div>
+          <div class="step-detail">Hands on hips, large circular motion 10 times each direction. Wake up the hip flexors — the most important mobility drill for runners</div>
+        </div>
+        <div class="rpe-tag tag-timeBadge">40S</div>
+      </div>
+
+      <div class="step-card">
+        <div class="rpe-badge ssp-1">4</div>
+        <div class="step-body">
+          <div class="step-title">Leg Swings Front to Back</div>
+          <div class="step-detail">Hold a wall or post. Swing each leg forward and back through full range, 10 per leg. Keep the swinging leg relaxed — let momentum do the work</div>
+        </div>
+        <div class="rpe-tag tag-timeBadge">40S</div>
+      </div>
+
+      <div class="step-card">
+        <div class="rpe-badge ssp-1">5</div>
+        <div class="step-body">
+          <div class="step-title">Leg Swings Side to Side</div>
+          <div class="step-detail">Face the wall, swing each leg side to side across the body 10 times. Opens the adductors and IT band</div>
+        </div>
+        <div class="rpe-tag tag-timeBadge">40S</div>
+      </div>
+
+      <div class="step-card">
+        <div class="rpe-badge ssp-1">6</div>
+        <div class="step-body">
+          <div class="step-title">Ankle Circles &amp; Calf Raises</div>
+          <div class="step-detail">10 circles each foot, then 15 slow calf raises. Primes the calves and Achilles for push-off</div>
+        </div>
+        <div class="rpe-tag tag-timeBadge">45S</div>
+      </div>
+
+      <div class="phase-label">Dynamic Activation</div>
+
+      <div class="step-card">
+        <div class="rpe-badge ssp-1">7</div>
+        <div class="step-body">
+          <div class="step-title">Walking Lunges with Hip Flexor Hold</div>
+          <div class="step-detail">10 alternating lunges. At the bottom of each, pause 1 second and press the hip forward. Activates glutes, opens tight hip flexors from desk work</div>
+        </div>
+        <div class="rpe-tag tag-timeBadge">45S</div>
+      </div>
+
+      <div class="step-card">
+        <div class="rpe-badge ssp-1">8</div>
+        <div class="step-body">
+          <div class="step-title">High Knees &amp; Butt Kicks</div>
+          <div class="step-detail">20 high knees on the spot (drive the knee to waist height), then 20 butt kicks (heel to glute). Raises core temp and primes the stride pattern</div>
+        </div>
+        <div class="rpe-tag tag-timeBadge">30S</div>
+      </div>
+
+      <div class="step-card">
+        <div class="rpe-badge ssp-1">9</div>
+        <div class="step-body">
+          <div class="step-title">3 × Build Strides — 20m each</div>
+          <div class="step-detail">Walk back recovery between each. Build from easy jog to race pace over the 20m. The third stride should touch your target session pace</div>
+        </div>
+        <div class="rpe-tag tag-timeBadge">2 MIN</div>
+      </div>
+
+      <div class="note-green">
+        <strong>RACE DAY NOTE</strong> Add a 1.5km easy jog before the strides. Do the full 9 steps plus jog in the 20 minutes before your start corral. Do not stand still after finishing — keep moving lightly
+      </div>
+    </div>
+
+    <!-- RPE -->
+    <div class="subview" id="run-rpe">
+      <div style="height:16px"></div>
+
+      <div class="rpe-row">
+        <div class="rpe-badge rpe-1">1</div>
+        <div class="rpe-body">
+          <div class="rpe-title">Rest/Nothing</div>
+          <div class="rpe-desc">Sitting, standing, walking slowly. No exertion whatsoever.</div>
+        </div>
+        <div class="rpe-tag tag-recovery">Rest</div>
+      </div>
+
+      <div class="rpe-row">
+        <div class="rpe-badge rpe-2">2</div>
+        <div class="rpe-body">
+          <div class="rpe-title">Very Light</div>
+          <div class="rpe-desc">Gentle walk or very slow jog. Breathing barely changes. Could hold this for hours. Feels almost lazy.</div>
+        </div>
+        <div class="rpe-tag tag-recovery">Recovery</div>
+      </div>
+
+      <div class="rpe-row">
+        <div class="rpe-badge rpe-3">3</div>
+        <div class="rpe-body">
+          <div class="rpe-title">Light — Easy Run</div>
+          <div class="rpe-desc">Full sentences with no effort. Breathing is elevated but completely controlled. Legs feel loose, rhythm is automatic. You could talk about your weekend. <strong>Target for most training volume.</strong></div>
+        </div>
+        <div class="rpe-tag tag-easy">Easy</div>
+      </div>
+
+      <div class="rpe-row">
+        <div class="rpe-badge rpe-4">4</div>
+        <div class="rpe-body">
+          <div class="rpe-title">Moderate-Easy</div>
+          <div class="rpe-desc">Full sentences, but you're aware of your breathing. Still genuinely comfortable. The effort is present but effortless to sustain. Legs feel engaged, not strained. <strong>Long run pace.</strong></div>
+        </div>
+        <div class="rpe-tag tag-easy">Easy</div>
+      </div>
+
+      <div class="rpe-row">
+        <div class="rpe-badge rpe-5">5</div>
+        <div class="rpe-body">
+          <div class="rpe-title">Moderate — Controlled Effort</div>
+          <div class="rpe-desc">Phrases, not full paragraphs. Breathing is rhythmic and intentional — you're coordinating it. Legs have some load. <strong>This is Chester HM ceiling pace.</strong> Should feel sustainable for 90+ minutes.</div>
+        </div>
+        <div class="rpe-tag tag-race">Race pace</div>
+      </div>
+
+      <div class="rpe-row">
+        <div class="rpe-badge rpe-6">6</div>
+        <div class="rpe-body">
+          <div class="rpe-title">Moderate-Hard</div>
+          <div class="rpe-desc">Short sentences only — 4 or 5 words before needing a breath. Breathing is working. Sustainable but you're putting in a real shift. Legs are noticeably loading. Used in sharpener sessions.</div>
+        </div>
+        <div class="rpe-tag tag-threshold">Threshold</div>
+      </div>
+
+      <div class="rpe-row">
+        <div class="rpe-badge rpe-7">7</div>
+        <div class="rpe-body">
+          <div class="rpe-title">Hard</div>
+          <div class="rpe-desc">One or two words at a time. Deep, forceful breathing — you can hear yourself working. Legs are heavy. Lactate threshold zone. Maintainable for 20–40 min max.</div>
+        </div>
+        <div class="rpe-tag tag-threshold">Threshold</div>
+      </div>
+
+      <div class="rpe-row">
+        <div class="rpe-badge rpe-8">8</div>
+        <div class="rpe-body">
+          <div class="rpe-title">Very Hard</div>
+          <div class="rpe-desc">Cannot hold a conversation. Breathing is maximal and laboured. Legs burning. This is 5k race effort territory. Not prescribed in your current plan.</div>
+        </div>
+        <div class="rpe-tag tag-max">Avoid</div>
+      </div>
+
+      <div class="rpe-row">
+        <div class="rpe-badge rpe-9">9</div>
+        <div class="rpe-body">
+          <div class="rpe-title">Extremely Hard</div>
+          <div class="rpe-desc">At absolute limit of what you can sustain. Gasping. Legs feel like they're failing. Near-maximal output. Not in scope until cardiac clearance received.</div>
+        </div>
+        <div class="rpe-tag tag-max">Avoid</div>
+      </div>
+
+      <div class="rpe-row">
+        <div class="rpe-badge rpe-10">10</div>
+        <div class="rpe-body">
+          <div class="rpe-title">Maximum — All-Out</div>
+          <div class="rpe-desc">Cannot be maintained. Sprint finish or absolute max effort. Not achievable for more than a few seconds.</div>
+        </div>
+        <div class="rpe-tag tag-max">Never</div>
+      </div>
+
+      <div class="divider"></div>
+      <div class="phase-label">Quick self-check — where am I?</div>
+
+      <div class="note" style="margin-bottom:0">
+        Can I speak freely? &rarr; RPE 1–3<br>
+        Phrases only, breathing managed? &rarr; RPE 4–5<br>
+        A few words, working hard? &rarr; RPE 6–7<br>
+        Cannot speak, breathing maximal? &rarr; RPE 8–10
+      </div>
+    </div>
+
+    <!-- Paces -->
+    <div class="subview" id="run-paces">
+      <div class="note" style="margin-top:16px">
+        paces calibrated to <strong>VDOT 51</strong> using training data
+      </div>
+
+      <div class="phase-label">your training zones</div>
+      <div class="pace-grid">
+        <div class="pace-card">
+          <div class="pace-card-label">Recovery</div>
+          <div class="pace-card-val" style="color:#97C459">&gt; 5:45</div>
+          <div class="pace-card-rpe"><span class="dot" style="background:rgba(39,80,10,0.8)"></span>RPE 2–3</div>
+        </div>
+        <div class="pace-card">
+          <div class="pace-card-label">Easy</div>
+          <div class="pace-card-val" style="color:#3ddc84">5:25–5:45</div>
+          <div class="pace-card-rpe"><span class="dot" style="background:var(--gold)"></span>RPE 3–4</div>
+        </div>
+        <div class="pace-card">
+          <div class="pace-card-label">Race pace cap</div>
+          <div class="pace-card-val" style="color:var(--amber)">5:00–5:10</div>
+          <div class="pace-card-rpe"><span class="dot" style="background:var(--amber)"></span>RPE 5–6</div>
+        </div>
+        <div class="pace-card">
+          <div class="pace-card-label">Threshold</div>
+          <div class="pace-card-val" style="color:var(--orange)">4:37–4:45</div>
+          <div class="pace-card-rpe"><span class="dot" style="background:var(--orange)"></span>RPE 7</div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+      <div class="phase-label">Breathing patterns by effort</div>
+      <div class="breath-card">
+        <div class="breath-rhythm">2:2</div>
+        <div class="breath-body">
+          <div class="breath-title">Easy Run — RPE 3–4</div>
+          <div class="breath-desc">2 steps inhale, 2 steps exhale. Fully relaxed rhythm. Breathing should be nasal if possible</div>
+        </div>
+      </div>
+
+      <div class="breath-card">
+        <div class="breath-rhythm">2:1</div>
+        <div class="breath-body">
+          <div class="breath-title">Race Pace — RPE 5–6</div>
+          <div class="breath-desc">2 steps inhale, 1 step exhale. Slightly faster exhale. Controlled and deliberate. Consistent throughout Chester HM</div>
+        </div>
+      </div>
+
+      <div class="breath-card">
+        <div class="breath-rhythm">1:1</div>
+        <div class="breath-body">
+          <div class="breath-title">Threshold — RPE 7</div>
+          <div class="breath-desc">Every step triggers a breath. Hard effort, short duration only. You're at your limit — this confirms RPE 7</div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+      <div class="phase-label">cadence reference</div>
+
+      <div class="targets-row">
+        <div class="t-card">
+          <div class="t-val" style="color:var(--gold)">168–171</div>
+          <div class="t-lbl">Easy Run</div>
+        </div>
+        <div class="t-card">
+          <div class="t-val" style="color:var(--amber)">172–174</div>
+          <div class="t-lbl">Race Pace</div>
+        </div>
+        <div class="t-card">
+          <div class="t-val" style="color:var(--orange)">175–178</div>
+          <div class="t-lbl">Threshold</div>
+        </div>
+      </div>
+
+      <div class="note">
+        Your average cadence in training has been <strong>171 spm</strong> — this is excellent. If pace starts to drop, increase cadence first before trying to push harder. Shorter, faster steps are more efficient than longer, slower strides at fatigue.
+      </div>
+    </div>
+  </div>
+
+  <!-- ====================== S&amp;P ====================== -->
+  <div class="view" id="view-sp">
+    <div class="sub-tab-bar" id="sp-subtabs">
+      <button class="sub-tab-btn active" onclick="switchSPSub(0,this)">Session A</button>
+      <button class="sub-tab-btn" onclick="switchSPSub(1,this)">Session B</button>
+    </div>
+
+    <!-- Session A -->
+    <div class="subview active" id="sp-a">
+      <div class="note" style="margin-top:16px">
+        <strong>strength focused</strong> rest 60–90s between sets
+      </div>
+
+      <div class="strength-set">3 ROUNDS — Minimal rest between exercises</div>
+
+      <div class="step-card">
+        <div class="rpe-badge ssp-1">1</div>
+        <div class="step-body">
+          <div class="step-title">Goblet Squat</div>
+          <div class="step-detail">Hold a dumbbell or kettlebell at chest. Squat deep, drive through heels. Keep torso upright.</div>
+        </div>
+        <div style="display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
+          <div class="rpe-tag tag-timeBadge">12 REPS</div>
+          <div class="weight-badge">16KG KB</div>
+        </div>
+      </div>
+
+      <div class="step-card">
+        <div class="rpe-badge ssp-1">2</div>
+        <div class="step-body">
+          <div class="step-title">Single Leg Romanian Deadlift</div>
+          <div class="step-detail">Hinge at hips, reach free leg back. Great for posterior chain and balance.</div>
+        </div>
+        <div style="display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
+          <div class="rpe-tag tag-timeBadge">10 EACH</div>
+          <div class="weight-badge">16KG KB</div>
+        </div>
+      </div>
+
+      <div class="step-card">
+        <div class="rpe-badge ssp-1">3</div>
+        <div class="step-body">
+          <div class="step-title">Push-Ups</div>
+          <div class="step-detail">Controlled tempo. Chest to floor if possible.</div>
+        </div>
+        <div style="display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
+          <div class="rpe-tag tag-timeBadge">15 REPS</div>
+          <div class="weight-badge">BW</div>
+        </div>
+      </div>
+
+      <div class="step-card">
+        <div class="rpe-badge ssp-1">4</div>
+        <div class="step-body">
+          <div class="step-title">Single Arm Dumbbell Row</div>
+          <div class="step-detail">Brace core, pull elbow back. Squeeze shoulder blade.</div>
+        </div>
+        <div style="display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
+          <div class="rpe-tag tag-timeBadge">12 EACH</div>
+          <div class="weight-badge">12KG DB</div>
+        </div>
+      </div>
+
+      <div class="step-card">
+        <div class="rpe-badge ssp-1">5</div>
+        <div class="step-body">
+          <div class="step-title">Glute Bridge March</div>
+          <div class="step-detail">Hold bridge, alternate marching knees to chest slowly.</div>
+        </div>
+        <div style="display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
+          <div class="rpe-tag tag-timeBadge">20 TOTAL</div>
+          <div class="weight-badge">BW</div>
+        </div>
+      </div>
+
+      <div class="step-card">
+        <div class="rpe-badge ssp-1">6</div>
+        <div class="step-body">
+          <div class="step-title">Plank Shoulder Taps</div>
+          <div class="step-detail">Strong plank position, tap opposite shoulder without rotating hips.</div>
+        </div>
+        <div style="display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
+          <div class="rpe-tag tag-timeBadge">20 TAPS</div>
+          <div class="weight-badge">BW</div>
+        </div>
+      </div>
+
+      <div class="strength-set">FINISHER</div>
+
+      <div class="step-card">
+        <div class="rpe-badge ssp-1">7</div>
+        <div class="step-body">
+          <div class="step-title">Wall Sit</div>
+        </div>
+        <div style="display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
+          <div class="rpe-tag tag-timeBadge">2 MIN</div>
+          <div class="weight-badge">BW</div>
+        </div>
+      </div>
+
+      <div class="step-card">
+        <div class="rpe-badge ssp-1">8</div>
+        <div class="step-body">
+          <div class="step-title">Dead Bug</div>
+        </div>
+        <div style="display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
+          <div class="rpe-tag tag-timeBadge">1 MIN</div>
+          <div class="weight-badge">BW</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Session B -->
+    <div class="subview" id="sp-b">
+      <div class="note" style="margin-top:16px">
+        <strong>plyometric & power focused</strong> posterior chain &amp; core emphasis
+      </div>
+
+      <div class="strength-set">3 ROUNDS</div>
+
+      <div class="step-card">
+        <div class="rpe-badge ssp-1">1</div>
+        <div class="step-body">
+          <div class="step-title">Romanian Deadlift</div>
+          <div class="step-detail">Hinge movement. Feel the stretch in hamstrings. Keep back flat.</div>
+        </div>
+        <div style="display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
+          <div class="rpe-tag tag-timeBadge">10 REPS</div>
+          <div class="weight-badge">16KG KB</div>
+        </div>
+      </div>
+
+      <div class="step-card">
+        <div class="rpe-badge ssp-1">2</div>
+        <div class="step-body">
+          <div class="step-title">Bulgarian Split Squat</div>
+          <div class="step-detail">Rear foot elevated. Drive through front heel. Great unilateral leg strength.</div>
+        </div>
+        <div style="display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
+          <div class="rpe-tag tag-timeBadge">10 EACH</div>
+          <div class="weight-badge">8KG DB EA</div>
+        </div>
+      </div>
+
+      <div class="step-card">
+        <div class="rpe-badge ssp-1">3</div>
+        <div class="step-body">
+          <div class="step-title">Dumbbell Floor Press</div>
+          <div class="step-detail">Lie on floor, press dumbbells up. Safer on shoulders.</div>
+        </div>
+        <div style="display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
+          <div class="rpe-tag tag-timeBadge">12 REPS</div>
+          <div class="weight-badge">BW</div>
+        </div>
+      </div>
+
+      <div class="step-card">
+        <div class="rpe-badge ssp-1">4</div>
+        <div class="step-body">
+          <div class="step-title">Bent Over Row</div>
+          <div class="step-detail">Hinge forward, row both arms. Pull to hips.</div>
+        </div>
+        <div style="display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
+          <div class="rpe-tag tag-timeBadge">12 REPS</div>
+          <div class="weight-badge">12KG DB</div>
+        </div>
+      </div>
+
+      <div class="step-card">
+        <div class="rpe-badge ssp-1">5</div>
+        <div class="step-body">
+          <div class="step-title">Single Leg Glute Bridge</div>
+          <div class="step-detail">One leg extended. Drive hips up powerfully.</div>
+        </div>
+        <div style="display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
+          <div class="rpe-tag tag-timeBadge">12 EACH</div>
+          <div class="weight-badge">16KG KB</div>
+        </div>
+      </div>
+
+      <div class="step-card">
+        <div class="rpe-badge ssp-1">6</div>
+        <div class="step-body">
+          <div class="step-title">Bird Dog</div>
+          <div class="step-detail">Alternate arm + opposite leg extension. Hold 2s at top.</div>
+        </div>
+        <div style="display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
+          <div class="rpe-tag tag-timeBadge">12 EACH</div>
+          <div class="weight-badge">BW</div>
+        </div>
+      </div>
+
+      <div class="strength-set">CORE FINISHER</div>
+
+      <div class="step-card">
+        <div class="rpe-badge ssp-1">7</div>
+        <div class="step-body">
+          <div class="step-title">Dead Bug</div>
+        </div>
+        <div style="display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
+          <div class="rpe-tag tag-timeBadge">20 EACH</div>
+          <div class="weight-badge">BW</div>
+        </div>
+      </div>
+
+      <div class="step-card">
+        <div class="rpe-badge ssp-1">8</div>
+        <div class="step-body">
+          <div class="step-title">Side Plank</div>
+        </div>
+        <div style="display:flex; flex-direction:column; align-items:flex-end; gap:6px;">
+          <div class="rpe-tag tag-timeBadge">30S EACH</div>
+          <div class="weight-badge">BW</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+function switchMainTab(tabIndex, btn) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+
+  document.getElementById('view-stretching').classList.remove('active');
+  document.getElementById('view-running').classList.remove('active');
+  document.getElementById('view-sp').classList.remove('active');
+
+  if (tabIndex === 0) document.getElementById('view-stretching').classList.add('active');
+  else if (tabIndex === 1) {
+    document.getElementById('view-running').classList.add('active');
+    switchRunningSub(0);
+  }
+  else if (tabIndex === 2) {
+    document.getElementById('view-sp').classList.add('active');
+    switchSPSub(0);
+  }
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function switchRunningSub(subIndex, btn) {
+  if (btn) {
+    document.querySelectorAll('#running-subtabs .sub-tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+  document.getElementById('run-warmup').classList.toggle('active', subIndex === 0);
+  document.getElementById('run-rpe').classList.toggle('active', subIndex === 1);
+  document.getElementById('run-paces').classList.toggle('active', subIndex === 2);
+}
+
+function switchSPSub(subIndex, btn) {
+  if (btn) {
+    document.querySelectorAll('#sp-subtabs .sub-tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+  }
+  document.getElementById('sp-a').classList.toggle('active', subIndex === 0);
+  document.getElementById('sp-b').classList.toggle('active', subIndex === 1);
+}
+
+document.addEventListener('DOMContentLoaded', function() {});
+</script>
+</body>
+</html>
