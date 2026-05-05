@@ -4,22 +4,22 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Food Database</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet">
 <style>
   :root {
-    --cream:    #F7F3EC;
-    --parchment:#EDE7D9;
-    --sand:     #D9CFBD;
-    --bark:     #9E8E76;
-    --soil:     #5C4A32;
-    --forest:   #2D5016;
-    --leaf:     #4A7C28;
-    --score-red:   #C0392B;
-    --score-amber: #B8780A;
-    --score-green: #2D6A1A;
-    --radius:   14px;
-    --shadow:   0 2px 18px rgba(92,74,50,0.10);
-  }
+  --cream:    #0c0e0d;
+  --parchment:#141714;
+  --sand:     #2e362e;
+  --bark:     #7a9088;
+  --soil:     #dde6df;
+  --forest:   #c8a97a;
+  --leaf:     #c8a97a;
+  --score-red:   #ff5757;
+  --score-amber: #f0b429;
+  --score-green: #3ddc84;
+  --radius:   14px;
+  --shadow:   0 2px 18px rgba(0,0,0,0.35);
+}
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { background: var(--cream); font-family: 'DM Sans', sans-serif; color: var(--soil); min-height: 100vh; }
   body::before {
@@ -163,6 +163,73 @@
 
   .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(20px); background: var(--forest); color: #fff; padding: 10px 20px; border-radius: 20px; font-size: 13px; font-weight: 500; opacity: 0; transition: all .3s; pointer-events: none; z-index: 100; }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+
+/* ─── DARK THEME OVERRIDE ─── */
+body { background: var(--cream); color: var(--soil); font-family: 'DM Mono', monospace; }
+body::before { display: none; }
+
+header h1 { font-family: 'Syne', sans-serif; color: var(--forest); }
+header h1 span { color: var(--bark); }
+
+.price-note { color: var(--bark); }
+
+#searchInput {
+  background: var(--parchment); border: 1.5px solid var(--sand);
+  color: var(--soil); box-shadow: none;
+  font-family: 'DM Mono', monospace;
+}
+#searchInput::placeholder { color: var(--bark); }
+#searchInput:focus { border-color: var(--forest); box-shadow: 0 0 0 3px rgba(200,169,122,0.12); }
+
+.browse-section { background: var(--parchment); border: 1.5px solid var(--sand); box-shadow: none; }
+.browse-header { background: #1c201c; color: var(--bark); border-bottom: 1px solid var(--sand); }
+.category-grid { background: var(--sand); }
+.cat-btn { background: var(--parchment); color: var(--soil); }
+.cat-btn:hover, .cat-btn.active { background: var(--forest); color: #0c0e0d; }
+.cat-count { background: rgba(255,255,255,0.06); color: var(--bark); }
+.cat-btn.active .cat-count, .cat-btn:hover .cat-count { background: rgba(0,0,0,0.18); color: rgba(12,14,13,0.7); }
+
+.item-pills { background: #0f1210; border-top: 1px solid var(--sand); }
+.item-pill { background: var(--parchment); border: 1.5px solid var(--sand); color: var(--soil); }
+.item-pill:hover, .item-pill.active { background: var(--forest); border-color: var(--forest); color: #0c0e0d; }
+
+.filter-chip { background: var(--forest); color: #0c0e0d; }
+.filter-chip button { color: #0c0e0d; }
+
+.results-header { color: var(--bark); }
+.results-header span { color: var(--soil); }
+
+.legend-item { color: var(--bark); }
+
+.product-card { box-shadow: none; }
+.product-card.score-green {
+  background: rgba(61,220,132,0.06);
+  border-left-color: var(--score-green); border-top-color: #222822;
+  border-right-color: #222822; border-bottom-color: #222822;
+}
+.product-card.score-amber {
+  background: rgba(240,180,41,0.06);
+  border-left-color: var(--score-amber); border-top-color: #222822;
+  border-right-color: #222822; border-bottom-color: #222822;
+}
+.product-card.score-red {
+  background: rgba(255,87,87,0.06);
+  border-left-color: var(--score-red); border-top-color: #222822;
+  border-right-color: #222822; border-bottom-color: #222822;
+}
+.product-card.score-none {
+  background: var(--parchment); border-color: var(--sand);
+}
+.product-card:hover { box-shadow: 0 4px 24px rgba(0,0,0,0.4); }
+
+.t-brand   { color: var(--bark); }
+.t-name, .t-own-name { color: var(--soil); }
+.price-tag { background: rgba(200,169,122,0.12); color: var(--forest); }
+
+.item-group-label { color: var(--soil); border-bottom: 1.5px solid var(--sand); }
+.item-group-label small { color: var(--bark); }
+
 </style>
 </head>
 <body>

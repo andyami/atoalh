@@ -4,14 +4,15 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Meal Prep Planner</title>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@400;500;600;700;800&family=Barlow:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet">
 <style>
-:root{
-  --bg:#F5F2EE;--surface:#FFFFFF;--header-bg:#1A2E1F;
-  --text:#1C1C1C;--text-muted:#6B6B6B;--border:#E0DDD8;
-  --alh:#2D6A4F;--alh-light:#EAF4EF;--alh-header:#1B4332;
-  --ato:#1B3A6B;--ato-light:#EBF0FA;--ato-header:#0F2554;
-  --total:#B5451B;--total-light:#FEF0EA;--total-header:#8B3214;
+:root {
+  --bg: #0c0e0d; --surface: #141714; --surface2: #1c201c;
+  --header-bg: #0c0e0d;
+  --text: #dde6df; --text-muted: #586860; --border: #222822;
+  --alh: #3ddc84; --alh-light: rgba(61,220,132,0.08); --alh-header: #3ddc84;
+  --ato: #4a9eff; --ato-light: rgba(74,158,255,0.08); --ato-header: #4a9eff;
+  --total: #f0b429; --total-light: rgba(240,180,41,0.09); --total-header: #f0b429;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
@@ -136,6 +137,94 @@ body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);min-
   .shopping-table{display:block;overflow-x:auto;}
   .shop-plan-table{display:block;overflow-x:auto;}
 }
+
+
+/* ─── DARK THEME OVERRIDE ─── */
+body { background: var(--bg); color: var(--text); font-family: 'DM Mono', monospace; }
+
+.header { background: var(--header-bg); border-bottom: 1px solid var(--border); }
+.header h1 { font-family: 'Syne', sans-serif; color: var(--text); }
+
+.mode-bar { background: var(--surface); border-bottom: 1px solid var(--border); }
+.mode-label { color: var(--muted, var(--text-muted)); font-family: 'DM Mono', monospace; }
+.mode-toggle { background: var(--surface2); border: 1.5px solid var(--border); border-radius: 10px; }
+.mode-btn { color: var(--text-muted); font-family: 'DM Mono', monospace; }
+.mode-btn.active-same { background: var(--alh); color: #0c0e0d; }
+.mode-btn.active-diff { background: var(--ato); color: #0c0e0d; }
+.mode-hint { color: var(--text-muted); }
+
+.section-title { font-family: 'Syne', sans-serif; color: var(--text); }
+.carb-group-header { color: var(--text); border-bottom: 2px solid var(--border); font-family: 'DM Mono', monospace; }
+.carb-count { color: var(--text-muted); }
+
+/* Meal cards */
+.meal-card { background: var(--surface); border: 2px solid var(--border); }
+.meal-card:hover { box-shadow: 0 4px 14px rgba(0,0,0,0.4); transform: translateY(-1px); }
+.meal-card.sel-alh  { border-color: var(--alh);  background: var(--alh-light); }
+.meal-card.sel-ato  { border-color: var(--ato);  background: var(--ato-light); }
+.meal-card.sel-both { border-color: #c8a97a; background: rgba(200,169,122,0.07); }
+.meal-check { background: var(--border); }
+.meal-card.sel-alh  .meal-check { background: var(--alh);  color: #0c0e0d; }
+.meal-card.sel-ato  .meal-check { background: var(--ato);  color: #0c0e0d; }
+.meal-card.sel-both .meal-check { background: #c8a97a; color: #0c0e0d; }
+.meal-id   { color: var(--text-muted); }
+.meal-name { color: var(--text); }
+.macro-who.alh { background: var(--alh-light); color: var(--alh); }
+.macro-who.ato { background: var(--ato-light); color: var(--ato); }
+.macro-val { color: var(--text-muted); }
+.meal-note { background: rgba(240,180,41,0.09); border: 1px solid rgba(240,180,41,0.2); color: var(--total); font-style: italic; }
+
+/* Person panels */
+.person-panel { background: var(--surface); border: 2px solid var(--border); }
+.person-panel.panel-alh { border-color: rgba(61,220,132,0.3); }
+.person-panel.panel-ato { border-color: rgba(74,158,255,0.3); }
+.panel-header { border-bottom: 1px solid var(--border); }
+.panel-badge.alh { background: var(--alh-light); color: var(--alh); }
+.panel-badge.ato { background: var(--ato-light); color: var(--ato); }
+.panel-sel-count { color: var(--text-muted); }
+
+/* Shopping */
+.divider { border-top: 1px solid var(--border); }
+.shopping-empty { background: var(--surface); border: 2px dashed var(--border); color: var(--text-muted); }
+.selected-pill { background: var(--alh-light); color: var(--alh); border: 1px solid rgba(61,220,132,0.2); }
+.selected-pill.ato-pill { background: var(--ato-light); color: var(--ato); border-color: rgba(74,158,255,0.2); }
+.btn { font-family: 'DM Mono', monospace; }
+.btn-print { background: var(--text); color: var(--bg); }
+.btn-clear { background: var(--surface2); color: var(--text-muted); border: 1px solid var(--border); }
+
+/* Tables */
+.cat-header { background: var(--surface2); color: var(--text); border-bottom: 1px solid var(--border); border-radius: 8px 8px 0 0; }
+.shopping-table { background: var(--surface); border-radius: 0 0 8px 8px; box-shadow: none; }
+.shopping-table th, .shopping-table td { border-bottom: 1px solid var(--border); }
+.th-check, .th-item, .th-tags { background: var(--surface2); color: var(--text); }
+.th-total { background: var(--total-light); color: var(--total-header); }
+.th-ato   { background: var(--ato-light);   color: var(--ato-header); }
+.th-alh   { background: var(--alh-light);   color: var(--alh-header); }
+.td-total { background: var(--total-light); color: var(--total); }
+.td-ato   { background: var(--ato-light);   color: var(--ato); }
+.td-alh   { background: var(--alh-light);   color: var(--alh); }
+.td-item  { color: var(--text); }
+.td-taste { color: var(--text-muted); }
+.shopping-table tr.have-it .td-item,
+.shopping-table tr.have-it .td-total,
+.shopping-table tr.have-it .td-ato,
+.shopping-table tr.have-it .td-alh,
+.shopping-table tr.have-it .td-tags { opacity: 0.25; }
+.shopping-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+/* Shop plan */
+.shop-plan-notice { background: var(--total-light); border: 1.5px solid rgba(240,180,41,0.2); color: var(--total); }
+.shop-group { background: var(--surface); box-shadow: none; border: 1px solid var(--border); border-radius: 10px; }
+.shop-plan-table td { border-bottom: 1px solid var(--border); }
+.shop-plan-table tr:hover td { background: rgba(255,255,255,0.02); }
+.sp-name { color: var(--text); }
+.sp-desc { color: var(--text-muted); }
+.sp-qty  { color: var(--text-muted); }
+.btn-reassign { background: transparent; border: 1.5px solid var(--border); color: var(--text-muted); font-family: 'DM Mono', monospace; }
+.btn-reassign:hover { border-color: var(--alh); color: var(--alh); }
+
+input[type="checkbox"] { accent-color: var(--alh); }
+
 </style>
 </head>
 <body>

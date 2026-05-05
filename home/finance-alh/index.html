@@ -4,15 +4,18 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ALH — Spending Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
-    --bg: #f7f5f0; --card: #ffffff; --border: #e2ddd4; --text: #2c2c2a; --muted: #888780;
-    --amber: #BA7517; --amber-light: #FAEEDA; --amber-dark: #412402;
-    --alhgreen: #216A39;
-    --green: #3B6D11; --green-light: #EAF3DE; --green-dark: #173404;
-    --red: #A32D2D; --red-light: #FCEBEB;
-  }
+  --bg: #0c0e0d; --card: #141714; --card2: #1c201c;
+  --border: #222822; --border2: #2e362e;
+  --text: #dde6df; --muted: #586860; --muted2: #3a4440;
+  --amber: #f0b429; --amber-light: rgba(240,180,41,0.09); --amber-dark: #e6a800;
+  --alhgreen: #3ddc84;
+  --green: #3ddc84; --green-light: rgba(61,220,132,0.08); --green-dark: #2ecc70;
+  --red: #ff5757; --red-light: rgba(255,87,87,0.08);
+}
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding: 24px 16px 48px; }
   .container { max-width: 400px; margin: 0 auto; }
   header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 28px; }
@@ -47,7 +50,7 @@
   .hint { font-size: 11px; color: #bbb; margin-top: 5px; }
   .input-wrap { position: relative; display: flex; align-items: center; }
   .pound { position: absolute; left: 13px; font-size: 16px; font-weight: 600; color: var(--text); pointer-events: none; }
-  .input-wrap input { width: 100%; padding: 11px 44px 11px 28px; font-size: 18px; font-weight: 600; font-family: inherit; border: 1.5px solid var(--border); border-radius: 10px; background: #faf9f7; color: var(--text); -webkit-appearance: none; appearance: none; transition: border-color 0.15s; }
+  .input-wrap input { width: 100%; padding: 11px 44px 11px 28px; font-size: 18px; font-weight: 600; font-family: inherit; border: 1.5px solid var(--border); border-radius: 10px; background: var(--card2); color: var(--text); -webkit-appearance: none; appearance: none; transition: border-color 0.15s; }
   .input-wrap input:focus { outline: none; border-color: var(--alhgreen); background: #fff; }
   .input-wrap input.spends-input:focus { border-color: var(--amber); }
   .saved-tag { position: absolute; right: 10px; font-size: 10px; color: var(--muted); background: #f0ede8; border-radius: 4px; padding: 2px 6px; pointer-events: none; }
@@ -55,6 +58,50 @@
   .reset-btn { width: 100%; padding: 12px; background: none; border: 1px solid var(--border); border-radius: 10px; font-family: inherit; font-size: 13px; color: var(--muted); cursor: pointer; margin-top: 4px; transition: background 0.15s; }
   .reset-btn:hover { background: #f0ede8; color: var(--text); }
   .footer { text-align: center; font-size: 11px; color: var(--muted); margin-top: 24px; }
+
+
+/* ─── DARK THEME OVERRIDE ─── */
+body { background: var(--bg); color: var(--text); font-family: 'DM Mono', monospace; }
+.name { font-family: 'Syne', sans-serif; font-size: 24px; }
+.name span { color: var(--alhgreen); }
+
+.card { background: var(--card); border: 1px solid var(--border); }
+.card-label { color: var(--muted); }
+
+.result-card.empty { background: var(--card); border: 1px solid var(--border); }
+.empty .result-label { color: var(--muted); }
+.empty .result-amount { color: var(--muted2); }
+.empty .result-context { color: var(--muted); }
+.result-card.positive { background: rgba(61,220,132,0.07); border: 1px solid rgba(61,220,132,0.25); }
+.result-card.warning  { background: rgba(240,180,41,0.07); border: 1px solid rgba(240,180,41,0.25); }
+.result-card.negative { background: rgba(255,87,87,0.07);  border: 1px solid rgba(255,87,87,0.25); }
+.positive .result-label { color: var(--green); }
+.positive .result-amount { color: var(--green); }
+.positive .result-context { color: var(--green); }
+.warning .result-label { color: var(--amber); }
+.warning .result-amount { color: var(--amber); }
+.warning .result-context { color: var(--amber); }
+.negative .result-label { color: var(--red); }
+.negative .result-amount { color: var(--red); }
+.negative .result-context { color: var(--red); }
+
+.input-wrap input {
+  background: var(--card2); border: 1.5px solid var(--border); color: var(--text);
+}
+.input-wrap input:focus { background: var(--card2); border-color: var(--alhgreen); }
+.input-wrap input.spends-input:focus { border-color: var(--amber); }
+.pound { color: var(--muted); }
+.saved-tag { background: var(--card2); color: var(--muted); border: none; }
+.field label { color: var(--muted); }
+
+.reset-btn {
+  background: transparent; border: 1px solid var(--border); color: var(--muted);
+}
+.reset-btn:hover { background: var(--card2); color: var(--text); }
+
+.cycle  { color: var(--muted); }
+.footer { color: var(--muted); }
+
 </style>
 </head>
 <body>

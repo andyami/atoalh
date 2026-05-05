@@ -4,24 +4,24 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Recipe Database</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg: #FAF8F5;
-  --surface: #FFFFFF;
-  --surface2: #F5F1EB;
-  --border: #E8E2D9;
-  --text: #1C1A17;
-  --muted: #8A8478;
-  --accent: #C4522A;
-  --accent2: #2A5C3F;
-  --header-bg: #1C1A17;
-  --header-text: #FAF8F5;
+  --bg: #0c0e0d;
+  --surface: #141714;
+  --surface2: #1c201c;
+  --border: #222822;
+  --text: #dde6df;
+  --muted: #586860;
+  --accent: #c8a97a;
+  --accent2: #3ddc84;
+  --header-bg: #0c0e0d;
+  --header-text: #dde6df;
   --radius: 12px;
-  --shadow: 0 2px 12px rgba(0,0,0,0.07);
-  --shadow-lg: 0 8px 40px rgba(0,0,0,0.15);
-  --font-display: 'Playfair Display', Georgia, serif;
-  --font-body: 'DM Sans', sans-serif;
+  --shadow: 0 2px 12px rgba(0,0,0,0.35);
+  --shadow-lg: 0 8px 40px rgba(0,0,0,0.55);
+  --font-display: 'Syne', sans-serif;
+  --font-body: 'DM Mono', monospace;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
@@ -204,6 +204,80 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-hei
   .form-row{grid-template-columns:1fr}
   .cb-check-grid{grid-template-columns:repeat(2,1fr)}
 }
+
+
+/* ─── DARK THEME OVERRIDE ─── */
+body { font-family: 'DM Mono', monospace; }
+
+.header { background: var(--header-bg); border-bottom: 1px solid var(--border); }
+.logo { font-family: 'Syne', sans-serif; color: var(--accent); font-size: 20px; font-weight: 800; }
+.logo span { color: var(--text); }
+.search-wrap input { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); font-family: 'DM Mono', monospace; }
+.search-wrap input::placeholder { color: rgba(221,230,223,0.35); }
+
+.filter-bar { background: var(--surface); border-color: var(--border); }
+.filter-label { color: var(--muted); }
+.filter-pill { background: var(--surface); border-color: var(--border); color: var(--muted); }
+.filter-pill:hover { border-color: var(--accent); color: var(--accent); }
+.filter-pill.active { background: var(--accent); color: #0c0e0d; border-color: transparent; }
+.filter-sep { background: var(--border); }
+.cooked-toggle { border-color: var(--border); }
+.cooked-toggle button { color: var(--muted); font-family: 'DM Mono', monospace; }
+.cooked-toggle button.active { background: var(--accent); color: #0c0e0d; }
+
+.results-bar { color: var(--muted); }
+
+.card { background: var(--surface); border-top: 3px solid var(--border); box-shadow: var(--shadow); }
+.card:hover { box-shadow: var(--shadow-lg); }
+.card-name { font-family: 'Syne', sans-serif; color: var(--text); }
+.card-desc { color: var(--muted); }
+.card-stats { border-color: var(--border); }
+.stat { color: var(--muted); }
+.card-footer { background: var(--surface2); border-color: var(--border); }
+.macro { color: var(--muted); }
+.macro span { color: var(--text); }
+.tag { background: rgba(61,220,132,0.09); color: var(--accent2); }
+.want-badge { background: rgba(74,158,255,0.10); color: #4a9eff; }
+.cooked-badge { background: rgba(200,169,122,0.12); color: var(--accent); }
+
+.btn { font-family: 'DM Mono', monospace; }
+.btn-ghost { background: rgba(255,255,255,0.07); color: var(--text); border: 1px solid rgba(255,255,255,0.12); }
+.btn-ghost:hover { background: rgba(255,255,255,0.12); }
+.btn-primary { background: var(--accent); color: #0c0e0d; }
+.btn-primary:hover { background: #b8976a; }
+.btn-secondary { background: var(--surface2); color: var(--text); border: 1px solid var(--border); }
+.btn-secondary:hover { background: var(--border); }
+.btn-danger { background: rgba(255,87,87,0.15); color: #ff5757; border: 1px solid rgba(255,87,87,0.25); }
+.btn-danger:hover { background: rgba(255,87,87,0.25); }
+
+.modal-overlay { background: rgba(0,0,0,0.80); }
+.modal { background: var(--surface); }
+.recipe-modal-header { background: var(--surface2); border-bottom: 1px solid var(--border); }
+.recipe-modal-header h2 { font-family: 'Syne', sans-serif; color: var(--text); }
+.recipe-modal-header .desc { color: var(--muted); }
+.recipe-modal-header .meta-item { color: var(--muted); }
+.close-btn { background: rgba(255,255,255,0.08); color: var(--text); }
+.close-btn:hover { background: rgba(255,255,255,0.14); }
+
+.recipe-modal-ing  { border-right: 1px solid var(--border); }
+.recipe-modal-body { background: var(--surface); }
+.serving-control { background: var(--surface2); border: 1px solid var(--border); }
+.serving-control label { color: var(--muted); }
+.sc-btn { background: var(--surface); border: 1px solid var(--border); color: var(--text); }
+.sc-btn:hover { background: var(--accent); color: #0c0e0d; border-color: var(--accent); }
+.sc-val { color: var(--text); }
+
+input, select, textarea {
+  background: var(--surface2) !important;
+  border-color: var(--border) !important;
+  color: var(--text) !important;
+  font-family: 'DM Mono', monospace !important;
+}
+input::placeholder, textarea::placeholder { color: var(--muted) !important; }
+
+.empty-state { color: var(--muted); }
+.empty-state .big { color: var(--muted); }
+
 </style>
 </head>
 <body>
