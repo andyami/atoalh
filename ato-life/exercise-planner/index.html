@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Exercise Planner">
+    <title>Exercise Planner</title>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+        :root{
+            --bg:#0c0e0d;--card:#141714;--card2:#1c201c;
+            --border:#222822;--border2:#2e362e;
+            --green:#3ddc84;--gold:#C59100;--amber:#f0b429;--red:#ff5757;
+            --blue:#4a9eff;--orange:#f97316;
+            --text:#dde6df;--muted:#586860;--muted2:#3a4440;
+            --mono:'DM Mono',monospace;--head:'Syne',sans-serif;
+            --run-easy:#ffe066;--run-tempo:#ffcc33;--run-long:#e6b800;
+        }
+        html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:var(--mono);-webkit-font-smoothing:antialiased}
+        .app{max-width:420px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
+
+        /* HEADER */
+        .hdr{padding:52px 24px 20px;text-align:center;background:var(--bg)}
+        .hdr-title{font-family:var(--head);font-size:36px;font-weight:800;letter-spacing:-0.02em;line-height:1.02;color:var(--text)}
+
+        .tab-bar{display:flex;gap:0;padding:0 24px;margin-bottom:4px}
+        .tab-btn{flex:1;padding:10px 6px;border:none;background:transparent;color:var(--muted);font-family:var(--mono);font-size:12px;font-weight:500;letter-spacing:0.04em;cursor:pointer;border-bottom:2px solid var(--border2);transition:color 0.15s,border-color 0.15s;text-transform:none}
+        .tab-btn.active{color:var(--gold);border-bottom-color:var(--gold)}
+
+        /* VIEWS */
+        .view{display:none;flex:1;overflow-y:auto;padding:12px 24px 20px}
+        .view.active{display:flex;flex-direction:column}
+
+        /* TODAY VIEW */
+        .today-header{font-size:20px;font-weight:700;font-family:var(--head);margin-bottom:14px}
+        .event-card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:10px;display:flex;gap:12px;align-items:center;cursor:pointer}
+        .event-bar{width:5px;border-radius:9999px;flex-shrink:0;align-self:stretch;min-height:36px}
+        .event-content{flex:1}
+        .event-time{font-size:12px;color:var(--muted);margin-bottom:2px}
+        .event-title{font-size:15px;font-weight:500}
+        .event-del{background:none;border:none;color:var(--muted);font-size:22px;padding:0 4px;cursor:pointer;line-height:1;flex-shrink:0}
+        .today-empty{padding:48px 0;text-align:center;color:var(--muted);font-size:13px;line-height:1.7}
+
+        /* WEEK VIEW */
+        .week-section-label{font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin:4px 0 12px}
+        .week-list{display:flex;flex-direction:column;gap:8px}
+        .day-row{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:12px 14px;display:flex;gap:14px;align-items:flex-start;transition:border-color 0.15s}
+        .day-row.today-row{border-color:var(--gold)}
+        .day-row.droppable{border-color:var(--muted2);border-style:dashed;cursor:pointer}
+        .day-label{width:38px;flex-shrink:0;text-align:center}
+        .day-label-name{font-size:10px;letter-spacing:0.08em;color:var(--muted);text-transform:uppercase;margin-bottom:2px}
+        .day-label-date{font-size:24px;font-weight:700;font-family:var(--head);line-height:1}
+        .today-row .day-label-date{color:var(--gold)}
+        .day-chips{flex:1;display:flex;flex-wrap:wrap;gap:6px;min-height:30px;align-content:flex-start}
+        .chip{display:inline-flex;align-items:center;gap:5px;background:var(--card2);border:1px solid var(--border2);border-radius:20px;padding:5px 10px 5px 8px;font-size:12px;font-weight:500;cursor:pointer;white-space:nowrap}
+        .chip:active{opacity:0.7}
+        .chip-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+        .chip-del{background:none;border:none;color:var(--muted2);font-size:15px;padding:0 0 0 3px;cursor:pointer;line-height:1;flex-shrink:0}
+        .chip-del:active{color:var(--red)}
+        .add-hint{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:50%;border:1px dashed var(--muted2);color:var(--muted2);font-size:16px;flex-shrink:0;margin-top:1px}
+
+        /* TARGETS */
+        .targets{background:var(--card);border-radius:12px;padding:16px 18px;margin-top:16px}
+        .target-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;font-size:13px}
+        .target-row:last-child{margin-bottom:0}
+        .target-name{color:var(--muted);width:80px;flex-shrink:0}
+        .target-progress{background:var(--border2);height:6px;border-radius:9999px;flex:1;margin:0 10px}
+        .target-fill{height:100%;border-radius:9999px;transition:width 0.3s}
+        .target-count{font-family:var(--head);font-size:14px;width:36px;text-align:right;flex-shrink:0}
+
+        /* PALETTE */
+        .palette{background:var(--card);border-top:1px solid var(--border);padding:14px 24px 220px}
+        .palette-title{font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+        .palette-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+        .draggable{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:10px 12px;display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px;font-weight:500;transition:border-color 0.15s,box-shadow 0.15s}
+        .draggable.selected{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold);color:var(--gold)}
+        .draggable .dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+
+        .action-bar{position:fixed;bottom:0;left:0;right:0;max-width:420px;margin:0 auto;background:linear-gradient(transparent,var(--bg) 28%);padding:24px 24px 20px;display:flex;flex-direction:column;gap:9px;z-index:20}
+        .btn-pri{width:100%;background:var(--gold);color:#0c0e0d;border:none;border-radius:13px;padding:10px;font-family:var(--mono);font-size:13px;font-weight:500;letter-spacing:0.03em;cursor:pointer;transition:opacity 0.15s,transform 0.1s}
+        .btn-pri:active{transform:scale(0.98)}
+        .btn-pri.unlocked{background:var(--green)}
+        .btn-sec{width:100%;background:transparent;color:var(--muted);border:1px solid var(--border2);border-radius:13px;padding:10px;font-family:var(--mono);font-size:13px;cursor:pointer}
+        .btn-sec.danger{color:var(--red)}
+
+        /* SYNC INDICATOR */
+        .sync-dot{position:fixed;top:18px;right:18px;width:8px;height:8px;border-radius:50%;background:var(--muted2);transition:background 0.3s;z-index:50}
+        .sync-dot.syncing{background:var(--amber)}
+        .sync-dot.synced{background:var(--green)}
+        .sync-dot.error{background:var(--red)}
+
+        /* MODAL */
+        .modal{display:none;position:fixed;inset:0;background:rgba(12,14,13,.95);align-items:center;justify-content:center;z-index:100}
+        .modal-content{background:var(--card);border-radius:16px;width:90%;max-width:340px;padding:24px}
+    </style>
+</head>
+<body>
+<div class="app">
+
+    <div class="hdr">
+        <div class="hdr-title">PLANNER</div>
+    </div>
+
+    <div class="tab-bar">
+        <button class="tab-btn active" onclick="switchTab(0)">Today</button>
+        <button class="tab-btn" onclick="switchTab(1)">Week</button>
+    </div>
+
+    <div class="view active" id="view-today">
+        <div id="today-header" class="today-header"></div>
+        <div id="today-events"></div>
+    </div>
+
+    <div class="view" id="view-week">
+        <div class="week-section-label">This week</div>
+        <div class="week-list" id="week-list"></div>
+        <div class="targets" id="targets"></div>
+    </div>
+
+    <div class="palette">
+        <div class="palette-grid" id="palette"></div>
+    </div>
+
+</div>
+
+<div class="sync-dot" id="sync-dot"></div>
+
+<div class="action-bar">
+    <button class="btn-pri" id="lock-btn" onclick="toggleLock()">LOCK</button>
+    <button class="btn-sec" onclick="clearAllEvents(false)">CLEAR ALL</button>
+    <button class="btn-sec danger" onclick="clearAllEvents(true)">CLEAR EVERYTHING</button>
+</div>
+
+<div class="modal" id="modal">
+    <div class="modal-content">
+        <h3 style="margin-bottom:16px;font-family:var(--head);font-size:20px">Edit Activity</h3>
+        <div style="margin-bottom:16px">
+            <label style="font-size:12px;color:var(--muted);display:block;margin-bottom:4px">Start time</label>
+            <input type="time" id="modal-time" style="width:100%;background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:12px;color:var(--text);font-size:16px">
+        </div>
+        <div style="display:flex;gap:10px">
+            <button onclick="closeModal()" style="flex:1;padding:14px;background:var(--card2);border:none;border-radius:12px;color:var(--text);font-weight:500;font-family:var(--mono)">Cancel</button>
+            <button onclick="saveModalEdit()" style="flex:1;padding:14px;background:var(--green);color:#0c0e0d;border:none;border-radius:12px;font-weight:500;font-family:var(--mono)">Save</button>
+        </div>
+        <button onclick="deleteCurrentEvent()" style="margin-top:10px;width:100%;padding:14px;background:var(--red);color:#fff;border:none;border-radius:12px;font-weight:500;font-family:var(--mono)">Delete</button>
+    </div>
+</div>
+
+<script>
+    // ─── CONFIGURATION ────────────────────────────────────────────────────────
+    // Replace this with your Cloudflare Worker URL once deployed
+    const WORKER_URL = 'https://exercise-brief.atoalh.workers.dev';
+    // ─────────────────────────────────────────────────────────────────────────
+
+    const exerciseTypes = [
+        {id:'stretch',   name:'Stretching',     color:'var(--orange)',    defaultTime:'12:00', duration:20},
+        {id:'easy-run',  name:'Easy Run',        color:'var(--run-easy)',  defaultTime:'17:30', duration:90},
+        {id:'tempo-run', name:'Tempo/Intervals', color:'var(--run-tempo)', defaultTime:'17:30', duration:90},
+        {id:'long-run',  name:'Long Run',        color:'var(--run-long)',  defaultTime:'17:30', duration:90},
+        {id:'sp-a',      name:'S&P A',           color:'var(--green)',     defaultTime:'12:25', duration:20},
+        {id:'sp-b',      name:'S&P B',           color:'var(--green)',     defaultTime:'12:25', duration:20},
+        {id:'jiu',       name:'Jiu-Jitsu',       color:'var(--blue)',      defaultTime:'19:15', duration:105}
+    ];
+
+    let currentEvents = {};
+    let isLocked = false;
+    let currentEditingDate = null;
+    let currentEditingIndex = null;
+    let targets = {runs:3, sp:2, stretch:7, jiu:2};
+    let selectedType = null;
+    let currentTab = 0;
+
+    // ─── DATE HELPERS ─────────────────────────────────────────────────────────
+    function getMonday(d) {
+        d = new Date(d);
+        const day = d.getDay();
+        d.setDate(d.getDate() - day + (day === 0 ? -6 : 1));
+        return d;
+    }
+    function formatKey(d) { return d.toISOString().split('T')[0]; }
+    function isToday(d) {
+        const t = new Date();
+        return d.getDate()===t.getDate() && d.getMonth()===t.getMonth() && d.getFullYear()===t.getFullYear();
+    }
+    function weekDates() {
+        const mon = getMonday(new Date());
+        return Array.from({length:7}, (_,i) => { const d=new Date(mon); d.setDate(d.getDate()+i); return d; });
+    }
+
+    // ─── LOCAL STORAGE ────────────────────────────────────────────────────────
+    function loadData() {
+        try {
+            const e = localStorage.getItem('exercisePlanner_events');
+            if (e) currentEvents = JSON.parse(e);
+            const t = localStorage.getItem('exercisePlanner_targets');
+            if (t) targets = { ...targets, ...JSON.parse(t) };
+        } catch(e) {}
+    }
+
+    function saveData() {
+        localStorage.setItem('exercisePlanner_events', JSON.stringify(currentEvents));
+        localStorage.setItem('exercisePlanner_targets', JSON.stringify(targets));
+        pushWeekToWorker();
+    }
+
+    // ─── CLOUDFLARE WORKER SYNC ───────────────────────────────────────────────
+    // Builds a full week map (excluding stretching, which is always daily)
+    // and pushes it to the Worker. Called on page load AND every save,
+    // so the Shortcut always has current data regardless of when it fires.
+    function pushWeekToWorker() {
+        if (!WORKER_URL || WORKER_URL.includes('YOUR-WORKER')) return;
+
+        const syncDot = document.getElementById('sync-dot');
+        syncDot.className = 'sync-dot syncing';
+
+        const dates = weekDates();
+        const weekPlan = {};
+        dates.forEach(date => {
+            const key = formatKey(date);
+            weekPlan[key] = (currentEvents[key] || [])
+                .filter(e => e.id !== 'stretch')
+                .map(e => e.name);
+        });
+
+        fetch(WORKER_URL + '/update', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ weekPlan })
+        })
+        .then(r => {
+            syncDot.className = 'sync-dot synced';
+            setTimeout(() => { syncDot.className = 'sync-dot'; }, 2000);
+        })
+        .catch(() => {
+            syncDot.className = 'sync-dot error';
+            setTimeout(() => { syncDot.className = 'sync-dot'; }, 3000);
+        });
+    }
+
+    // ─── STRETCHING ───────────────────────────────────────────────────────────
+    function ensureStretching(dates) {
+        dates.forEach(date => {
+            const key = formatKey(date);
+            if (!currentEvents[key]) currentEvents[key] = [];
+            if (!currentEvents[key].some(ev => ev.id === 'stretch')) {
+                currentEvents[key].push({id:'stretch', name:'Stretching', color:'var(--orange)', time:'12:00', duration:20});
+            }
+        });
+        saveData();
+    }
+
+    // ─── PALETTE ──────────────────────────────────────────────────────────────
+    function selectType(type, el) {
+        if (isLocked) return;
+        if (selectedType && selectedType.id === type.id) { deselect(); return; }
+        selectedType = type;
+        document.querySelectorAll('.draggable').forEach(d => d.classList.remove('selected'));
+        el.classList.add('selected');
+        updateDropState();
+    }
+    function deselect() {
+        selectedType = null;
+        document.querySelectorAll('.draggable').forEach(d => d.classList.remove('selected'));
+        updateDropState();
+    }
+    function updateDropState() {
+        document.querySelectorAll('.day-row').forEach(row => {
+            row.classList.toggle('droppable', !!selectedType && !isLocked);
+        });
+    }
+
+    function renderPalette() {
+        const container = document.getElementById('palette');
+        container.innerHTML = '';
+        exerciseTypes.forEach(type => {
+            const el = document.createElement('div');
+            el.className = 'draggable';
+            el.dataset.id = type.id;
+            el.innerHTML = `<div class="dot" style="background:${type.color}"></div><span>${type.name}</span>`;
+            el.addEventListener('click', e => { e.stopPropagation(); selectType(type, el); });
+            container.appendChild(el);
+        });
+    }
+
+    // ─── TODAY VIEW ───────────────────────────────────────────────────────────
+    function renderToday() {
+        const today = new Date();
+        const key = formatKey(today);
+        document.getElementById('today-header').textContent =
+            today.toLocaleString('en-GB', {weekday:'long', day:'numeric', month:'short'});
+
+        const container = document.getElementById('today-events');
+        container.innerHTML = '';
+        if (!currentEvents[key]) currentEvents[key] = [];
+        const sorted = [...currentEvents[key]].sort((a,b) => a.time.localeCompare(b.time));
+
+        if (sorted.length === 0) {
+            container.innerHTML = `<div class="today-empty">Select an activity below<br>then tap here to add it</div>`;
+        }
+        sorted.forEach((ev, i) => {
+            const card = document.createElement('div');
+            card.className = 'event-card';
+            card.innerHTML = `
+                <div class="event-bar" style="background:${ev.color}"></div>
+                <div class="event-content">
+                    <div class="event-time">${ev.time} · ${ev.duration} min</div>
+                    <div class="event-title">${ev.name}</div>
+                </div>`;
+            if (!isLocked) {
+                const del = document.createElement('button');
+                del.className = 'event-del';
+                del.textContent = '×';
+                del.onclick = e => { e.stopPropagation(); deleteEvent(key, i); };
+                card.appendChild(del);
+            }
+            card.onclick = () => { if (!isLocked) editEvent(key, i); };
+            container.appendChild(card);
+        });
+    }
+
+    // ─── WEEK VIEW ────────────────────────────────────────────────────────────
+    function renderWeek() {
+        const list = document.getElementById('week-list');
+        list.innerHTML = '';
+        const dates = weekDates();
+        ensureStretching(dates);
+
+        dates.forEach(date => {
+            const key = formatKey(date);
+            if (!currentEvents[key]) currentEvents[key] = [];
+            const sorted = [...currentEvents[key]].sort((a,b) => a.time.localeCompare(b.time));
+
+            const row = document.createElement('div');
+            row.className = `day-row${isToday(date) ? ' today-row' : ''}${selectedType && !isLocked ? ' droppable' : ''}`;
+            row.dataset.key = key;
+
+            const labelDiv = document.createElement('div');
+            labelDiv.className = 'day-label';
+            labelDiv.innerHTML = `
+                <div class="day-label-name">${date.toLocaleString('en-GB',{weekday:'short'})}</div>
+                <div class="day-label-date">${date.getDate()}</div>`;
+            row.appendChild(labelDiv);
+
+            const chipsDiv = document.createElement('div');
+            chipsDiv.className = 'day-chips';
+
+            sorted.forEach((ev, i) => {
+                const chip = document.createElement('div');
+                chip.className = 'chip';
+                chip.innerHTML = `<div class="chip-dot" style="background:${ev.color}"></div><span>${ev.name}</span>`;
+                chip.onclick = e => {
+                    if (isLocked) return;
+                    if (e.target.closest('.chip-del')) return;
+                    if (selectedType) { addEvent(key, selectedType); deselect(); return; }
+                    editEvent(key, i);
+                };
+                if (!isLocked) {
+                    const del = document.createElement('button');
+                    del.className = 'chip-del';
+                    del.innerHTML = '&times;';
+                    del.onclick = e => { e.stopPropagation(); deleteEvent(key, i); };
+                    chip.appendChild(del);
+                }
+                chipsDiv.appendChild(chip);
+            });
+
+            if (selectedType && !isLocked) {
+                const hint = document.createElement('div');
+                hint.className = 'add-hint';
+                hint.textContent = '+';
+                chipsDiv.appendChild(hint);
+            }
+
+            row.appendChild(chipsDiv);
+
+            row.addEventListener('click', e => {
+                if (isLocked || !selectedType) return;
+                if (e.target.closest('.chip') && !e.target.closest('.chip-del')) return;
+                addEvent(key, selectedType);
+                deselect();
+            });
+
+            list.appendChild(row);
+        });
+    }
+
+    // ─── TARGETS ──────────────────────────────────────────────────────────────
+    function renderTargets() {
+        const container = document.getElementById('targets');
+        const dates = weekDates();
+        let counts = {runs:0, sp:0, stretch:0, jiu:0};
+        dates.forEach(d => {
+            (currentEvents[formatKey(d)] || []).forEach(ev => {
+                if (['easy-run','tempo-run','long-run'].includes(ev.id)) counts.runs++;
+                else if (['sp-a','sp-b'].includes(ev.id)) counts.sp++;
+                else if (ev.id === 'stretch') counts.stretch++;
+                else if (ev.id === 'jiu') counts.jiu++;
+            });
+        });
+        const items = [
+            {key:'stretch', label:'Stretching', color:'var(--orange)'},
+            {key:'runs',    label:'Runs',        color:'var(--run-tempo)'},
+            {key:'sp',      label:'S&P',         color:'var(--green)'},
+            {key:'jiu',     label:'Jiu-Jitsu',   color:'var(--blue)'}
+        ];
+        container.innerHTML = items.map(item => {
+            const pct = targets[item.key] > 0 ? Math.min(100, Math.round(counts[item.key]/targets[item.key]*100)) : 0;
+            return `<div class="target-row">
+                <span class="target-name">${item.label}</span>
+                <div class="target-progress"><div class="target-fill" style="width:${pct}%;background:${item.color}"></div></div>
+                <span class="target-count">${counts[item.key]}/${targets[item.key]}</span>
+            </div>`;
+        }).join('');
+    }
+
+    // ─── EVENT CRUD ───────────────────────────────────────────────────────────
+    function addEvent(dateKey, type) {
+        if (!currentEvents[dateKey]) currentEvents[dateKey] = [];
+        currentEvents[dateKey].push({id:type.id, name:type.name, color:type.color, time:type.defaultTime, duration:type.duration});
+        saveData();
+        refresh();
+    }
+    function editEvent(dateKey, index) {
+        if (isLocked) return;
+        currentEditingDate = dateKey;
+        currentEditingIndex = index;
+        document.getElementById('modal-time').value = currentEvents[dateKey][index].time;
+        document.getElementById('modal').style.display = 'flex';
+    }
+    function saveModalEdit() {
+        if (!currentEditingDate || currentEditingIndex === null) return;
+        currentEvents[currentEditingDate][currentEditingIndex].time = document.getElementById('modal-time').value;
+        saveData();
+        closeModal();
+        refresh();
+    }
+    function deleteEvent(dateKey, index) {
+        currentEvents[dateKey].splice(index, 1);
+        saveData();
+        refresh();
+    }
+    function deleteCurrentEvent() {
+        if (!currentEditingDate || currentEditingIndex === null) return;
+        currentEvents[currentEditingDate].splice(currentEditingIndex, 1);
+        saveData();
+        closeModal();
+        refresh();
+    }
+    function closeModal() {
+        document.getElementById('modal').style.display = 'none';
+        currentEditingDate = currentEditingIndex = null;
+    }
+
+    function clearAllEvents(includeStretch) {
+        if (!confirm(includeStretch ? 'CLEAR EVERYTHING' : 'Clear all except stretching?')) return;
+        Object.keys(currentEvents).forEach(key => {
+            if (includeStretch) delete currentEvents[key];
+            else currentEvents[key] = currentEvents[key].filter(e => e.id === 'stretch');
+        });
+        saveData();
+        refresh();
+    }
+
+    // ─── UI ───────────────────────────────────────────────────────────────────
+    function toggleLock() {
+        isLocked = !isLocked;
+        const btn = document.getElementById('lock-btn');
+        btn.textContent = isLocked ? 'Unlock Entries' : 'Lock Entries';
+        btn.classList.toggle('unlocked', isLocked);
+        if (isLocked) deselect();
+        refresh();
+    }
+
+    function switchTab(n) {
+        currentTab = n;
+        document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.toggle('active', i===n));
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+        document.getElementById(n===0 ? 'view-today' : 'view-week').classList.add('active');
+        refresh();
+    }
+
+    function refresh() {
+        if (currentTab === 0) renderToday();
+        else { renderWeek(); renderTargets(); }
+    }
+
+    function setupTodayDropZone() {
+        const container = document.getElementById('today-events');
+        container.addEventListener('click', e => {
+            if (isLocked || !selectedType) return;
+            if (e.target.closest('.event-card')) return;
+            addEvent(formatKey(new Date()), selectedType);
+            deselect();
+        });
+    }
+
+    // ─── INIT ─────────────────────────────────────────────────────────────────
+    function init() {
+        loadData();
+        renderPalette();
+        ensureStretching(weekDates());
+        setupTodayDropZone();
+        refresh();
+        pushWeekToWorker(); // push full week on every page load — keeps Shortcut data fresh
+    }
+    window.onload = init;
+</script>
+</body>
+</html>
