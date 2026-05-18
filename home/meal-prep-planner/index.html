@@ -225,6 +225,50 @@ body { background: var(--bg); color: var(--text); font-family: 'DM Mono', monosp
 
 input[type="checkbox"] { accent-color: var(--alh); }
 
+
+/* RECIPE VIEW */
+.recipe-section{margin-top:28px;}
+.recipe-controls{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:18px;}
+.recipe-controls label{font-family:'Barlow Semi Condensed',sans-serif;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:0.8px;color:var(--header-bg);}
+.recipe-select{background:var(--surface);border:2px solid var(--border);border-radius:8px;padding:9px 14px;font-family:'Barlow',sans-serif;font-size:14px;font-weight:500;color:var(--text);min-width:280px;cursor:pointer;}
+.recipe-select:focus{outline:2px solid var(--alh);outline-offset:2px;}
+.recipe-empty{background:var(--surface);border:2px dashed var(--border);border-radius:10px;padding:32px;text-align:center;color:var(--text-muted);}
+.recipe-card{background:var(--surface);border:2px solid var(--border);border-radius:14px;overflow:hidden;}
+.recipe-header{padding:18px 22px;border-bottom:2px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+.recipe-title{font-family:'Barlow Semi Condensed',sans-serif;font-size:22px;font-weight:800;line-height:1.1;color:var(--header-bg);}
+.recipe-id{font-family:'DM Mono',monospace;font-size:11px;color:var(--text-muted);margin-bottom:3px;}
+.recipe-macros{display:flex;flex-direction:column;gap:4px;align-items:flex-end;}
+.recipe-macros .macro-row{font-size:12px;}
+.recipe-macros .macro-val{font-size:11px;}
+.recipe-body{padding:20px 22px;}
+.recipe-section-label{font-family:'Barlow Semi Condensed',sans-serif;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--header-bg);margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid var(--border);}
+.recipe-ing-table{width:100%;border-collapse:collapse;margin-bottom:22px;font-size:13px;}
+.recipe-ing-table th{padding:7px 10px;font-family:'Barlow Semi Condensed',sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;text-align:left;background:#F8F7F4;border-bottom:1px solid var(--border);}
+.recipe-ing-table th.col-alh{background:var(--alh-light);color:var(--alh-header);}
+.recipe-ing-table th.col-ato{background:var(--ato-light);color:var(--ato-header);}
+.recipe-ing-table td{padding:7px 10px;border-bottom:1px solid #F0EDE8;vertical-align:middle;}
+.recipe-ing-table td.amt{font-family:'DM Mono',monospace;font-size:12px;}
+.recipe-ing-table td.amt-alh{color:var(--alh);background:var(--alh-light);}
+.recipe-ing-table td.amt-ato{color:var(--ato);background:var(--ato-light);}
+.recipe-ing-table td.amt-taste{font-style:italic;color:var(--text-muted);font-family:'Barlow',sans-serif;}
+.recipe-note{background:#FEF3C7;border:1px solid rgba(245,158,11,.3);color:#92400E;border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:18px;font-style:italic;}
+.recipe-steps{display:flex;flex-direction:column;gap:12px;}
+.recipe-step{display:flex;gap:14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:12px 14px;}
+.recipe-step-num{flex:0 0 32px;height:32px;border-radius:50%;background:var(--header-bg);color:white;display:flex;align-items:center;justify-content:center;font-family:'Barlow Semi Condensed',sans-serif;font-weight:800;font-size:14px;}
+.recipe-step-content{flex:1;}
+.recipe-step-title{font-family:'Barlow Semi Condensed',sans-serif;font-size:14px;font-weight:700;color:var(--header-bg);margin-bottom:4px;letter-spacing:0.3px;}
+.recipe-step-text{font-size:13px;line-height:1.5;color:var(--text);}
+.recipe-tip{margin-top:18px;background:rgba(61,220,132,0.08);border-left:4px solid var(--alh);border-radius:8px;padding:12px 16px;font-size:13px;line-height:1.5;}
+.recipe-tip-label{font-family:'Barlow Semi Condensed',sans-serif;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--alh-header);margin-bottom:4px;}
+@media (max-width: 600px) {
+  .recipe-select{min-width:200px;width:100%;}
+  .recipe-controls{flex-direction:column;align-items:stretch;}
+  .recipe-header{flex-direction:column;}
+  .recipe-macros{align-items:flex-start;width:100%;}
+  .recipe-ing-table{font-size:12px;}
+  .recipe-ing-table th,.recipe-ing-table td{padding:6px 7px;}
+}
+
 </style>
 </head>
 <body>
@@ -272,6 +316,20 @@ input[type="checkbox"] { accent-color: var(--alh); }
     <hr class="divider" style="margin-top:0">
     <div class="section-title">Shop Plan <span class="sub" id="shop-plan-sub">Based on what you still need to buy</span></div>
     <div id="shop-plan-body"></div>
+  </div>
+
+
+  <!-- HOW TO COOK -->
+  <div class="recipe-section">
+    <hr class="divider" style="margin-top:0">
+    <div class="section-title">How to Cook <span class="sub">Pick a meal to see ingredients and step-by-step instructions</span></div>
+    <div class="recipe-controls">
+      <label for="recipe-select">Meal</label>
+      <select id="recipe-select" class="recipe-select" onchange="renderRecipe(this.value)">
+        <option value="">— Select a meal —</option>
+      </select>
+    </div>
+    <div id="recipe-display"></div>
   </div>
 
 </div>
@@ -397,384 +455,626 @@ const SHOP_EMOJI = {Aldi:"🧡",Lidl:"🔵","M&S":"💜",Tesco:"🔷",Asda:"🟢
 // ─── MEALS ─────────────────────────────────────────────────────────────────
 const MEALS=[
   {id:"001",name:"Smoky Beef & Bacon Pasta Bake",short:"Pasta Bake",carbGroup:"pasta",color:"#C62828",
-   alhMacros:{kcal:500,p:31,c:36,f:24},atoMacros:{kcal:800,p:49,c:58,f:39},
+   alhMacros:{kcal:505,p:40,c:43,f:18},atoMacros:{kcal:808,p:64,c:67,f:29},
    ingredients:[
-    {key:"lean-beef-mince",name:"Lean beef mince",cat:"meat",alh:{v:400,u:"g"},ato:{v:650,u:"g"}},
-    {key:"bacon-medallions",name:"Bacon medallions",cat:"meat",alh:{v:120,u:"g"},ato:{v:200,u:"g"}},
-    {key:"wholewheat-pasta",name:"Wholewheat pasta",cat:"dry",alh:{v:240,u:"g"},ato:{v:390,u:"g"}},
-    {key:"tomato-passata",name:"Tomato passata",cat:"sauce",alh:{v:400,u:"ml"},ato:{v:650,u:"ml"}},
-    {key:"block-cheddar",name:"Block cheddar",cat:"dairy",alh:{v:120,u:"g"},ato:{v:200,u:"g"}},
-    {key:"smoked-paprika",name:"Smoked paprika",cat:"spice",alh:{v:2.5,u:"tsp"},ato:{v:4.5,u:"tsp"}},
-    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:3,u:"pcs"},ato:{v:4,u:"pcs"}},
-    {key:"italian-herbs",name:"Italian herbs",cat:"pantry",taste:true},
-    {key:"black-pepper",name:"Black pepper",cat:"pantry",taste:true},
-  ]},
+    {key:"lean-beef-mince",name:"Lean beef mince",cat:"meat",alh:{v:450,u:"g"},ato:{v:700,u:"g"}},
+    {key:"bacon-medallions",name:"Bacon medallions",cat:"meat",alh:{v:130,u:"g"},ato:{v:225,u:"g"}},
+    {key:"wholewheat-pasta",name:"Wholewheat pasta",cat:"dry",alh:{v:275,u:"g"},ato:{v:425,u:"g"}},
+    {key:"tomato-passata",name:"Tomato passata",cat:"sauce",alh:{v:450,u:"ml"},ato:{v:700,u:"ml"}},
+    {key:"block-cheddar",name:"Block cheddar",cat:"dairy",alh:{v:130,u:"g"},ato:{v:225,u:"g"}},
+    {key:"smoked-paprika",name:"Smoked paprika",cat:"spice",alh:{v:3,u:"tsp"},ato:{v:5,u:"tsp"}},
+    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:3,u:"pcs"},ato:{v:4,u:"pcs"}}
+   ],
+   steps:[
+    {title:"Preheat oven",text:"Preheat oven to 200\u00b0C (180\u00b0C fan). Boil a large pan of salted water."},
+    {title:"Brown the meat",text:"Heat a large oven-safe pan over high heat. Brown the lean beef mince in batches with a pinch of salt for 5–6 minutes until well caramelised. Add chopped bacon and cook for a further 3 minutes."},
+    {title:"Build the sauce",text:"Add minced garlic, smoked paprika and Italian herbs. Stir for 30 seconds. Pour in the tomato passata and a splash of water. Simmer for 10 minutes until thickened. Season with black pepper."},
+    {title:"Cook the pasta",text:"Cook the wholewheat pasta in the boiling salted water for 2 minutes less than packet says (it'll finish in the oven). Drain, reserving a cup of pasta water."},
+    {title:"Combine and bake",text:"Stir the pasta through the sauce, adding pasta water as needed. Top with grated cheddar. Bake for 15–20 minutes until bubbling and golden."},
+    {title:"Portion up",text:"Cool slightly, then divide into 5 containers \u2014 weigh ALH and ATO portions separately for accuracy."}
+   ],
+   tip:"If using a heavy cast-iron pan, you can do the whole thing in one pot \u2014 saves washing up."},
   {id:"002",name:"Harissa Turkey, Potato & Egg",short:"Harissa Turkey",carbGroup:"potato",color:"#7B1FA2",
-   alhMacros:{kcal:500,p:36,c:34,f:22},atoMacros:{kcal:800,p:58,c:55,f:34},
+   alhMacros:{kcal:493,p:50,c:41,f:14},atoMacros:{kcal:760,p:74,c:64,f:22},
    ingredients:[
-    {key:"turkey-mince",name:"Turkey mince",cat:"meat",alh:{v:430,u:"g"},ato:{v:690,u:"g"}},
-    {key:"white-potatoes",name:"White potatoes",cat:"produce",alh:{v:600,u:"g"},ato:{v:960,u:"g"}},
-    {key:"eggs",name:"Eggs",cat:"produce",alh:{v:4,u:"pcs"},ato:{v:7,u:"pcs"}},
-    {key:"tomato-puree",name:"Tomato puree",cat:"sauce",alh:{v:2.5,u:"tsp"},ato:{v:4.5,u:"tsp"}},
+    {key:"turkey-mince",name:"Turkey mince",cat:"meat",alh:{v:800,u:"g"},ato:{v:1100,u:"g"}},
+    {key:"white-potatoes",name:"White potatoes",cat:"produce",alh:{v:1125,u:"g"},ato:{v:1750,u:"g"}},
+    {key:"eggs",name:"Eggs",cat:"produce",alh:{v:7,u:"pcs"},ato:{v:13,u:"pcs"}},
+    {key:"tomato-puree",name:"Tomato puree",cat:"sauce",alh:{v:4.5,u:"tsp"},ato:{v:8,u:"tsp"}},
     {key:"fresh-red-chilli",name:"Fresh red chilli",cat:"produce",alh:{v:1,u:"pcs"},ato:{v:2,u:"pcs"}},
-    {key:"smoked-paprika",name:"Smoked paprika",cat:"spice",alh:{v:1,u:"tsp"},ato:{v:1.5,u:"tsp"}},
-    {key:"ground-cumin",name:"Ground cumin",cat:"spice",alh:{v:1,u:"tsp"},ato:{v:1.5,u:"tsp"}},
-    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:3,u:"pcs"},ato:{v:4,u:"pcs"}},
-  ]},
+    {key:"smoked-paprika",name:"Smoked paprika",cat:"spice",alh:{v:2,u:"tsp"},ato:{v:2.5,u:"tsp"}},
+    {key:"ground-cumin",name:"Ground cumin",cat:"spice",alh:{v:2,u:"tsp"},ato:{v:2.5,u:"tsp"}},
+    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:3,u:"pcs"},ato:{v:4,u:"pcs"}}
+   ],
+   steps:[
+    {title:"Boil potatoes",text:"Chop the white potatoes into 2cm chunks. Boil in salted water for 12–15 minutes until just tender. Drain and set aside."},
+    {title:"Brown the turkey",text:"Heat oil in a large pan. Brown the turkey mince over high heat for 6–8 minutes, breaking it up as it cooks."},
+    {title:"Add spice base",text:"Add minced garlic, sliced fresh red chilli, smoked paprika, ground cumin and tomato puree. Stir and cook for 2 minutes."},
+    {title:"Combine with potatoes",text:"Add the cooked potatoes to the pan. Toss gently to coat in the spiced turkey. Cook for 3–4 minutes."},
+    {title:"Cook the eggs",text:"In a separate non-stick pan, fry the eggs to your liking (runny yolk works well with this dish)."},
+    {title:"Portion up",text:"Divide the turkey and potato mix across 5 containers. Top with a fried egg per portion."}
+   ],
+   tip:"If meal prepping, store eggs separately and fry fresh each day \u2014 pre-cooked eggs go rubbery when reheated."},
   {id:"003",name:"Chicken Meatballs with Creamy Mash",short:"Meatball Mash",carbGroup:"potato",color:"#1565C0",
-   alhMacros:{kcal:500,p:30,c:39,f:23},atoMacros:{kcal:800,p:47,c:63,f:37},
+   alhMacros:{kcal:504,p:42,c:46,f:16},atoMacros:{kcal:760,p:60,c:73,f:25},
    ingredients:[
-    {key:"minced-chicken",name:"Minced chicken",cat:"meat",alh:{v:410,u:"g"},ato:{v:650,u:"g"}},
-    {key:"white-potatoes",name:"White potatoes",cat:"produce",alh:{v:650,u:"g"},ato:{v:1050,u:"g"}},
-    {key:"creme-fraiche",name:"Crème fraîche",cat:"dairy",alh:{v:80,u:"g"},ato:{v:130,u:"g"}},
-    {key:"butter",name:"Butter",cat:"dairy",alh:{v:15,u:"g"},ato:{v:25,u:"g"}},
-    {key:"semi-skimmed-milk",name:"Semi-skimmed milk",cat:"dairy",alh:{v:40,u:"ml"},ato:{v:65,u:"ml"}},
-    {key:"wholegrain-mustard",name:"Wholegrain mustard",cat:"sauce",alh:{v:1,u:"tsp"},ato:{v:1.5,u:"tsp"}},
-    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:3,u:"pcs"},ato:{v:4,u:"pcs"}},
-    {key:"fresh-parsley",name:"Fresh parsley",cat:"pantry",taste:true},
-  ]},
+    {key:"minced-chicken",name:"Minced chicken",cat:"meat",alh:{v:800,u:"g"},ato:{v:1100,u:"g"}},
+    {key:"white-potatoes",name:"White potatoes",cat:"produce",alh:{v:1275,u:"g"},ato:{v:2025,u:"g"}},
+    {key:"creme-fraiche",name:"Crème fraîche",cat:"dairy",alh:{v:160,u:"g"},ato:{v:250,u:"g"}},
+    {key:"butter",name:"Butter",cat:"dairy",alh:{v:30,u:"g"},ato:{v:50,u:"g"}},
+    {key:"semi-skimmed-milk",name:"Semi-skimmed milk",cat:"dairy",alh:{v:80,u:"ml"},ato:{v:125,u:"ml"}},
+    {key:"wholegrain-mustard",name:"Wholegrain mustard",cat:"sauce",alh:{v:2,u:"tsp"},ato:{v:3,u:"tsp"}},
+    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:3,u:"pcs"},ato:{v:4,u:"pcs"}}
+   ],
+   steps:[
+    {title:"Boil potatoes",text:"Chop the white potatoes into 3cm chunks. Boil in salted water for 18–20 minutes until very tender."},
+    {title:"Shape and cook meatballs",text:"While potatoes cook, season the minced chicken with salt, pepper and minced garlic. Shape into 30–40 small meatballs. Fry in a non-stick pan over medium-high heat for 8–10 minutes, turning frequently, until golden and cooked through."},
+    {title:"Make the mash",text:"Drain the potatoes and return to the pan. Mash with the butter and warmed semi-skimmed milk until smooth. Stir through the crème fraîche, wholegrain mustard and a pinch of salt."},
+    {title:"Finish",text:"Add the meatballs to the creamy mash to warm through, or serve alongside. Scatter with fresh parsley if using."},
+    {title:"Portion up",text:"Weigh out 5 portions into containers. Mash on the bottom, meatballs on top."}
+   ],
+   tip:"Use floury potatoes (Maris Piper) for the best mash texture. Make meatballs a uniform size for even cooking."},
   {id:"004",name:"Sticky Noodle Bowl with Turkey & Bacon",short:"Sticky Noodles",carbGroup:"noodles",color:"#00897B",
-   alhMacros:{kcal:500,p:32,c:45,f:16},atoMacros:{kcal:800,p:51,c:73,f:26},
+   alhMacros:{kcal:502,p:46,c:62,f:8},atoMacros:{kcal:796,p:73,c:99,f:12},
    ingredients:[
-    {key:"turkey-breast-strips",name:"Turkey breast strips",cat:"meat",alh:{v:360,u:"g"},ato:{v:580,u:"g"}},
-    {key:"bacon-medallions",name:"Bacon medallions",cat:"meat",alh:{v:90,u:"g"},ato:{v:145,u:"g"}},
-    {key:"egg-noodles",name:"Egg noodles",cat:"dry",alh:{v:225,u:"g"},ato:{v:360,u:"g"}},
-    {key:"soy-sauce",name:"Soy sauce",cat:"sauce",alh:{v:5.5,u:"tsp"},ato:{v:9,u:"tsp"}},
-    {key:"honey",name:"Honey",cat:"sauce",alh:{v:2.5,u:"tsp"},ato:{v:4.5,u:"tsp"}},
-    {key:"sesame-oil",name:"Sesame oil",cat:"sauce",alh:{v:1,u:"tsp"},ato:{v:1.5,u:"tsp"}},
+    {key:"turkey-breast-strips",name:"Turkey breast strips",cat:"meat",alh:{v:625,u:"g"},ato:{v:1000,u:"g"}},
+    {key:"bacon-medallions",name:"Bacon medallions",cat:"meat",alh:{v:160,u:"g"},ato:{v:250,u:"g"}},
+    {key:"egg-noodles",name:"Egg noodles",cat:"dry",alh:{v:400,u:"g"},ato:{v:625,u:"g"}},
+    {key:"soy-sauce",name:"Soy sauce",cat:"sauce",alh:{v:9.5,u:"tsp"},ato:{v:15.5,u:"tsp"}},
+    {key:"honey",name:"Honey",cat:"sauce",alh:{v:4.5,u:"tsp"},ato:{v:8,u:"tsp"}},
+    {key:"sesame-oil",name:"Sesame oil",cat:"sauce",alh:{v:1.5,u:"tsp"},ato:{v:2.5,u:"tsp"}},
     {key:"spring-onions",name:"Spring onions",cat:"produce",alh:{v:1,u:"pcs"},ato:{v:2,u:"pcs"}},
-    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:2,u:"pcs"},ato:{v:3,u:"pcs"}},
-    {key:"fresh-ginger",name:"Fresh ginger",cat:"pantry",taste:true},
-    {key:"sesame-seeds",name:"Sesame seeds",cat:"pantry",taste:true},
-  ]},
+    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:2,u:"pcs"},ato:{v:3,u:"pcs"}}
+   ],
+   steps:[
+    {title:"Cook noodles",text:"Cook egg noodles according to packet instructions. Drain, rinse under cold water and toss with a splash of sesame oil. Set aside."},
+    {title:"Crisp the bacon",text:"Heat a wok over high heat. Add chopped bacon medallions and cook until crisp, about 4 minutes. Remove and set aside."},
+    {title:"Stir-fry the turkey",text:"In the same wok, stir-fry the turkey strips for 6–7 minutes until cooked through and lightly golden. Add minced garlic and grated ginger for the last 30 seconds."},
+    {title:"Make the glaze",text:"Add soy sauce and honey to the wok. Toss with the turkey for 1–2 minutes until sticky."},
+    {title:"Combine",text:"Return the bacon to the wok. Add the cooked noodles and toss everything together over high heat for 1 minute. Drizzle with sesame oil."},
+    {title:"Portion up",text:"Divide into 5 containers. Top with sliced spring onions and a sprinkle of sesame seeds."}
+   ],
+   tip:"Get the wok properly hot before adding the turkey \u2014 high heat is the difference between stir-fried and stewed."},
   {id:"005",name:"Creamy Turkey & Bacon Pasta",short:"Creamy Pasta",carbGroup:"pasta",color:"#E91E63",
-   alhMacros:{kcal:500,p:33,c:37,f:19},atoMacros:{kcal:800,p:53,c:60,f:31},
+   alhMacros:{kcal:502,p:41,c:49,f:15},atoMacros:{kcal:790,p:66,c:75,f:23},
    ingredients:[
-    {key:"turkey-mince",name:"Turkey mince",cat:"meat",alh:{v:415,u:"g"},ato:{v:670,u:"g"}},
-    {key:"bacon-medallions",name:"Bacon medallions",cat:"meat",alh:{v:80,u:"g"},ato:{v:130,u:"g"}},
-    {key:"fusilli-penne",name:"Fusilli / Penne",cat:"dry",alh:{v:250,u:"g"},ato:{v:400,u:"g"}},
-    {key:"creme-fraiche",name:"Crème fraîche",cat:"dairy",alh:{v:125,u:"g"},ato:{v:200,u:"g"}},
-    {key:"parmesan",name:"Parmesan",cat:"dairy",alh:{v:40,u:"g"},ato:{v:65,u:"g"}},
-    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:2,u:"pcs"},ato:{v:4,u:"pcs"}},
-    {key:"black-pepper",name:"Black pepper",cat:"pantry",taste:true},
-    {key:"fresh-parsley",name:"Fresh parsley",cat:"pantry",taste:true},
-  ]},
+    {key:"turkey-mince",name:"Turkey mince",cat:"meat",alh:{v:525,u:"g"},ato:{v:850,u:"g"}},
+    {key:"bacon-medallions",name:"Bacon medallions",cat:"meat",alh:{v:100,u:"g"},ato:{v:160,u:"g"}},
+    {key:"fusilli-penne",name:"Fusilli / Penne",cat:"dry",alh:{v:325,u:"g"},ato:{v:500,u:"g"}},
+    {key:"creme-fraiche",name:"Crème fraîche",cat:"dairy",alh:{v:160,u:"g"},ato:{v:250,u:"g"}},
+    {key:"parmesan",name:"Parmesan",cat:"dairy",alh:{v:50,u:"g"},ato:{v:80,u:"g"}},
+    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:2,u:"pcs"},ato:{v:4,u:"pcs"}}
+   ],
+   steps:[
+    {title:"Cook pasta",text:"Cook fusilli or penne in well-salted water until al dente. Reserve a cup of pasta water before draining."},
+    {title:"Crisp the bacon",text:"Chop bacon medallions and fry in a large pan over medium-high heat until crisp. Remove and set aside."},
+    {title:"Brown the turkey",text:"In the same pan, brown the turkey mince for 6–8 minutes. Add minced garlic for the last 30 seconds."},
+    {title:"Make creamy sauce",text:"Reduce heat to low. Stir in the crème fraîche and a splash of pasta water to loosen. Add grated parmesan and black pepper. Simmer gently for 2 minutes."},
+    {title:"Combine",text:"Return the bacon to the pan. Toss the cooked pasta through the sauce, adding more pasta water if it looks dry. Finish with fresh parsley."},
+    {title:"Portion up",text:"Divide across 5 containers."}
+   ],
+   tip:"Don't let the crème fraîche boil hard \u2014 keep heat low to prevent splitting."},
   {id:"006",name:"BBQ Chicken Breast & Potato Traybake",short:"BBQ Traybake",carbGroup:"potato",color:"#F57C00",
-   alhMacros:{kcal:500,p:33,c:32,f:17},atoMacros:{kcal:800,p:53,c:51,f:28},
+   alhMacros:{kcal:494,p:54,c:53,f:8},atoMacros:{kcal:669,p:59,c:80,f:13},
    ingredients:[
-    {key:"chicken-breast",name:"Chicken breast",cat:"meat",alh:{v:475,u:"g"},ato:{v:760,u:"g"}},
-    {key:"white-potatoes",name:"White potatoes",cat:"produce",alh:{v:550,u:"g"},ato:{v:890,u:"g"}},
+    {key:"chicken-breast",name:"Chicken breast",cat:"meat",alh:{v:1050,u:"g"},ato:{v:1100,u:"g"}},
+    {key:"white-potatoes",name:"White potatoes",cat:"produce",alh:{v:1200,u:"g"},ato:{v:1900,u:"g"}},
     {key:"mixed-peppers",name:"Mixed peppers",cat:"produce",alh:{v:1,u:"pcs"},ato:{v:2,u:"pcs"}},
-    {key:"bbq-sauce",name:"BBQ sauce",cat:"sauce",alh:{v:100,u:"g"},ato:{v:125,u:"g"}},
-    {key:"olive-oil",name:"Olive oil",cat:"sauce",alh:{v:2,u:"tsp"},ato:{v:4.5,u:"tsp"}},
-    {key:"smoked-paprika",name:"Smoked paprika",cat:"spice",alh:{v:1,u:"tsp"},ato:{v:1.5,u:"tsp"}},
-    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:2,u:"pcs"},ato:{v:3,u:"pcs"}},
-  ]},
+    {key:"bbq-sauce",name:"BBQ sauce",cat:"sauce",alh:{v:225,u:"g"},ato:{v:275,u:"g"}},
+    {key:"olive-oil",name:"Olive oil",cat:"sauce",alh:{v:4.5,u:"tsp"},ato:{v:9.5,u:"tsp"}},
+    {key:"smoked-paprika",name:"Smoked paprika",cat:"spice",alh:{v:2,u:"tsp"},ato:{v:3,u:"tsp"}},
+    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:2,u:"pcs"},ato:{v:3,u:"pcs"}}
+   ],
+   steps:[
+    {title:"Preheat oven",text:"Preheat oven to 200\u00b0C (180\u00b0C fan). Line a large baking tray with foil."},
+    {title:"Prep potatoes",text:"Chop white potatoes into bite-sized chunks and mixed peppers into strips. Toss in a bowl with olive oil, smoked paprika, minced garlic and salt. Spread across the tray in a single layer."},
+    {title:"Coat the chicken",text:"Slice chicken breast into 2cm-thick strips. Coat thoroughly in the BBQ sauce, ensuring every piece is well covered."},
+    {title:"Assemble and roast",text:"Nestle the BBQ chicken among the potatoes and peppers. Roast for 30–35 minutes, turning the potatoes halfway, until chicken is cooked and potatoes are golden."},
+    {title:"Portion up",text:"Allow to cool slightly. Divide across 5 containers \u2014 weigh the potato/pepper mix and chicken portions separately for ALH and ATO."}
+   ],
+   tip:"Parboil the potatoes for 6 minutes first if you want extra-crispy edges. Use a fan-bake setting for best results."},
   {id:"007",name:"Asian Beef & Noodle Stir-Fry",short:"Beef Stir-Fry",carbGroup:"noodles",color:"#388E3C",
-   alhMacros:{kcal:500,p:30,c:41,f:20},atoMacros:{kcal:800,p:48,c:66,f:32},
+   alhMacros:{kcal:497,p:40,c:52,f:13},atoMacros:{kcal:768,p:59,c:85,f:20},
    ingredients:[
-    {key:"lean-beef-mince",name:"Lean beef mince",cat:"meat",alh:{v:400,u:"g"},ato:{v:630,u:"g"}},
-    {key:"egg-noodles",name:"Egg noodles",cat:"dry",alh:{v:200,u:"g"},ato:{v:320,u:"g"}},
-    {key:"soy-sauce",name:"Soy sauce",cat:"sauce",alh:{v:5,u:"tsp"},ato:{v:7.5,u:"tsp"}},
-    {key:"oyster-sauce",name:"Oyster sauce",cat:"sauce",alh:{v:5,u:"tsp"},ato:{v:7.5,u:"tsp"}},
-    {key:"sesame-oil",name:"Sesame oil",cat:"sauce",alh:{v:1,u:"tsp"},ato:{v:1.5,u:"tsp"}},
-    {key:"chilli-flakes",name:"Chilli flakes",cat:"spice",alh:{v:1,u:"tsp"},ato:{v:1.5,u:"tsp"}},
-    {key:"spring-onions",name:"Spring onions",cat:"produce",alh:{v:2,u:"pcs"},ato:{v:3,u:"pcs"}},
-    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:3,u:"pcs"},ato:{v:4,u:"pcs"}},
-    {key:"fresh-ginger",name:"Fresh ginger",cat:"pantry",taste:true},
-  ]},
-  {id:"008",name:"Cajun Chicken & Rice Bowl",short:"Cajun Chicken",carbGroup:"rice",color:"#5D4037",
-   alhMacros:{kcal:500,p:37,c:47,f:15},atoMacros:{kcal:800,p:60,c:75,f:24},
-   ingredients:[
-    {key:"chicken-breast",name:"Chicken breast",cat:"meat",alh:{v:510,u:"g"},ato:{v:810,u:"g"}},
-    {key:"long-grain-rice",name:"Long-grain rice",cat:"dry",alh:{v:255,u:"g"},ato:{v:400,u:"g"}},
-    {key:"chicken-stock",name:"Chicken stock",cat:"sauce",alh:{v:170,u:"ml"},ato:{v:270,u:"ml"}},
-    {key:"red-peppers",name:"Red peppers",cat:"produce",alh:{v:1,u:"pcs"},ato:{v:2,u:"pcs"}},
-    {key:"cajun-spice",name:"Cajun spice",cat:"spice",alh:{v:2.5,u:"tsp"},ato:{v:4.5,u:"tsp"}},
-    {key:"tomato-puree",name:"Tomato puree",cat:"sauce",alh:{v:2.5,u:"tsp"},ato:{v:4.5,u:"tsp"}},
-    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:2,u:"pcs"},ato:{v:4,u:"pcs"}},
-  ]},
-  {id:"009",name:"Teriyaki Turkey & Udon Stir-Fry",short:"Teriyaki Turkey",carbGroup:"noodles",color:"#0288D1",
-   alhMacros:{kcal:500,p:38,c:54,f:13},atoMacros:{kcal:800,p:60,c:86,f:21},
-   ingredients:[
-    {key:"turkey-breast-strips",name:"Turkey breast strips",cat:"meat",alh:{v:445,u:"g"},ato:{v:710,u:"g"}},
-    {key:"udon-noodles",name:"Udon noodles",cat:"dry",alh:{v:270,u:"g"},ato:{v:430,u:"g"}},
-    {key:"teriyaki-sauce",name:"Teriyaki sauce",cat:"sauce",alh:{v:80,u:"ml"},ato:{v:130,u:"ml"}},
-    {key:"sesame-oil",name:"Sesame oil",cat:"sauce",alh:{v:1,u:"tsp"},ato:{v:1.5,u:"tsp"}},
-    {key:"sesame-seeds",name:"Sesame seeds",cat:"spice",alh:{v:3,u:"tsp"},ato:{v:6,u:"tsp"}},
-    {key:"spring-onions",name:"Spring onions",cat:"produce",alh:{v:3,u:"pcs"},ato:{v:5,u:"pcs"}},
-    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:2,u:"pcs"},ato:{v:3,u:"pcs"}},
-    {key:"fresh-ginger",name:"Fresh ginger",cat:"pantry",taste:true},
-  ]},
-  {id:"010",name:"Beef & Sweet Potato Chilli",short:"Beef Chilli",carbGroup:"other",color:"#D81B60",
-   alhMacros:{kcal:500,p:33,c:45,f:16},atoMacros:{kcal:800,p:52,c:72,f:26},
-   ingredients:[
-    {key:"lean-beef-mince",name:"Lean beef mince",cat:"meat",alh:{v:410,u:"g"},ato:{v:660,u:"g"}},
-    {key:"sweet-potato",name:"Sweet potato",cat:"produce",alh:{v:325,u:"g"},ato:{v:525,u:"g"}},
-    {key:"chopped-tomatoes",name:"Chopped tomatoes",cat:"sauce",alh:{v:1,u:"cans"},ato:{v:1.5,u:"cans"}},
-    {key:"red-peppers",name:"Red peppers",cat:"produce",alh:{v:1,u:"pcs"},ato:{v:2,u:"pcs"}},
-    {key:"tomato-puree",name:"Tomato puree",cat:"sauce",alh:{v:2.5,u:"tsp"},ato:{v:4.5,u:"tsp"}},
-    {key:"chilli-powder",name:"Chilli powder",cat:"spice",alh:{v:2.5,u:"tsp"},ato:{v:4.5,u:"tsp"}},
-    {key:"ground-cumin",name:"Ground cumin",cat:"spice",alh:{v:1,u:"tsp"},ato:{v:1.5,u:"tsp"}},
-    {key:"paprika",name:"Paprika",cat:"spice",alh:{v:1,u:"tsp"},ato:{v:1.5,u:"tsp"}},
-    {key:"block-cheddar",name:"Block cheddar",cat:"dairy",alh:{v:40,u:"g"},ato:{v:65,u:"g"}},
-    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:3,u:"pcs"},ato:{v:4,u:"pcs"}},
-  ]},
-  {id:"011",name:"Garlic Butter Chicken Breast Gnocchi",short:"Chicken Gnocchi",carbGroup:"other",color:"#6A1B9A",
-   alhMacros:{kcal:500,p:36,c:39,f:17},atoMacros:{kcal:800,p:58,c:63,f:28},
-   ingredients:[
-    {key:"chicken-breast",name:"Chicken breast",cat:"meat",alh:{v:470,u:"g"},ato:{v:750,u:"g"}},
-    {key:"gnocchi",name:"Gnocchi",cat:"dry",alh:{v:390,u:"g"},ato:{v:625,u:"g"}},
-    {key:"butter",name:"Butter",cat:"dairy",alh:{v:20,u:"g"},ato:{v:35,u:"g"}},
-    {key:"parmesan",name:"Parmesan",cat:"dairy",alh:{v:25,u:"g"},ato:{v:40,u:"g"}},
-    {key:"spinach",name:"Spinach",cat:"produce",alh:{v:60,u:"g"},ato:{v:95,u:"g"}},
-    {key:"chicken-stock",name:"Chicken stock",cat:"sauce",alh:{v:80,u:"ml"},ato:{v:125,u:"ml"}},
-    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:3,u:"pcs"},ato:{v:4,u:"pcs"}},
-    {key:"fresh-parsley",name:"Fresh parsley",cat:"pantry",taste:true},
-  ]},
-  {id:"012",name:"Chipotle Pulled Chicken & Rice",short:"Chipotle Chicken",carbGroup:"rice",color:"#BF360C",
-   alhMacros:{kcal:500,p:37,c:48,f:13},atoMacros:{kcal:800,p:58,c:78,f:21},
-   ingredients:[
-    {key:"chicken-breast",name:"Chicken breast",cat:"meat",alh:{v:500,u:"g"},ato:{v:800,u:"g"}},
-    {key:"long-grain-rice",name:"Long-grain rice",cat:"dry",alh:{v:250,u:"g"},ato:{v:400,u:"g"}},
-    {key:"chicken-stock",name:"Chicken stock",cat:"sauce",alh:{v:165,u:"ml"},ato:{v:270,u:"ml"}},
-    {key:"chipotle-chilli-powder",name:"Chipotle paste",cat:"spice",alh:{v:1.5,u:"tsp"},ato:{v:2.5,u:"tsp"}},
-    {key:"red-peppers",name:"Red peppers",cat:"produce",alh:{v:1,u:"pcs"},ato:{v:2,u:"pcs"}},
-    {key:"smoked-paprika",name:"Smoked paprika",cat:"spice",alh:{v:1,u:"tsp"},ato:{v:1.5,u:"tsp"}},
-    {key:"tomato-puree",name:"Tomato puree",cat:"sauce",alh:{v:2.5,u:"tsp"},ato:{v:4.5,u:"tsp"}},
-    {key:"ground-cumin",name:"Ground cumin",cat:"spice",alh:{v:1,u:"tsp"},ato:{v:1.5,u:"tsp"}},
-    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:3,u:"pcs"},ato:{v:4,u:"pcs"}},
-  ]},
-  {id:"013",name:"Pesto Chicken & Orzo",short:"Pesto Orzo",carbGroup:"pasta",color:"#2E7D32",
-   alhMacros:{kcal:500,p:36,c:38,f:18},atoMacros:{kcal:800,p:58,c:61,f:29},
-   ingredients:[
-    {key:"chicken-breast",name:"Chicken breast",cat:"meat",alh:{v:490,u:"g"},ato:{v:790,u:"g"}},
-    {key:"orzo",name:"Orzo",cat:"dry",alh:{v:230,u:"g"},ato:{v:370,u:"g"}},
-    {key:"green-pesto",name:"Green pesto",cat:"sauce",alh:{v:60,u:"g"},ato:{v:80,u:"g"}},
-    {key:"parmesan",name:"Parmesan",cat:"dairy",alh:{v:35,u:"g"},ato:{v:55,u:"g"}},
-    {key:"spinach",name:"Spinach",cat:"produce",alh:{v:80,u:"g"},ato:{v:130,u:"g"}},
-    {key:"chicken-stock",name:"Chicken stock",cat:"sauce",alh:{v:165,u:"ml"},ato:{v:265,u:"ml"}},
-    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:2,u:"pcs"},ato:{v:3,u:"pcs"}},
-  ]},
-  {id:"014",name:"Honey Garlic Salmon & Rice",short:"Honey Salmon",carbGroup:"rice",color:"#00838F",
-   alhMacros:{kcal:500,p:35,c:43,f:15},atoMacros:{kcal:800,p:56,c:70,f:24},
-   ingredients:[
-    {key:"salmon-fillets",name:"Salmon fillets",cat:"meat",alh:{v:415,u:"g"},ato:{v:665,u:"g"}},
-    {key:"long-grain-rice",name:"Long-grain rice",cat:"dry",alh:{v:235,u:"g"},ato:{v:375,u:"g"}},
-    {key:"honey",name:"Honey",cat:"sauce",alh:{v:2.5,u:"tsp"},ato:{v:4.5,u:"tsp"}},
-    {key:"soy-sauce",name:"Soy sauce",cat:"sauce",alh:{v:3,u:"tsp"},ato:{v:6,u:"tsp"}},
-    {key:"sesame-oil",name:"Sesame oil",cat:"sauce",alh:{v:1,u:"tsp"},ato:{v:1.5,u:"tsp"}},
-    {key:"spring-onions",name:"Spring onions",cat:"produce",alh:{v:2,u:"pcs"},ato:{v:3,u:"pcs"}},
-    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:2,u:"pcs"},ato:{v:3,u:"pcs"}},
-    {key:"sesame-seeds",name:"Sesame seeds",cat:"pantry",taste:true},
-  ]},
-  {id:"015",name:"Soy Glazed Pork & Noodles",short:"Soy Pork",carbGroup:"noodles",color:"#6D4C41",
-   alhMacros:{kcal:500,p:33,c:44,f:16},atoMacros:{kcal:800,p:54,c:70,f:25},
-   ingredients:[
-    {key:"pork-mince",name:"Pork mince",cat:"meat",alh:{v:440,u:"g"},ato:{v:700,u:"g"}},
-    {key:"egg-noodles",name:"Egg noodles",cat:"dry",alh:{v:220,u:"g"},ato:{v:350,u:"g"}},
-    {key:"soy-sauce",name:"Soy sauce",cat:"sauce",alh:{v:4,u:"tsp"},ato:{v:6,u:"tsp"}},
-    {key:"hoisin-sauce",name:"Hoisin sauce",cat:"sauce",alh:{v:3,u:"tsp"},ato:{v:4.5,u:"tsp"}},
-    {key:"sesame-oil",name:"Sesame oil",cat:"sauce",alh:{v:1,u:"tsp"},ato:{v:1.5,u:"tsp"}},
-    {key:"spring-onions",name:"Spring onions",cat:"produce",alh:{v:2,u:"pcs"},ato:{v:3,u:"pcs"}},
-    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:2,u:"pcs"},ato:{v:3,u:"pcs"}},
-    {key:"fresh-ginger",name:"Fresh ginger",cat:"pantry",taste:true},
-  ]},
-  {id:"016",name:"Chicken & Chorizo Rice",short:"Chorizo Rice",carbGroup:"rice",color:"#AD1457",
-   alhMacros:{kcal:500,p:35,c:42,f:15},atoMacros:{kcal:800,p:57,c:68,f:23},
-   ingredients:[
-    {key:"chicken-breast",name:"Chicken breast",cat:"meat",alh:{v:400,u:"g"},ato:{v:650,u:"g"}},
-    {key:"fresh-cooking-chorizo",name:"Fresh cooking chorizo",cat:"meat",alh:{v:80,u:"g"},ato:{v:130,u:"g"}},
-    {key:"long-grain-rice",name:"Long-grain rice",cat:"dry",alh:{v:225,u:"g"},ato:{v:365,u:"g"}},
-    {key:"chopped-tomatoes",name:"Chopped tomatoes",cat:"sauce",alh:{v:1,u:"cans"},ato:{v:1.5,u:"cans"}},
-    {key:"red-peppers",name:"Red peppers",cat:"produce",alh:{v:1,u:"pcs"},ato:{v:2,u:"pcs"}},
-    {key:"chicken-stock",name:"Chicken stock",cat:"sauce",alh:{v:120,u:"ml"},ato:{v:200,u:"ml"}},
-    {key:"smoked-paprika",name:"Smoked paprika",cat:"spice",alh:{v:1,u:"tsp"},ato:{v:1.5,u:"tsp"}},
-    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:3,u:"pcs"},ato:{v:4,u:"pcs"}},
-  ]},
-  {id:"017",name:"Thai Green Turkey & Rice",short:"Thai Green",carbGroup:"rice",color:"#1B5E20",
-   alhMacros:{kcal:500,p:36,c:45,f:14},atoMacros:{kcal:800,p:58,c:72,f:21},
-   ingredients:[
-    {key:"turkey-breast-strips",name:"Turkey breast strips",cat:"meat",alh:{v:430,u:"g"},ato:{v:690,u:"g"}},
-    {key:"jasmine-rice",name:"Jasmine rice",cat:"dry",alh:{v:240,u:"g"},ato:{v:385,u:"g"}},
-    {key:"light-coconut-milk",name:"Light coconut milk",cat:"sauce",alh:{v:170,u:"ml"},ato:{v:275,u:"ml"}},
-    {key:"thai-green-paste",name:"Thai green paste",cat:"sauce",alh:{v:2,u:"tsp"},ato:{v:3,u:"tsp"}},
-    {key:"spring-onions",name:"Spring onions",cat:"produce",alh:{v:2,u:"pcs"},ato:{v:3,u:"pcs"}},
-    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:2,u:"pcs"},ato:{v:3,u:"pcs"}},
-    {key:"fresh-ginger",name:"Fresh ginger",cat:"pantry",taste:true},
-    {key:"fresh-coriander",name:"Fresh coriander",cat:"pantry",taste:true},
-  ]},
-  {id:"018",name:"Garlic Beef & Sweet Potato Noodles",short:"Beef SP Noodles",carbGroup:"noodles",color:"#558B2F",
-   alhMacros:{kcal:500,p:32,c:43,f:18},atoMacros:{kcal:800,p:51,c:69,f:29},
-   ingredients:[
-    {key:"lean-beef-mince",name:"Lean beef mince",cat:"meat",alh:{v:415,u:"g"},ato:{v:665,u:"g"}},
-    {key:"rice-noodles",name:"Rice noodles",cat:"dry",alh:{v:210,u:"g"},ato:{v:335,u:"g"}},
-    {key:"sweet-potato",name:"Sweet potato",cat:"produce",alh:{v:250,u:"g"},ato:{v:400,u:"g"}},
-    {key:"oyster-sauce",name:"Oyster sauce",cat:"sauce",alh:{v:3.5,u:"tsp"},ato:{v:5.5,u:"tsp"}},
-    {key:"sesame-oil",name:"Sesame oil",cat:"sauce",alh:{v:1,u:"tsp"},ato:{v:1.5,u:"tsp"}},
-    {key:"chilli-flakes",name:"Chilli flakes",cat:"spice",alh:{v:1,u:"tsp"},ato:{v:1.5,u:"tsp"}},
-    {key:"spring-onions",name:"Spring onions",cat:"produce",alh:{v:2,u:"pcs"},ato:{v:3,u:"pcs"}},
-    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:3,u:"pcs"},ato:{v:4,u:"pcs"}},
-  ]},
-  {id:"019",name:"Chicken & Spinach Pasta Bake",short:"Chicken Spinach Bake",carbGroup:"pasta",color:"#1976D2",
-   alhMacros:{kcal:600,p:43,c:63,f:14},atoMacros:{kcal:720,p:55,c:85,f:17},
-   ingredients:[
-    {key:"chicken-breast",name:"Chicken breast",cat:"meat",alh:{v:450,u:"g"},ato:{v:700,u:"g"}},
-    {key:"wholewheat-pasta",name:"Wholewheat pasta",cat:"dry",alh:{v:250,u:"g"},ato:{v:400,u:"g"}},
-    {key:"tomato-passata",name:"Tomato passata",cat:"sauce",alh:{v:400,u:"ml"},ato:{v:500,u:"ml"}},
-    {key:"spinach",name:"Spinach",cat:"produce",alh:{v:100,u:"g"},ato:{v:160,u:"g"}},
-    {key:"mozzarella",name:"Mozzarella",cat:"dairy",alh:{v:80,u:"g"},ato:{v:120,u:"g"}},
-    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:3,u:"pcs"},ato:{v:4,u:"pcs"}},
-    {key:"italian-herbs",name:"Italian herbs",cat:"pantry",taste:true},
-  ]},
-  {id:"020",name:"Chicken Arrabiata",short:"Chicken Arrabiata",carbGroup:"pasta",color:"#E53935",
-   alhMacros:{kcal:620,p:42,c:78,f:9},atoMacros:{kcal:740,p:57,c:94,f:11},
-   ingredients:[
-    {key:"chicken-breast",name:"Chicken breast",cat:"meat",alh:{v:470,u:"g"},ato:{v:740,u:"g"}},
-    {key:"wholewheat-pasta",name:"Wholewheat pasta",cat:"dry",alh:{v:260,u:"g"},ato:{v:400,u:"g"}},
-    {key:"chopped-tomatoes",name:"Chopped tomatoes",cat:"sauce",alh:{v:1,u:"cans"},ato:{v:1.5,u:"cans"}},
+    {key:"lean-beef-mince",name:"Lean beef mince",cat:"meat",alh:{v:700,u:"g"},ato:{v:1000,u:"g"}},
+    {key:"egg-noodles",name:"Egg noodles",cat:"dry",alh:{v:350,u:"g"},ato:{v:575,u:"g"}},
+    {key:"soy-sauce",name:"Soy sauce",cat:"sauce",alh:{v:8.5,u:"tsp"},ato:{v:13,u:"tsp"}},
+    {key:"oyster-sauce",name:"Oyster sauce",cat:"sauce",alh:{v:8.5,u:"tsp"},ato:{v:13,u:"tsp"}},
+    {key:"sesame-oil",name:"Sesame oil",cat:"sauce",alh:{v:1.5,u:"tsp"},ato:{v:2.5,u:"tsp"}},
     {key:"chilli-flakes",name:"Chilli flakes",cat:"spice",alh:{v:1.5,u:"tsp"},ato:{v:2.5,u:"tsp"}},
-    {key:"olive-oil",name:"Olive oil",cat:"sauce",alh:{v:1,u:"tsp"},ato:{v:2,u:"tsp"}},
-    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:3,u:"pcs"},ato:{v:5,u:"pcs"}},
-    {key:"black-pepper",name:"Black pepper",cat:"pantry",taste:true},
-  ]},
-  {id:"021",name:"Turkey Mince Pasta Bake",short:"Turkey Pasta Bake",carbGroup:"pasta",color:"#6D4C41",
-   alhMacros:{kcal:630,p:43,c:75,f:15},atoMacros:{kcal:710,p:55,c:85,f:16},
+    {key:"spring-onions",name:"Spring onions",cat:"produce",alh:{v:2,u:"pcs"},ato:{v:3,u:"pcs"}},
+    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:3,u:"pcs"},ato:{v:4,u:"pcs"}}
+   ],
+   steps:[
+    {title:"Cook noodles",text:"Cook egg noodles according to packet instructions. Drain, rinse under cold water and toss with a little sesame oil. Set aside."},
+    {title:"Mix the sauce",text:"In a small bowl, combine soy sauce, oyster sauce, sesame oil and chilli flakes."},
+    {title:"Brown the beef",text:"Heat a wok over the highest heat possible. Add the beef mince and press flat into the pan. Leave undisturbed for 2–3 minutes for a good colour, then break up and stir-fry for another 4–5 minutes until fully cooked."},
+    {title:"Add aromatics",text:"Add minced garlic and grated ginger. Stir-fry for 30 seconds. Pour in the sauce mixture and toss to coat the beef."},
+    {title:"Combine and finish",text:"Add the cooked noodles to the wok and toss everything over high heat for 1–2 minutes. Top with sliced spring onions."},
+    {title:"Portion up",text:"Divide across 5 containers."}
+   ],
+   tip:"Don't crowd the wok \u2014 if your pan is small, brown the beef in two batches for proper caramelisation."},
+  {id:"008",name:"Cajun Chicken & Rice Bowl",short:"Cajun Chicken",carbGroup:"rice",color:"#5D4037",
+   alhMacros:{kcal:496,p:46,c:70,f:3},atoMacros:{kcal:741,p:62,c:112,f:4},
    ingredients:[
-    {key:"turkey-mince",name:"Turkey mince",cat:"meat",alh:{v:420,u:"g"},ato:{v:670,u:"g"}},
-    {key:"wholewheat-pasta",name:"Wholewheat pasta",cat:"dry",alh:{v:250,u:"g"},ato:{v:400,u:"g"}},
-    {key:"tomato-passata",name:"Tomato passata",cat:"sauce",alh:{v:400,u:"ml"},ato:{v:500,u:"ml"}},
-    {key:"mixed-peppers",name:"Mixed peppers",cat:"produce",alh:{v:1,u:"pcs"},ato:{v:2,u:"pcs"}},
-    {key:"block-cheddar",name:"Block cheddar",cat:"dairy",alh:{v:60,u:"g"},ato:{v:90,u:"g"}},
-    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:3,u:"pcs"},ato:{v:4,u:"pcs"}},
-    {key:"italian-herbs",name:"Italian herbs",cat:"pantry",taste:true},
-  ]},
-  {id:"022",name:"Creamy Sausage & Sun-Dried Tomato Pasta",short:"Sausage SDT Pasta",carbGroup:"pasta",color:"#EF6C00",
-   note:"Aim for ~70 kcal per sausage (e.g. Heck chicken or light pork own-brand)",
-   alhMacros:{kcal:565,p:31,c:73,f:17},atoMacros:{kcal:775,p:37,c:95,f:23},
+    {key:"chicken-breast",name:"Chicken breast",cat:"meat",alh:{v:850,u:"g"},ato:{v:1100,u:"g"}},
+    {key:"long-grain-rice",name:"Long-grain rice",cat:"dry",alh:{v:425,u:"g"},ato:{v:675,u:"g"}},
+    {key:"chicken-stock",name:"Chicken stock",cat:"sauce",alh:{v:275,u:"ml"},ato:{v:450,u:"ml"}},
+    {key:"red-peppers",name:"Red peppers",cat:"produce",alh:{v:1,u:"pcs"},ato:{v:2,u:"pcs"}},
+    {key:"cajun-spice",name:"Cajun spice",cat:"spice",alh:{v:4,u:"tsp"},ato:{v:7.5,u:"tsp"}},
+    {key:"tomato-puree",name:"Tomato puree",cat:"sauce",alh:{v:4,u:"tsp"},ato:{v:7.5,u:"tsp"}},
+    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:2,u:"pcs"},ato:{v:4,u:"pcs"}}
+   ],
+   steps:[
+    {title:"Cook the rice",text:"Rinse long-grain rice until water runs clear. Cook in chicken stock with a pinch of salt for 12 minutes, then rest covered for 5 minutes."},
+    {title:"Season the chicken",text:"Cut chicken breast into 2cm strips. Toss with Cajun spice, salt, tomato puree and a splash of oil until well coated."},
+    {title:"Sear the chicken",text:"Heat a large pan over high heat. Cook chicken for 4–5 minutes each side until golden and cooked through."},
+    {title:"Add peppers",text:"Slice red peppers into strips. Add to the pan with the minced garlic for the last 2–3 minutes of cooking until peppers are slightly softened but still bright."},
+    {title:"Combine",text:"Stir the rice through the chicken and peppers in the pan, or serve separately."},
+    {title:"Portion up",text:"Divide across 5 containers, weighing ALH and ATO rice portions separately."}
+   ],
+   tip:"Cooking the rice in stock instead of water adds significant flavour for no extra effort."},
+  {id:"009",name:"Teriyaki Turkey & Udon Stir-Fry",short:"Teriyaki Turkey",carbGroup:"noodles",color:"#0288D1",
+   alhMacros:{kcal:494,p:40,c:64,f:6},atoMacros:{kcal:792,p:64,c:102,f:11},
    ingredients:[
-    {key:"low-cal-sausages",name:"Low-cal pork sausages",cat:"meat",alh:{v:8,u:"pcs"},ato:{v:10,u:"pcs"}},
-    {key:"wholewheat-pasta",name:"Wholewheat pasta",cat:"dry",alh:{v:225,u:"g"},ato:{v:360,u:"g"}},
-    {key:"sun-dried-tomatoes",name:"Sun-dried tomatoes",cat:"sauce",alh:{v:60,u:"g"},ato:{v:80,u:"g"}},
-    {key:"single-cream",name:"Single cream",cat:"dairy",alh:{v:100,u:"ml"},ato:{v:160,u:"ml"}},
-    {key:"parmesan",name:"Parmesan",cat:"dairy",alh:{v:30,u:"g"},ato:{v:50,u:"g"}},
-    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:3,u:"pcs"},ato:{v:4,u:"pcs"}},
-    {key:"italian-herbs",name:"Italian herbs",cat:"pantry",taste:true},
-  ]},
-  {id:"023",name:"Beef Mince Pasta Bake",short:"Beef Pasta Bake",carbGroup:"pasta",color:"#C62828",
-   alhMacros:{kcal:610,p:41,c:68,f:15},atoMacros:{kcal:770,p:50,c:85,f:18},
-   ingredients:[
-    {key:"lean-beef-mince",name:"Lean beef mince",cat:"meat",alh:{v:415,u:"g"},ato:{v:660,u:"g"}},
-    {key:"wholewheat-pasta",name:"Wholewheat pasta",cat:"dry",alh:{v:240,u:"g"},ato:{v:385,u:"g"}},
-    {key:"tomato-passata",name:"Tomato passata",cat:"sauce",alh:{v:400,u:"ml"},ato:{v:500,u:"ml"}},
-    {key:"smoked-paprika",name:"Smoked paprika",cat:"spice",alh:{v:1.5,u:"tsp"},ato:{v:2.5,u:"tsp"}},
-    {key:"mozzarella",name:"Mozzarella",cat:"dairy",alh:{v:70,u:"g"},ato:{v:110,u:"g"}},
-    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:3,u:"pcs"},ato:{v:4,u:"pcs"}},
-    {key:"italian-herbs",name:"Italian herbs",cat:"pantry",taste:true},
-  ]},
-  {id:"024",name:"Sweet Chilli Beef Noodles",short:"Sweet Chilli Beef",carbGroup:"noodles",color:"#F4511E",
-   alhMacros:{kcal:600,p:37,c:78,f:14},atoMacros:{kcal:785,p:52,c:91,f:19},
-   ingredients:[
-    {key:"lean-beef-mince",name:"Lean beef mince",cat:"meat",alh:{v:410,u:"g"},ato:{v:650,u:"g"}},
-    {key:"egg-noodles",name:"Egg noodles",cat:"dry",alh:{v:210,u:"g"},ato:{v:335,u:"g"}},
-    {key:"sweet-chilli-sauce",name:"Sweet chilli sauce",cat:"sauce",alh:{v:80,u:"ml"},ato:{v:100,u:"ml"}},
-    {key:"soy-sauce",name:"Soy sauce",cat:"sauce",alh:{v:3,u:"tsp"},ato:{v:4.5,u:"tsp"}},
-    {key:"sesame-oil",name:"Sesame oil",cat:"sauce",alh:{v:1,u:"tsp"},ato:{v:1.5,u:"tsp"}},
-    {key:"spring-onions",name:"Spring onions",cat:"produce",alh:{v:3,u:"pcs"},ato:{v:4,u:"pcs"}},
-    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:3,u:"pcs"},ato:{v:4,u:"pcs"}},
-    {key:"fresh-ginger",name:"Fresh ginger",cat:"pantry",taste:true},
-  ]},
-  {id:"025",name:"Honey Garlic Chicken Thighs, Rice & Broccoli",short:"Honey Garlic Thighs",carbGroup:"rice",color:"#F9A825",
-   alhMacros:{kcal:600,p:40,c:72,f:14},atoMacros:{kcal:790,p:52,c:95,f:19},
-   ingredients:[
-    {key:"chicken-thighs",name:"Chicken thighs (boneless)",cat:"meat",alh:{v:450,u:"g"},ato:{v:720,u:"g"}},
-    {key:"long-grain-rice",name:"Long-grain rice",cat:"dry",alh:{v:240,u:"g"},ato:{v:385,u:"g"}},
-    {key:"broccoli",name:"Broccoli",cat:"produce",alh:{v:200,u:"g"},ato:{v:320,u:"g"}},
-    {key:"honey",name:"Honey",cat:"sauce",alh:{v:2.5,u:"tsp"},ato:{v:4.5,u:"tsp"}},
-    {key:"soy-sauce",name:"Soy sauce",cat:"sauce",alh:{v:3,u:"tsp"},ato:{v:5,u:"tsp"}},
-    {key:"sesame-oil",name:"Sesame oil",cat:"sauce",alh:{v:1,u:"tsp"},ato:{v:1.5,u:"tsp"}},
-    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:4,u:"pcs"},ato:{v:6,u:"pcs"}},
-    {key:"fresh-ginger",name:"Fresh ginger",cat:"pantry",taste:true},
+    {key:"turkey-breast-strips",name:"Turkey breast strips",cat:"meat",alh:{v:700,u:"g"},ato:{v:1100,u:"g"}},
+    {key:"udon-noodles",name:"Udon noodles",cat:"dry",alh:{v:425,u:"g"},ato:{v:675,u:"g"}},
+    {key:"teriyaki-sauce",name:"Teriyaki sauce",cat:"sauce",alh:{v:125,u:"ml"},ato:{v:200,u:"ml"}},
+    {key:"sesame-oil",name:"Sesame oil",cat:"sauce",alh:{v:1.5,u:"tsp"},ato:{v:2.5,u:"tsp"}},
     {key:"sesame-seeds",name:"Sesame seeds",cat:"pantry",taste:true},
-  ]},
-  {id:"026",name:"Turkey & Sweet Potato Chili",short:"Turkey SP Chili",carbGroup:"other",color:"#8E24AA",
-   alhMacros:{kcal:570,p:42,c:64,f:9},atoMacros:{kcal:720,p:54,c:82,f:12},
+    {key:"spring-onions",name:"Spring onions",cat:"produce",alh:{v:3,u:"pcs"},ato:{v:5,u:"pcs"}},
+    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:2,u:"pcs"},ato:{v:3,u:"pcs"}}
+   ],
+   steps:[
+    {title:"Cook noodles",text:"Cook udon noodles according to packet instructions (typically 4–5 minutes for fresh, longer for dried). Drain and rinse under cold water."},
+    {title:"Stir-fry turkey",text:"Heat a wok over high heat with a splash of oil. Stir-fry turkey breast strips for 6–7 minutes until golden and cooked through."},
+    {title:"Add aromatics",text:"Add minced garlic and grated ginger. Stir-fry for 30 seconds."},
+    {title:"Add sauce",text:"Pour in the teriyaki sauce and toss with the turkey for 1–2 minutes until sticky and glossy. Add sesame oil."},
+    {title:"Combine",text:"Add the cooked udon noodles to the wok and toss to coat. Stir-fry for 1 minute over high heat."},
+    {title:"Portion up",text:"Divide across 5 containers. Top with sliced spring onions and sesame seeds."}
+   ],
+   tip:"If you have access to fresh udon (vac-packed), use those \u2014 the texture is far better than dried."},
+  {id:"010",name:"Beef & Sweet Potato Chilli",short:"Beef Chilli",carbGroup:"other",color:"#D81B60",
+   alhMacros:{kcal:496,p:43,c:36,f:18},atoMacros:{kcal:692,p:56,c:57,f:24},
    ingredients:[
-    {key:"turkey-mince",name:"Turkey mince",cat:"meat",alh:{v:420,u:"g"},ato:{v:670,u:"g"}},
-    {key:"sweet-potato",name:"Sweet potato",cat:"produce",alh:{v:320,u:"g"},ato:{v:510,u:"g"}},
-    {key:"chopped-tomatoes",name:"Chopped tomatoes",cat:"sauce",alh:{v:1,u:"cans"},ato:{v:1.5,u:"cans"}},
-    {key:"onion",name:"Onion",cat:"produce",alh:{v:1,u:"pcs"},ato:{v:2,u:"pcs"}},
-    {key:"tomato-puree",name:"Tomato puree",cat:"sauce",alh:{v:2,u:"tsp"},ato:{v:3,u:"tsp"}},
-    {key:"chilli-powder",name:"Chilli powder",cat:"spice",alh:{v:1.5,u:"tsp"},ato:{v:2.5,u:"tsp"}},
+    {key:"lean-beef-mince",name:"Lean beef mince",cat:"meat",alh:{v:825,u:"g"},ato:{v:1000,u:"g"}},
+    {key:"sweet-potato",name:"Sweet potato",cat:"produce",alh:{v:650,u:"g"},ato:{v:1025,u:"g"}},
+    {key:"chopped-tomatoes",name:"Chopped tomatoes",cat:"sauce",alh:{v:2,u:"cans"},ato:{v:3,u:"cans"}},
+    {key:"red-peppers",name:"Red peppers",cat:"produce",alh:{v:1,u:"pcs"},ato:{v:2,u:"pcs"}},
+    {key:"tomato-puree",name:"Tomato puree",cat:"sauce",alh:{v:5,u:"tsp"},ato:{v:9,u:"tsp"}},
+    {key:"chilli-powder",name:"Chilli powder",cat:"spice",alh:{v:5,u:"tsp"},ato:{v:9,u:"tsp"}},
+    {key:"ground-cumin",name:"Ground cumin",cat:"spice",alh:{v:2,u:"tsp"},ato:{v:3,u:"tsp"}},
+    {key:"paprika",name:"Paprika",cat:"spice",alh:{v:2,u:"tsp"},ato:{v:3,u:"tsp"}},
+    {key:"block-cheddar",name:"Block cheddar",cat:"dairy",alh:{v:80,u:"g"},ato:{v:130,u:"g"}},
+    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:3,u:"pcs"},ato:{v:4,u:"pcs"}}
+   ],
+   steps:[
+    {title:"Prep the veg",text:"Dice the sweet potato into 1.5cm cubes. Slice red peppers into chunks."},
+    {title:"Brown the beef",text:"Heat a large heavy pan over high heat. Brown the beef mince for 6–8 minutes until well caramelised. Drain excess fat if needed."},
+    {title:"Build the spice base",text:"Add minced garlic, chilli powder, paprika and ground cumin. Stir for 1 minute until fragrant. Add tomato puree and cook for another minute."},
+    {title:"Simmer",text:"Add the chopped tomatoes, red peppers and sweet potato cubes. Stir in 200ml water. Bring to a boil, then reduce to a simmer. Cook covered for 25–30 minutes, stirring occasionally, until sweet potato is tender."},
+    {title:"Finish",text:"Taste and adjust seasoning. Stir through grated cheddar just before portioning, or use as a topping."},
+    {title:"Portion up",text:"Divide across 5 containers."}
+   ],
+   tip:"The chilli tastes even better the next day as the flavours meld. Great with a dollop of natural yoghurt."},
+  {id:"011",name:"Garlic Butter Chicken Breast Gnocchi",short:"Chicken Gnocchi",carbGroup:"other",color:"#6A1B9A",
+   alhMacros:{kcal:502,p:47,c:46,f:12},atoMacros:{kcal:753,p:65,c:72,f:19},
+   ingredients:[
+    {key:"chicken-breast",name:"Chicken breast",cat:"meat",alh:{v:825,u:"g"},ato:{v:1100,u:"g"}},
+    {key:"gnocchi",name:"Gnocchi",cat:"dry",alh:{v:700,u:"g"},ato:{v:1100,u:"g"}},
+    {key:"butter",name:"Butter",cat:"dairy",alh:{v:35,u:"g"},ato:{v:60,u:"g"}},
+    {key:"parmesan",name:"Parmesan",cat:"dairy",alh:{v:45,u:"g"},ato:{v:70,u:"g"}},
+    {key:"spinach",name:"Spinach",cat:"produce",alh:{v:110,u:"g"},ato:{v:170,u:"g"}},
+    {key:"chicken-stock",name:"Chicken stock",cat:"sauce",alh:{v:150,u:"ml"},ato:{v:225,u:"ml"}},
+    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:3,u:"pcs"},ato:{v:4,u:"pcs"}}
+   ],
+   steps:[
+    {title:"Cook the chicken",text:"Cut chicken breast into 2cm pieces. Heat a large pan over medium-high heat with a splash of oil. Cook chicken for 6–8 minutes until golden and cooked through. Remove and set aside."},
+    {title:"Cook the gnocchi",text:"In the same pan, add half the butter. Add the gnocchi in a single layer and cook for 2–3 minutes per side until golden and crisp."},
+    {title:"Build the sauce",text:"Reduce heat to medium. Add remaining butter and minced garlic. Cook for 30 seconds until fragrant. Pour in the chicken stock and simmer for 2 minutes."},
+    {title:"Add greens",text:"Stir in the spinach and let it wilt, about 1 minute. Return the chicken to the pan. Toss everything to coat. Finish with grated parmesan and fresh parsley."},
+    {title:"Portion up",text:"Divide across 5 containers."}
+   ],
+   tip:"Pan-frying the gnocchi instead of boiling gives crispy edges that are far better than the boiled version."},
+  {id:"012",name:"Chipotle Pulled Chicken & Rice",short:"Chipotle Chicken",carbGroup:"rice",color:"#BF360C",
+   alhMacros:{kcal:498,p:46,c:70,f:3},atoMacros:{kcal:742,p:62,c:112,f:5},
+   ingredients:[
+    {key:"chicken-breast",name:"Chicken breast",cat:"meat",alh:{v:850,u:"g"},ato:{v:1100,u:"g"}},
+    {key:"long-grain-rice",name:"Long-grain rice",cat:"dry",alh:{v:425,u:"g"},ato:{v:675,u:"g"}},
+    {key:"chicken-stock",name:"Chicken stock",cat:"sauce",alh:{v:275,u:"ml"},ato:{v:450,u:"ml"}},
+    {key:"chipotle-chilli-powder",name:"Chipotle paste",cat:"spice",alh:{v:2.5,u:"tsp"},ato:{v:4,u:"tsp"}},
+    {key:"red-peppers",name:"Red peppers",cat:"produce",alh:{v:1,u:"pcs"},ato:{v:2,u:"pcs"}},
     {key:"smoked-paprika",name:"Smoked paprika",cat:"spice",alh:{v:1.5,u:"tsp"},ato:{v:2.5,u:"tsp"}},
-    {key:"ground-cumin",name:"Ground cumin",cat:"spice",alh:{v:1,u:"tsp"},ato:{v:1.5,u:"tsp"}},
-    {key:"chicken-stock",name:"Chicken stock",cat:"sauce",alh:{v:150,u:"ml"},ato:{v:250,u:"ml"}},
-    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:3,u:"pcs"},ato:{v:4,u:"pcs"}},
-  ]},
-  {id:"027",name:"Slow Cooker Beef Ragu",short:"Beef Ragu",carbGroup:"pasta",color:"#4E342E",
-   alhMacros:{kcal:595,p:40,c:68,f:13},atoMacros:{kcal:760,p:51,c:88,f:17},
+    {key:"tomato-puree",name:"Tomato puree",cat:"sauce",alh:{v:4,u:"tsp"},ato:{v:7.5,u:"tsp"}},
+    {key:"ground-cumin",name:"Ground cumin",cat:"spice",alh:{v:1.5,u:"tsp"},ato:{v:2.5,u:"tsp"}},
+    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:3,u:"pcs"},ato:{v:4,u:"pcs"}}
+   ],
+   steps:[
+    {title:"Sear the chicken",text:"Season chicken breast with salt. Heat oil in a large pan over high heat and sear chicken for 2–3 minutes each side until golden."},
+    {title:"Build the sauce",text:"Add minced garlic, ground cumin and chipotle chilli powder. Stir for 30 seconds. Add smoked paprika, tomato puree and sliced red peppers."},
+    {title:"Simmer",text:"Pour in the chicken stock. Return the chicken and ensure it's submerged. Bring to a boil, then cover and simmer on low for 25 minutes until chicken is tender."},
+    {title:"Shred",text:"Remove the chicken and shred with two forks. Return to the sauce and simmer uncovered for 5 minutes to thicken."},
+    {title:"Cook the rice",text:"Meanwhile, cook the long-grain rice in salted water. Drain well."},
+    {title:"Portion up",text:"Divide rice across 5 containers and top with the chipotle pulled chicken."}
+   ],
+   tip:"The longer it simmers, the more tender the chicken \u2014 you can do this in a slow cooker on low for 4 hours instead."},
+  {id:"013",name:"Pesto Chicken & Orzo",short:"Pesto Orzo",carbGroup:"pasta",color:"#2E7D32",
+   alhMacros:{kcal:499,p:45,c:48,f:13},atoMacros:{kcal:784,p:71,c:78,f:19},
    ingredients:[
-    {key:"braising-beef",name:"Braising beef",cat:"meat",alh:{v:420,u:"g"},ato:{v:670,u:"g"}},
-    {key:"wholewheat-pasta",name:"Wholewheat pasta",cat:"dry",alh:{v:240,u:"g"},ato:{v:385,u:"g"}},
-    {key:"chopped-tomatoes",name:"Chopped tomatoes",cat:"sauce",alh:{v:1,u:"cans"},ato:{v:1.5,u:"cans"}},
-    {key:"tomato-puree",name:"Tomato puree",cat:"sauce",alh:{v:2,u:"tsp"},ato:{v:3,u:"tsp"}},
-    {key:"beef-stock",name:"Beef stock",cat:"sauce",alh:{v:200,u:"ml"},ato:{v:300,u:"ml"}},
+    {key:"chicken-breast",name:"Chicken breast",cat:"meat",alh:{v:700,u:"g"},ato:{v:1100,u:"g"}},
+    {key:"orzo",name:"Orzo",cat:"dry",alh:{v:325,u:"g"},ato:{v:525,u:"g"}},
+    {key:"green-pesto",name:"Green pesto",cat:"sauce",alh:{v:80,u:"g"},ato:{v:110,u:"g"}},
+    {key:"parmesan",name:"Parmesan",cat:"dairy",alh:{v:50,u:"g"},ato:{v:80,u:"g"}},
+    {key:"spinach",name:"Spinach",cat:"produce",alh:{v:110,u:"g"},ato:{v:190,u:"g"}},
+    {key:"chicken-stock",name:"Chicken stock",cat:"sauce",alh:{v:225,u:"ml"},ato:{v:375,u:"ml"}},
+    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:2,u:"pcs"},ato:{v:3,u:"pcs"}}
+   ],
+   steps:[
+    {title:"Sear the chicken",text:"Season chicken breast with salt. Heat oil in a large pan over medium-high heat. Sear chicken for 5–6 minutes per side until golden and cooked through. Rest, then dice."},
+    {title:"Toast the orzo",text:"In the same pan, add a splash more oil if needed. Add the orzo and stir for 1–2 minutes until lightly golden. Add minced garlic for the last 30 seconds."},
+    {title:"Cook orzo in stock",text:"Pour in the chicken stock with a pinch of salt. Bring to a simmer and cook, stirring regularly, for 10–12 minutes until orzo has absorbed the stock and is al dente."},
+    {title:"Add pesto and spinach",text:"Remove from heat. Stir through the green pesto. Add spinach and stir until wilted. Add grated parmesan and fold through."},
+    {title:"Combine",text:"Return the diced chicken to the pan and fold through. Taste and season."},
+    {title:"Portion up",text:"Divide across 5 containers."}
+   ],
+   tip:"Toasting the orzo first develops a nutty flavour \u2014 worth the extra 2 minutes."},
+  {id:"014",name:"Honey Garlic Salmon & Rice",short:"Honey Salmon",carbGroup:"rice",color:"#00838F",
+   alhMacros:{kcal:489,p:28,c:56,f:17},atoMacros:{kcal:768,p:43,c:91,f:25},
+   ingredients:[
+    {key:"salmon-fillets",name:"Salmon fillets",cat:"meat",alh:{v:575,u:"g"},ato:{v:875,u:"g"}},
+    {key:"long-grain-rice",name:"Long-grain rice",cat:"dry",alh:{v:325,u:"g"},ato:{v:525,u:"g"}},
+    {key:"honey",name:"Honey",cat:"sauce",alh:{v:3.5,u:"tsp"},ato:{v:6.5,u:"tsp"}},
+    {key:"soy-sauce",name:"Soy sauce",cat:"sauce",alh:{v:4,u:"tsp"},ato:{v:8.5,u:"tsp"}},
+    {key:"sesame-oil",name:"Sesame oil",cat:"sauce",alh:{v:1.5,u:"tsp"},ato:{v:2,u:"tsp"}},
+    {key:"spring-onions",name:"Spring onions",cat:"produce",alh:{v:2,u:"pcs"},ato:{v:3,u:"pcs"}},
+    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:2,u:"pcs"},ato:{v:3,u:"pcs"}}
+   ],
+   steps:[
+    {title:"Cook the rice",text:"Rinse long-grain rice. Cover with water 2cm above the rice, add salt. Bring to a boil, cover and cook on lowest heat for 12 minutes. Rest 5 minutes."},
+    {title:"Make the glaze",text:"In a small bowl, mix honey, soy sauce, minced garlic and grated ginger."},
+    {title:"Cook the salmon",text:"Heat oil in a non-stick pan over medium-high heat. Place salmon skin-side up and cook for 3–4 minutes. Flip and cook for another 2–3 minutes."},
+    {title:"Glaze",text:"Pour the honey-garlic mixture over the salmon. Let it bubble and caramelise for 1–2 minutes, spooning over the fish. Drizzle with sesame oil."},
+    {title:"Portion up",text:"Serve salmon over the rice. Top with sliced spring onions and a sprinkle of sesame seeds."}
+   ],
+   tip:"Salmon reheats best at 60% power for 90 seconds in the microwave \u2014 high heat makes it rubbery."},
+  {id:"015",name:"Soy Glazed Pork & Noodles",short:"Soy Pork",carbGroup:"noodles",color:"#6D4C41",
+   alhMacros:{kcal:504,p:32,c:49,f:21},atoMacros:{kcal:739,p:46,c:75,f:29},
+   ingredients:[
+    {key:"pork-mince",name:"Pork mince",cat:"meat",alh:{v:625,u:"g"},ato:{v:875,u:"g"}},
+    {key:"egg-noodles",name:"Egg noodles",cat:"dry",alh:{v:325,u:"g"},ato:{v:500,u:"g"}},
+    {key:"soy-sauce",name:"Soy sauce",cat:"sauce",alh:{v:5.5,u:"tsp"},ato:{v:8.5,u:"tsp"}},
+    {key:"hoisin-sauce",name:"Hoisin sauce",cat:"sauce",alh:{v:4.5,u:"tsp"},ato:{v:6.5,u:"tsp"}},
+    {key:"sesame-oil",name:"Sesame oil",cat:"sauce",alh:{v:1.5,u:"tsp"},ato:{v:2,u:"tsp"}},
+    {key:"spring-onions",name:"Spring onions",cat:"produce",alh:{v:2,u:"pcs"},ato:{v:3,u:"pcs"}},
+    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:2,u:"pcs"},ato:{v:3,u:"pcs"}}
+   ],
+   steps:[
+    {title:"Cook noodles",text:"Cook egg noodles according to packet. Drain, rinse under cold water and set aside."},
+    {title:"Brown the pork",text:"Heat a wok over high heat. Add the pork mince and press flat. Leave to char for 2 minutes, then break up. Cook until well browned and crispy in places, about 6 minutes."},
+    {title:"Aromatics",text:"Add minced garlic and grated ginger. Fry for 30 seconds."},
+    {title:"Sauce",text:"Add soy sauce and hoisin sauce. Toss over high heat for 1–2 minutes until sticky. Drizzle with sesame oil."},
+    {title:"Combine",text:"Add the cooked noodles to the wok and toss through the pork. Top with sliced spring onions."},
+    {title:"Portion up",text:"Divide across 5 containers."}
+   ],
+   tip:"Look for a clean hoisin sauce (e.g. Cottage Delight or similar) \u2014 many supermarket versions are very processed."},
+  {id:"016",name:"Chicken & Chorizo Rice",short:"Chorizo Rice",carbGroup:"rice",color:"#AD1457",
+   alhMacros:{kcal:493,p:40,c:62,f:8},atoMacros:{kcal:799,p:64,c:102,f:13},
+   ingredients:[
+    {key:"chicken-breast",name:"Chicken breast",cat:"meat",alh:{v:625,u:"g"},ato:{v:1000,u:"g"}},
+    {key:"fresh-cooking-chorizo",name:"Fresh cooking chorizo",cat:"meat",alh:{v:130,u:"g"},ato:{v:200,u:"g"}},
+    {key:"long-grain-rice",name:"Long-grain rice",cat:"dry",alh:{v:350,u:"g"},ato:{v:575,u:"g"}},
+    {key:"chopped-tomatoes",name:"Chopped tomatoes",cat:"sauce",alh:{v:1.5,u:"cans"},ato:{v:2.5,u:"cans"}},
+    {key:"red-peppers",name:"Red peppers",cat:"produce",alh:{v:1,u:"pcs"},ato:{v:2,u:"pcs"}},
+    {key:"chicken-stock",name:"Chicken stock",cat:"sauce",alh:{v:200,u:"ml"},ato:{v:300,u:"ml"}},
+    {key:"smoked-paprika",name:"Smoked paprika",cat:"spice",alh:{v:1.5,u:"tsp"},ato:{v:2.5,u:"tsp"}},
+    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:3,u:"pcs"},ato:{v:4,u:"pcs"}}
+   ],
+   steps:[
+    {title:"Cook the rice",text:"Rinse the long-grain rice. Cook in salted water for 12 minutes, then rest covered for 5 minutes."},
+    {title:"Render the chorizo",text:"Slice fresh chorizo into discs. Cook in a large pan over medium heat for 5 minutes until the oil renders out and the chorizo is crisp at the edges."},
+    {title:"Cook the chicken",text:"Dice chicken breast into 2cm pieces. Add to the pan with the chorizo oil and cook for 6–8 minutes until golden."},
+    {title:"Build the sauce",text:"Add sliced red peppers, minced garlic and smoked paprika. Cook for 2 minutes. Add chopped tomatoes and chicken stock. Simmer for 8–10 minutes until thickened."},
+    {title:"Combine",text:"Stir in the cooked rice and toss until everything is coated and warmed through."},
+    {title:"Portion up",text:"Divide across 5 containers."}
+   ],
+   tip:"Don't drain the chorizo oil \u2014 it's the base flavour for the whole dish."},
+  {id:"017",name:"Thai Green Turkey & Rice",short:"Thai Green",carbGroup:"rice",color:"#1B5E20",
+   alhMacros:{kcal:489,p:38,c:65,f:7},atoMacros:{kcal:774,p:59,c:105,f:11},
+   ingredients:[
+    {key:"turkey-breast-strips",name:"Turkey breast strips",cat:"meat",alh:{v:725,u:"g"},ato:{v:1100,u:"g"}},
+    {key:"jasmine-rice",name:"Jasmine rice",cat:"dry",alh:{v:400,u:"g"},ato:{v:650,u:"g"}},
+    {key:"light-coconut-milk",name:"Light coconut milk",cat:"sauce",alh:{v:300,u:"ml"},ato:{v:475,u:"ml"}},
+    {key:"thai-green-paste",name:"Thai green paste",cat:"sauce",alh:{v:3.5,u:"tsp"},ato:{v:5,u:"tsp"}},
+    {key:"spring-onions",name:"Spring onions",cat:"produce",alh:{v:2,u:"pcs"},ato:{v:3,u:"pcs"}},
+    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:2,u:"pcs"},ato:{v:3,u:"pcs"}}
+   ],
+   steps:[
+    {title:"Cook the rice",text:"Rinse jasmine rice. Cook in salted water for 10 minutes, then rest covered for 5 minutes."},
+    {title:"Stir-fry turkey",text:"Heat oil in a wok over high heat. Stir-fry turkey breast strips for 6–7 minutes until cooked through."},
+    {title:"Build the curry base",text:"Add minced garlic, grated ginger and Thai green paste. Fry for 1 minute until fragrant."},
+    {title:"Simmer",text:"Pour in the light coconut milk. Bring to a gentle simmer and cook for 5–8 minutes, stirring occasionally, until the sauce thickens slightly."},
+    {title:"Combine",text:"Add the cooked jasmine rice to the pan, or serve separately. Top with sliced spring onions and fresh coriander."},
+    {title:"Portion up",text:"Divide across 5 containers."}
+   ],
+   tip:"Look for an authentic Thai green curry paste (Mae Ploy is excellent) \u2014 the supermarket own-brand jars are far less aromatic."},
+  {id:"018",name:"Garlic Beef & Sweet Potato Noodles",short:"Beef SP Noodles",carbGroup:"noodles",color:"#558B2F",
+   alhMacros:{kcal:509,p:32,c:69,f:11},atoMacros:{kcal:795,p:50,c:107,f:16},
+   ingredients:[
+    {key:"lean-beef-mince",name:"Lean beef mince",cat:"meat",alh:{v:625,u:"g"},ato:{v:1000,u:"g"}},
+    {key:"rice-noodles",name:"Rice noodles",cat:"dry",alh:{v:325,u:"g"},ato:{v:500,u:"g"}},
+    {key:"sweet-potato",name:"Sweet potato",cat:"produce",alh:{v:375,u:"g"},ato:{v:600,u:"g"}},
+    {key:"oyster-sauce",name:"Oyster sauce",cat:"sauce",alh:{v:5,u:"tsp"},ato:{v:8,u:"tsp"}},
+    {key:"sesame-oil",name:"Sesame oil",cat:"sauce",alh:{v:1.5,u:"tsp"},ato:{v:2,u:"tsp"}},
+    {key:"chilli-flakes",name:"Chilli flakes",cat:"spice",alh:{v:1.5,u:"tsp"},ato:{v:2,u:"tsp"}},
+    {key:"spring-onions",name:"Spring onions",cat:"produce",alh:{v:2,u:"pcs"},ato:{v:3,u:"pcs"}},
+    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:3,u:"pcs"},ato:{v:4,u:"pcs"}}
+   ],
+   steps:[
+    {title:"Roast sweet potato",text:"Preheat oven to 200\u00b0C (180\u00b0C fan). Dice sweet potato into 1.5cm cubes, toss with a little oil and salt. Roast for 25 minutes until tender and caramelised."},
+    {title:"Cook noodles",text:"Cook rice noodles according to packet instructions. Drain and set aside."},
+    {title:"Brown the beef",text:"Heat a wok over high heat. Brown the beef mince for 6 minutes, breaking it up. Add minced garlic and stir-fry for 30 seconds."},
+    {title:"Add sauce",text:"Add oyster sauce, sesame oil and chilli flakes. Toss to coat the beef."},
+    {title:"Combine",text:"Add the roasted sweet potato and cooked rice noodles to the wok. Toss everything together over high heat. Top with sliced spring onions."},
+    {title:"Portion up",text:"Divide across 5 containers."}
+   ],
+   tip:"Roasting the sweet potato rather than boiling keeps it from going mushy when reheated."},
+  {id:"019",name:"Chicken & Spinach Pasta Bake",short:"Chicken Spinach Bake",carbGroup:"pasta",color:"#1976D2",
+   alhMacros:{kcal:504,p:47,c:59,f:8},atoMacros:{kcal:792,p:74,c:92,f:13},
+   ingredients:[
+    {key:"chicken-breast",name:"Chicken breast",cat:"meat",alh:{v:650,u:"g"},ato:{v:1050,u:"g"}},
+    {key:"wholewheat-pasta",name:"Wholewheat pasta",cat:"dry",alh:{v:375,u:"g"},ato:{v:600,u:"g"}},
+    {key:"tomato-passata",name:"Tomato passata",cat:"sauce",alh:{v:575,u:"ml"},ato:{v:750,u:"ml"}},
+    {key:"spinach",name:"Spinach",cat:"produce",alh:{v:150,u:"g"},ato:{v:250,u:"g"}},
+    {key:"mozzarella",name:"Mozzarella",cat:"dairy",alh:{v:120,u:"g"},ato:{v:180,u:"g"}},
+    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:3,u:"pcs"},ato:{v:4,u:"pcs"}}
+   ],
+   steps:[
+    {title:"Preheat and prep",text:"Preheat oven to 200\u00b0C (180\u00b0C fan). Boil a large pan of salted water for the pasta."},
+    {title:"Cook the chicken",text:"Dice chicken breast into 2cm pieces. Heat oil in a large pan and brown for 6–8 minutes until cooked. Add minced garlic for the last 30 seconds."},
+    {title:"Add sauce and spinach",text:"Pour in the tomato passata. Stir in the spinach and let it wilt. Season with Italian herbs, salt and pepper. Simmer for 5 minutes."},
+    {title:"Cook pasta",text:"Cook wholewheat pasta for 2 minutes less than packet says. Drain."},
+    {title:"Assemble and bake",text:"Stir the pasta into the chicken-spinach sauce. Transfer to an oven dish. Top with torn mozzarella. Bake for 15–20 minutes until bubbling and golden."},
+    {title:"Portion up",text:"Cool slightly, then divide across 5 containers."}
+   ],
+   tip:"If using fresh mozzarella balls, tear them rather than slicing for better melting and texture."},
+  {id:"020",name:"Chicken Arrabiata",short:"Chicken Arrabiata",carbGroup:"pasta",color:"#E53935",
+   alhMacros:{kcal:503,p:47,c:62,f:6},atoMacros:{kcal:774,p:70,c:96,f:9},
+   ingredients:[
+    {key:"chicken-breast",name:"Chicken breast",cat:"meat",alh:{v:750,u:"g"},ato:{v:1100,u:"g"}},
+    {key:"wholewheat-pasta",name:"Wholewheat pasta",cat:"dry",alh:{v:425,u:"g"},ato:{v:650,u:"g"}},
+    {key:"chopped-tomatoes",name:"Chopped tomatoes",cat:"sauce",alh:{v:1.5,u:"cans"},ato:{v:2.5,u:"cans"}},
+    {key:"chilli-flakes",name:"Chilli flakes",cat:"spice",alh:{v:2.5,u:"tsp"},ato:{v:4,u:"tsp"}},
+    {key:"olive-oil",name:"Olive oil",cat:"sauce",alh:{v:1.5,u:"tsp"},ato:{v:3.5,u:"tsp"}},
+    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:3,u:"pcs"},ato:{v:5,u:"pcs"}}
+   ],
+   steps:[
+    {title:"Cook pasta",text:"Boil wholewheat pasta in well-salted water until al dente. Reserve a cup of pasta water before draining."},
+    {title:"Sear the chicken",text:"Slice chicken breast into 2cm strips. Season with salt and pepper. Heat olive oil in a large pan and cook chicken for 4–5 minutes each side until golden. Remove and set aside."},
+    {title:"Build the arrabbiata sauce",text:"In the same pan, add a splash more oil. Add minced garlic and chilli flakes and fry for 30 seconds (don't let the garlic burn). Add the chopped tomatoes and simmer for 10–12 minutes until thickened."},
+    {title:"Combine",text:"Slice the chicken into pieces. Return to the sauce. Add the pasta and a splash of pasta water. Toss everything together. Finish with black pepper."},
+    {title:"Portion up",text:"Divide across 5 containers."}
+   ],
+   tip:"Arrabbiata is meant to be spicy \u2014 don't be shy with the chilli flakes if you like heat."},
+  {id:"021",name:"Turkey Mince Pasta Bake",short:"Turkey Pasta Bake",carbGroup:"pasta",color:"#6D4C41",
+   alhMacros:{kcal:502,p:42,c:56,f:12},atoMacros:{kcal:791,p:66,c:86,f:19},
+   ingredients:[
+    {key:"turkey-mince",name:"Turkey mince",cat:"meat",alh:{v:575,u:"g"},ato:{v:925,u:"g"}},
+    {key:"wholewheat-pasta",name:"Wholewheat pasta",cat:"dry",alh:{v:350,u:"g"},ato:{v:550,u:"g"}},
+    {key:"tomato-passata",name:"Tomato passata",cat:"sauce",alh:{v:550,u:"ml"},ato:{v:700,u:"ml"}},
+    {key:"mixed-peppers",name:"Mixed peppers",cat:"produce",alh:{v:1,u:"pcs"},ato:{v:2,u:"pcs"}},
+    {key:"block-cheddar",name:"Block cheddar",cat:"dairy",alh:{v:80,u:"g"},ato:{v:130,u:"g"}},
+    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:3,u:"pcs"},ato:{v:4,u:"pcs"}}
+   ],
+   steps:[
+    {title:"Preheat and boil",text:"Preheat oven to 200\u00b0C (180\u00b0C fan). Boil salted water for pasta."},
+    {title:"Brown the turkey",text:"Heat oil in a large pan. Brown the turkey mince for 6–8 minutes."},
+    {title:"Add veg and sauce",text:"Slice mixed peppers and add to the pan with minced garlic. Cook for 3 minutes. Pour in tomato passata. Add Italian herbs, salt and pepper. Simmer for 5 minutes."},
+    {title:"Cook pasta",text:"Cook the wholewheat pasta for 2 minutes less than packet directs. Drain."},
+    {title:"Bake",text:"Stir pasta into the turkey sauce. Transfer to a baking dish. Top with grated cheddar. Bake for 15–20 minutes until golden."},
+    {title:"Portion up",text:"Divide across 5 containers."}
+   ],
+   tip:"Turkey mince dries out easily \u2014 make sure your sauce stays saucy so the bake doesn't go dry in the oven."},
+  {id:"022",name:"Creamy Sausage & Sun-Dried Tomato Pasta",short:"Sausage SDT Pasta",carbGroup:"pasta",color:"#EF6C00",note:"Aim for ~70 kcal per sausage (e.g. Heck chicken or light pork own-brand)",
+   alhMacros:{kcal:472,p:26,c:48,f:19},atoMacros:{kcal:792,p:41,c:82,f:32},
+   ingredients:[
+    {key:"low-cal-sausages",name:"Low-cal pork sausages",cat:"meat",alh:{v:10,u:"pcs"},ato:{v:15,u:"pcs"}},
+    {key:"wholewheat-pasta",name:"Wholewheat pasta",cat:"dry",alh:{v:300,u:"g"},ato:{v:525,u:"g"}},
+    {key:"sun-dried-tomatoes",name:"Sun-dried tomatoes",cat:"sauce",alh:{v:80,u:"g"},ato:{v:120,u:"g"}},
+    {key:"single-cream",name:"Single cream",cat:"dairy",alh:{v:125,u:"ml"},ato:{v:250,u:"ml"}},
+    {key:"parmesan",name:"Parmesan",cat:"dairy",alh:{v:40,u:"g"},ato:{v:70,u:"g"}},
+    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:3,u:"pcs"},ato:{v:4,u:"pcs"}}
+   ],
+   steps:[
+    {title:"Cook pasta",text:"Boil wholewheat pasta in salted water until al dente. Reserve a cup of pasta water before draining."},
+    {title:"Cook sausages",text:"Remove sausage meat from casings (or slice the sausages). Cook in a large pan over medium-high heat for 6–8 minutes until browned and cooked through, breaking up as it cooks."},
+    {title:"Build the sauce",text:"Add minced garlic and sliced sun-dried tomatoes. Cook for 1 minute. Pour in the single cream and let it bubble gently for 2 minutes."},
+    {title:"Add parmesan",text:"Stir in the grated parmesan. Add Italian herbs and a generous grind of black pepper."},
+    {title:"Combine",text:"Toss the pasta through the sauce, adding pasta water to loosen if needed."},
+    {title:"Portion up",text:"Divide across 5 containers."}
+   ],
+   tip:"Aim for ~70 kcal per sausage (Heck chicken or light pork own-brand work well). Higher-cal sausages will push the meal over target."},
+  {id:"023",name:"Beef Mince Pasta Bake",short:"Beef Pasta Bake",carbGroup:"pasta",color:"#C62828",
+   alhMacros:{kcal:493,p:38,c:51,f:13},atoMacros:{kcal:800,p:61,c:84,f:21},
+   ingredients:[
+    {key:"lean-beef-mince",name:"Lean beef mince",cat:"meat",alh:{v:575,u:"g"},ato:{v:925,u:"g"}},
+    {key:"wholewheat-pasta",name:"Wholewheat pasta",cat:"dry",alh:{v:325,u:"g"},ato:{v:550,u:"g"}},
+    {key:"tomato-passata",name:"Tomato passata",cat:"sauce",alh:{v:550,u:"ml"},ato:{v:700,u:"ml"}},
+    {key:"smoked-paprika",name:"Smoked paprika",cat:"spice",alh:{v:2,u:"tsp"},ato:{v:3.5,u:"tsp"}},
+    {key:"mozzarella",name:"Mozzarella",cat:"dairy",alh:{v:100,u:"g"},ato:{v:160,u:"g"}},
+    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:3,u:"pcs"},ato:{v:4,u:"pcs"}}
+   ],
+   steps:[
+    {title:"Preheat and boil",text:"Preheat oven to 200\u00b0C (180\u00b0C fan). Boil salted water for pasta."},
+    {title:"Brown the beef",text:"Heat oil in a large pan. Brown the lean beef mince for 6–8 minutes. Add minced garlic and smoked paprika for the last 30 seconds."},
+    {title:"Add the sauce",text:"Pour in the tomato passata. Add Italian herbs. Simmer for 5 minutes until thickened."},
+    {title:"Cook the pasta",text:"Cook wholewheat pasta for 2 minutes less than packet. Drain."},
+    {title:"Assemble and bake",text:"Stir pasta into the beef sauce. Transfer to a baking dish. Top with torn mozzarella. Bake for 15–20 minutes."},
+    {title:"Portion up",text:"Cool slightly. Divide across 5 containers."}
+   ],
+   tip:"For extra depth, add a tablespoon of Worcestershire sauce to the beef when browning."},
+  {id:"024",name:"Sweet Chilli Beef Noodles",short:"Sweet Chilli Beef",carbGroup:"noodles",color:"#F4511E",
+   alhMacros:{kcal:506,p:35,c:61,f:12},atoMacros:{kcal:789,p:57,c:92,f:19},
+   ingredients:[
+    {key:"lean-beef-mince",name:"Lean beef mince",cat:"meat",alh:{v:625,u:"g"},ato:{v:1000,u:"g"}},
+    {key:"egg-noodles",name:"Egg noodles",cat:"dry",alh:{v:325,u:"g"},ato:{v:525,u:"g"}},
+    {key:"sweet-chilli-sauce",name:"Sweet chilli sauce",cat:"sauce",alh:{v:125,u:"ml"},ato:{v:150,u:"ml"}},
+    {key:"soy-sauce",name:"Soy sauce",cat:"sauce",alh:{v:4.5,u:"tsp"},ato:{v:7,u:"tsp"}},
+    {key:"sesame-oil",name:"Sesame oil",cat:"sauce",alh:{v:1.5,u:"tsp"},ato:{v:2.5,u:"tsp"}},
+    {key:"spring-onions",name:"Spring onions",cat:"produce",alh:{v:3,u:"pcs"},ato:{v:4,u:"pcs"}},
+    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:3,u:"pcs"},ato:{v:4,u:"pcs"}}
+   ],
+   steps:[
+    {title:"Cook noodles",text:"Cook egg noodles according to packet. Drain, rinse under cold water and set aside."},
+    {title:"Brown the beef",text:"Heat a wok over high heat. Brown the beef mince for 6 minutes. Add minced garlic for 30 seconds."},
+    {title:"Add sauce",text:"Pour in the sweet chilli sauce, soy sauce and sesame oil. Toss with the beef for 1–2 minutes until sticky."},
+    {title:"Combine",text:"Add cooked noodles to the wok and toss to coat everything in the sticky sauce. Heat through over high heat for 1 minute."},
+    {title:"Portion up",text:"Divide across 5 containers. Top with sliced spring onions."}
+   ],
+   tip:"Use a clean sweet chilli sauce \u2014 Mae Ploy and Blue Dragon are good options."},
+  {id:"025",name:"Honey Garlic Chicken Thighs, Rice & Broccoli",short:"Honey Garlic Thighs",carbGroup:"rice",color:"#F9A825",
+   alhMacros:{kcal:496,p:30,c:58,f:16},atoMacros:{kcal:796,p:49,c:94,f:25},
+   ingredients:[
+    {key:"chicken-thighs",name:"Chicken thighs (boneless)",cat:"meat",alh:{v:625,u:"g"},ato:{v:1000,u:"g"}},
+    {key:"long-grain-rice",name:"Long-grain rice",cat:"dry",alh:{v:325,u:"g"},ato:{v:525,u:"g"}},
+    {key:"broccoli",name:"Broccoli",cat:"produce",alh:{v:275,u:"g"},ato:{v:450,u:"g"}},
+    {key:"honey",name:"Honey",cat:"sauce",alh:{v:3.5,u:"tsp"},ato:{v:6,u:"tsp"}},
+    {key:"soy-sauce",name:"Soy sauce",cat:"sauce",alh:{v:4,u:"tsp"},ato:{v:7,u:"tsp"}},
+    {key:"sesame-oil",name:"Sesame oil",cat:"sauce",alh:{v:1.5,u:"tsp"},ato:{v:2,u:"tsp"}},
+    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:4,u:"pcs"},ato:{v:6,u:"pcs"}}
+   ],
+   steps:[
+    {title:"Cook the rice",text:"Rinse long-grain rice. Cook in salted water for 12 minutes, then rest covered for 5 minutes."},
+    {title:"Steam the broccoli",text:"Cut broccoli into florets. Steam for 4–5 minutes until tender-crisp. Set aside."},
+    {title:"Cook the chicken thighs",text:"Heat oil in a large non-stick pan over medium-high heat. Season the chicken thighs with salt. Cook for 5–6 minutes each side until golden and cooked through."},
+    {title:"Make the glaze",text:"Add minced garlic and grated ginger to the pan and cook for 30 seconds. Add honey, soy sauce and sesame oil. Bubble for 1–2 minutes until syrupy. Spoon the glaze over the thighs."},
+    {title:"Portion up",text:"Divide rice across 5 containers. Top with chicken thighs (whole or sliced) and broccoli. Drizzle over any remaining glaze. Sprinkle with sesame seeds."}
+   ],
+   tip:"Boneless thighs are more forgiving than breast \u2014 they stay juicy even if slightly overcooked."},
+  {id:"026",name:"Turkey & Sweet Potato Chili",short:"Turkey SP Chili",carbGroup:"other",color:"#8E24AA",
+   alhMacros:{kcal:509,p:54,c:50,f:9},atoMacros:{kcal:659,p:61,c:78,f:10},
+   ingredients:[
+    {key:"turkey-mince",name:"Turkey mince",cat:"meat",alh:{v:1025,u:"g"},ato:{v:1100,u:"g"}},
+    {key:"sweet-potato",name:"Sweet potato",cat:"produce",alh:{v:950,u:"g"},ato:{v:1475,u:"g"}},
+    {key:"chopped-tomatoes",name:"Chopped tomatoes",cat:"sauce",alh:{v:2.5,u:"cans"},ato:{v:3.5,u:"cans"}},
     {key:"onion",name:"Onion",cat:"produce",alh:{v:1,u:"pcs"},ato:{v:2,u:"pcs"}},
-    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:3,u:"pcs"},ato:{v:4,u:"pcs"}},
-    {key:"italian-herbs",name:"Italian herbs",cat:"pantry",taste:true},
-  ]},
-  {id:"028",name:"Sausage & Pepper Bake with Rice",short:"Sausage Pepper Bake",carbGroup:"rice",color:"#2E7D32",
-   note:"Aim for ~70 kcal per sausage (e.g. Heck chicken or light pork own-brand)",
-   alhMacros:{kcal:560,p:33,c:61,f:16},atoMacros:{kcal:710,p:42,c:78,f:21},
+    {key:"tomato-puree",name:"Tomato puree",cat:"sauce",alh:{v:5,u:"tsp"},ato:{v:7.5,u:"tsp"}},
+    {key:"chilli-powder",name:"Chilli powder",cat:"spice",alh:{v:3.5,u:"tsp"},ato:{v:6,u:"tsp"}},
+    {key:"smoked-paprika",name:"Smoked paprika",cat:"spice",alh:{v:3.5,u:"tsp"},ato:{v:6,u:"tsp"}},
+    {key:"ground-cumin",name:"Ground cumin",cat:"spice",alh:{v:2.5,u:"tsp"},ato:{v:3.5,u:"tsp"}},
+    {key:"chicken-stock",name:"Chicken stock",cat:"sauce",alh:{v:375,u:"ml"},ato:{v:625,u:"ml"}},
+    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:3,u:"pcs"},ato:{v:4,u:"pcs"}}
+   ],
+   steps:[
+    {title:"Brown the turkey",text:"Heat oil in a large heavy pan over high heat. Brown the turkey mince for 6–8 minutes, breaking up as it cooks."},
+    {title:"Soften the aromatics",text:"Add diced onion and minced garlic. Cook for 4 minutes until soft. Add chilli powder, smoked paprika and ground cumin. Stir for 1 minute."},
+    {title:"Add tomato base",text:"Stir in the tomato puree, chopped tomatoes and chicken stock. Bring to a simmer."},
+    {title:"Add sweet potato",text:"Dice sweet potato into 1.5cm cubes and add to the pot. Cover and simmer for 25–30 minutes until tender, stirring occasionally."},
+    {title:"Finish",text:"Taste and adjust seasoning. The chili should be thick \u2014 simmer uncovered for 5 minutes if it's too loose."},
+    {title:"Portion up",text:"Divide across 5 containers."}
+   ],
+   tip:"This is even better the next day. Freezes brilliantly \u2014 make a double batch."},
+  {id:"027",name:"Slow Cooker Beef Ragu",short:"Beef Ragu",carbGroup:"pasta",color:"#4E342E",
+   alhMacros:{kcal:498,p:39,c:55,f:13},atoMacros:{kcal:794,p:61,c:89,f:20},
    ingredients:[
-    {key:"low-cal-sausages",name:"Low-cal pork sausages",cat:"meat",alh:{v:8,u:"pcs"},ato:{v:10,u:"pcs"}},
+    {key:"braising-beef",name:"Braising beef",cat:"meat",alh:{v:625,u:"g"},ato:{v:975,u:"g"}},
+    {key:"wholewheat-pasta",name:"Wholewheat pasta",cat:"dry",alh:{v:350,u:"g"},ato:{v:575,u:"g"}},
+    {key:"chopped-tomatoes",name:"Chopped tomatoes",cat:"sauce",alh:{v:1.5,u:"cans"},ato:{v:2,u:"cans"}},
+    {key:"tomato-puree",name:"Tomato puree",cat:"sauce",alh:{v:3,u:"tsp"},ato:{v:4.5,u:"tsp"}},
+    {key:"beef-stock",name:"Beef stock",cat:"sauce",alh:{v:300,u:"ml"},ato:{v:450,u:"ml"}},
+    {key:"onion",name:"Onion",cat:"produce",alh:{v:1,u:"pcs"},ato:{v:2,u:"pcs"}},
+    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:3,u:"pcs"},ato:{v:4,u:"pcs"}}
+   ],
+   steps:[
+    {title:"Sear the beef",text:"Season braising beef generously. Heat oil in a heavy pan over high heat and sear on all sides until deeply browned, about 8 minutes. Don't skip this \u2014 it's where the flavour comes from."},
+    {title:"Build the base",text:"In the same pan, fry the diced onion for 5 minutes until soft. Add minced garlic, Italian herbs and tomato puree. Stir for 2 minutes."},
+    {title:"Slow cook",text:"Transfer everything to a slow cooker. Add chopped tomatoes and beef stock \u2014 the liquid should come halfway up the beef. Cook LOW 7–8 hours or HIGH 4–5 hours until beef shreds easily."},
+    {title:"Shred",text:"Remove the beef and shred with two forks. Return to the pot and stir through the sauce. Taste and season."},
+    {title:"Cook pasta and serve",text:"Cook wholewheat pasta in well-salted water until al dente. Toss the ragu through the pasta with a splash of pasta water."},
+    {title:"Portion up",text:"Divide across 5 containers."}
+   ],
+   tip:"No slow cooker? Use a Dutch oven at 150\u00b0C (130\u00b0C fan) for 3–3.5 hours."},
+  {id:"028",name:"Sausage & Pepper Bake with Rice",short:"Sausage Pepper Bake",carbGroup:"rice",color:"#2E7D32",note:"Aim for ~70 kcal per sausage (e.g. Heck chicken or light pork own-brand)",
+   alhMacros:{kcal:510,p:27,c:70,f:14},atoMacros:{kcal:719,p:31,c:112,f:16},
+   ingredients:[
+    {key:"low-cal-sausages",name:"Low-cal pork sausages",cat:"meat",alh:{v:15,u:"pcs"},ato:{v:15,u:"pcs"}},
     {key:"mixed-peppers",name:"Mixed peppers",cat:"produce",alh:{v:2,u:"pcs"},ato:{v:3,u:"pcs"}},
     {key:"onion",name:"Onion",cat:"produce",alh:{v:1,u:"pcs"},ato:{v:2,u:"pcs"}},
-    {key:"long-grain-rice",name:"Long-grain rice",cat:"dry",alh:{v:220,u:"g"},ato:{v:355,u:"g"}},
-    {key:"smoked-paprika",name:"Smoked paprika",cat:"spice",alh:{v:1.5,u:"tsp"},ato:{v:2.5,u:"tsp"}},
-    {key:"olive-oil",name:"Olive oil",cat:"sauce",alh:{v:1,u:"tsp"},ato:{v:2,u:"tsp"}},
-  ]},
+    {key:"long-grain-rice",name:"Long-grain rice",cat:"dry",alh:{v:375,u:"g"},ato:{v:625,u:"g"}},
+    {key:"smoked-paprika",name:"Smoked paprika",cat:"spice",alh:{v:2.5,u:"tsp"},ato:{v:4.5,u:"tsp"}},
+    {key:"olive-oil",name:"Olive oil",cat:"sauce",alh:{v:1.5,u:"tsp"},ato:{v:3.5,u:"tsp"}}
+   ],
+   steps:[
+    {title:"Preheat oven",text:"Preheat oven to 210\u00b0C (190\u00b0C fan)."},
+    {title:"Prep the veg",text:"Slice mixed peppers into strips and onion into wedges. Leave sausages whole or slice into thirds."},
+    {title:"Season and roast",text:"Toss peppers, onion and sausages with olive oil, smoked paprika, salt and pepper on a roasting tray. Roast for 25–30 minutes, turning halfway, until caramelised."},
+    {title:"Cook the rice",text:"Rinse long-grain rice. Cook in salted water for 12 minutes, then rest covered for 5 minutes."},
+    {title:"Portion up",text:"Divide rice across 5 containers. Top with the sausage and pepper bake."}
+   ],
+   tip:"Air fryer alternative \u2014 190\u00b0C for 18–20 minutes, shaking halfway. Better caramelisation."},
   {id:"029",name:"Cottage Pie",short:"Cottage Pie",carbGroup:"potato",color:"#455A64",
-   alhMacros:{kcal:580,p:38,c:65,f:12},atoMacros:{kcal:730,p:48,c:82,f:16},
+   alhMacros:{kcal:494,p:36,c:50,f:16},atoMacros:{kcal:754,p:54,c:80,f:23},
    ingredients:[
-    {key:"lean-beef-mince",name:"Lean beef mince",cat:"meat",alh:{v:400,u:"g"},ato:{v:640,u:"g"}},
-    {key:"white-potatoes",name:"White potatoes",cat:"produce",alh:{v:700,u:"g"},ato:{v:1100,u:"g"}},
+    {key:"lean-beef-mince",name:"Lean beef mince",cat:"meat",alh:{v:675,u:"g"},ato:{v:1000,u:"g"}},
+    {key:"white-potatoes",name:"White potatoes",cat:"produce",alh:{v:1200,u:"g"},ato:{v:1875,u:"g"}},
     {key:"onion",name:"Onion",cat:"produce",alh:{v:1,u:"pcs"},ato:{v:2,u:"pcs"}},
-    {key:"frozen-peas",name:"Frozen peas",cat:"produce",alh:{v:100,u:"g"},ato:{v:160,u:"g"}},
-    {key:"beef-stock",name:"Beef stock",cat:"sauce",alh:{v:150,u:"ml"},ato:{v:250,u:"ml"}},
-    {key:"worcestershire-sauce",name:"Worcestershire sauce",cat:"sauce",alh:{v:1.5,u:"tsp"},ato:{v:2.5,u:"tsp"}},
-    {key:"tomato-puree",name:"Tomato puree",cat:"sauce",alh:{v:1.5,u:"tsp"},ato:{v:2.5,u:"tsp"}},
-    {key:"butter",name:"Butter",cat:"dairy",alh:{v:20,u:"g"},ato:{v:30,u:"g"}},
-    {key:"semi-skimmed-milk",name:"Semi-skimmed milk",cat:"dairy",alh:{v:50,u:"ml"},ato:{v:80,u:"ml"}},
-    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:2,u:"pcs"},ato:{v:3,u:"pcs"}},
-    {key:"black-pepper",name:"Black pepper",cat:"pantry",taste:true},
-  ]},
+    {key:"frozen-peas",name:"Frozen peas",cat:"produce",alh:{v:170,u:"g"},ato:{v:275,u:"g"}},
+    {key:"beef-stock",name:"Beef stock",cat:"sauce",alh:{v:250,u:"ml"},ato:{v:425,u:"ml"}},
+    {key:"worcestershire-sauce",name:"Worcestershire sauce",cat:"sauce",alh:{v:2.5,u:"tsp"},ato:{v:4.5,u:"tsp"}},
+    {key:"tomato-puree",name:"Tomato puree",cat:"sauce",alh:{v:2.5,u:"tsp"},ato:{v:4.5,u:"tsp"}},
+    {key:"butter",name:"Butter",cat:"dairy",alh:{v:35,u:"g"},ato:{v:50,u:"g"}},
+    {key:"semi-skimmed-milk",name:"Semi-skimmed milk",cat:"dairy",alh:{v:90,u:"ml"},ato:{v:125,u:"ml"}},
+    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:2,u:"pcs"},ato:{v:3,u:"pcs"}}
+   ],
+   steps:[
+    {title:"Boil potatoes",text:"Chop white potatoes into 3cm chunks. Boil in salted water for 18–20 minutes until very tender."},
+    {title:"Brown the beef",text:"Heat oil in a large pan over high heat. Brown the lean beef mince for 6–8 minutes."},
+    {title:"Soften aromatics",text:"Add diced onion and minced garlic. Cook for 5 minutes until soft."},
+    {title:"Build the sauce",text:"Add tomato puree, Worcestershire sauce and beef stock. Simmer for 10 minutes until reduced and thickened. Stir in the frozen peas for the last 2 minutes."},
+    {title:"Make the mash",text:"Drain the potatoes and return to the pan. Mash with butter, warmed milk, salt and pepper until smooth."},
+    {title:"Assemble and bake",text:"Transfer the beef filling to an oven dish. Top with the mash and rough up with a fork for crispy edges. Bake at 200\u00b0C (180\u00b0C fan) for 20 minutes until golden."},
+    {title:"Portion up",text:"Cool slightly. Divide across 5 containers."}
+   ],
+   tip:"Roughing up the mash with a fork before baking gives crispy peaks \u2014 far better than smooth mash."},
   {id:"030",name:"Firecracker Ground Turkey & Rice Noodles",short:"Firecracker Turkey",carbGroup:"noodles",color:"#BF360C",
-   alhMacros:{kcal:590,p:42,c:70,f:11},atoMacros:{kcal:745,p:53,c:89,f:14},
+   alhMacros:{kcal:500,p:41,c:65,f:8},atoMacros:{kcal:777,p:61,c:106,f:12},
    ingredients:[
-    {key:"turkey-mince",name:"Turkey mince",cat:"meat",alh:{v:420,u:"g"},ato:{v:670,u:"g"}},
-    {key:"rice-noodles",name:"Rice noodles",cat:"dry",alh:{v:200,u:"g"},ato:{v:320,u:"g"}},
-    {key:"snap-peas",name:"Snap peas",cat:"produce",alh:{v:150,u:"g"},ato:{v:240,u:"g"}},
-    {key:"soy-sauce",name:"Soy sauce",cat:"sauce",alh:{v:3,u:"tsp"},ato:{v:5,u:"tsp"}},
-    {key:"honey",name:"Honey",cat:"sauce",alh:{v:2,u:"tsp"},ato:{v:3,u:"tsp"}},
-    {key:"sesame-oil",name:"Sesame oil",cat:"sauce",alh:{v:1,u:"tsp"},ato:{v:1.5,u:"tsp"}},
-    {key:"chilli-flakes",name:"Chilli flakes",cat:"spice",alh:{v:1.5,u:"tsp"},ato:{v:2.5,u:"tsp"}},
-    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:3,u:"pcs"},ato:{v:4,u:"pcs"}},
-    {key:"fresh-ginger",name:"Fresh ginger",cat:"pantry",taste:true},
-  ]},
+    {key:"turkey-mince",name:"Turkey mince",cat:"meat",alh:{v:750,u:"g"},ato:{v:1100,u:"g"}},
+    {key:"rice-noodles",name:"Rice noodles",cat:"dry",alh:{v:350,u:"g"},ato:{v:575,u:"g"}},
+    {key:"snap-peas",name:"Snap peas",cat:"produce",alh:{v:275,u:"g"},ato:{v:425,u:"g"}},
+    {key:"soy-sauce",name:"Soy sauce",cat:"sauce",alh:{v:5.5,u:"tsp"},ato:{v:9,u:"tsp"}},
+    {key:"honey",name:"Honey",cat:"sauce",alh:{v:3.5,u:"tsp"},ato:{v:5.5,u:"tsp"}},
+    {key:"sesame-oil",name:"Sesame oil",cat:"sauce",alh:{v:2,u:"tsp"},ato:{v:2.5,u:"tsp"}},
+    {key:"chilli-flakes",name:"Chilli flakes",cat:"spice",alh:{v:2.5,u:"tsp"},ato:{v:4.5,u:"tsp"}},
+    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:3,u:"pcs"},ato:{v:4,u:"pcs"}}
+   ],
+   steps:[
+    {title:"Soak noodles",text:"Soak rice noodles in just-boiled water for 5 minutes until tender. Drain and rinse with cold water."},
+    {title:"Brown the turkey",text:"Heat oil in a wok over high heat. Brown the turkey mince for 6 minutes, breaking up as it cooks."},
+    {title:"Add aromatics",text:"Add minced garlic and grated ginger. Stir-fry for 30 seconds."},
+    {title:"Make the sauce",text:"Add soy sauce, honey, sesame oil and chilli flakes. Toss with the turkey until sticky, about 1–2 minutes."},
+    {title:"Add veg and noodles",text:"Add snap peas and stir-fry for 1 minute. Add the rice noodles and toss everything together over high heat for 1–2 minutes."},
+    {title:"Portion up",text:"Divide across 5 containers."}
+   ],
+   tip:"Rice noodles cool quickly \u2014 keep the wok hot for the final toss to bring everything back up to temperature."},
   {id:"031",name:"Korean-Style Ground Beef Bowls",short:"Korean Beef Bowls",carbGroup:"rice",color:"#D32F2F",
-   alhMacros:{kcal:600,p:39,c:70,f:14},atoMacros:{kcal:770,p:50,c:90,f:18},
+   alhMacros:{kcal:500,p:33,c:64,f:11},atoMacros:{kcal:786,p:51,c:103,f:17},
    ingredients:[
-    {key:"lean-beef-mince",name:"Lean beef mince",cat:"meat",alh:{v:415,u:"g"},ato:{v:660,u:"g"}},
-    {key:"jasmine-rice",name:"Jasmine rice",cat:"dry",alh:{v:235,u:"g"},ato:{v:375,u:"g"}},
-    {key:"soy-sauce",name:"Soy sauce",cat:"sauce",alh:{v:4,u:"tsp"},ato:{v:6,u:"tsp"}},
-    {key:"sesame-oil",name:"Sesame oil",cat:"sauce",alh:{v:1,u:"tsp"},ato:{v:1.5,u:"tsp"}},
-    {key:"honey",name:"Honey",cat:"sauce",alh:{v:2.5,u:"tsp"},ato:{v:4,u:"tsp"}},
+    {key:"lean-beef-mince",name:"Lean beef mince",cat:"meat",alh:{v:650,u:"g"},ato:{v:1000,u:"g"}},
+    {key:"jasmine-rice",name:"Jasmine rice",cat:"dry",alh:{v:375,u:"g"},ato:{v:600,u:"g"}},
+    {key:"soy-sauce",name:"Soy sauce",cat:"sauce",alh:{v:6.5,u:"tsp"},ato:{v:9.5,u:"tsp"}},
+    {key:"sesame-oil",name:"Sesame oil",cat:"sauce",alh:{v:1.5,u:"tsp"},ato:{v:2.5,u:"tsp"}},
+    {key:"honey",name:"Honey",cat:"sauce",alh:{v:4,u:"tsp"},ato:{v:6.5,u:"tsp"}},
     {key:"spring-onions",name:"Spring onions",cat:"produce",alh:{v:3,u:"pcs"},ato:{v:4,u:"pcs"}},
-    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:3,u:"pcs"},ato:{v:4,u:"pcs"}},
-    {key:"fresh-ginger",name:"Fresh ginger",cat:"pantry",taste:true},
-    {key:"sesame-seeds",name:"Sesame seeds",cat:"pantry",taste:true},
-  ]},
+    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:3,u:"pcs"},ato:{v:4,u:"pcs"}}
+   ],
+   steps:[
+    {title:"Cook the rice",text:"Rinse jasmine rice. Cook in salted water for 10 minutes, then rest covered for 5 minutes."},
+    {title:"Brown the beef",text:"Heat oil in a wok over high heat. Brown the beef mince for 6–8 minutes."},
+    {title:"Make the glaze",text:"Add minced garlic and grated ginger. Stir-fry for 30 seconds. Add soy sauce, honey and sesame oil. Toss for 1–2 minutes until sticky and glossy."},
+    {title:"Combine",text:"Stir the cooked rice through the beef in the wok, or serve separately."},
+    {title:"Portion up",text:"Divide across 5 containers. Top with sliced spring onions and sesame seeds."}
+   ],
+   tip:"Add a fried egg per portion if you want to make this more like classic Korean bibimbap (would add ~75 kcal per portion)."},
 ];
 
 const CARB_GROUPS=[
@@ -1126,6 +1426,87 @@ function renderShopPlan(byCat){
 function reassign(key,newShop){overrides[key]=newShop;renderShopping();}
 function clearAll(){selSame.clear();selAlh.clear();selAto.clear();haveRows.clear();overrides={};renderAll();}
 function renderAll(){renderMealSelector();renderShopping();}
+
+// ─── RECIPE VIEW ─────────────────────────────────────────────────
+function initRecipeSelect(){
+  const sel=document.getElementById('recipe-select');
+  if(!sel)return;
+  const groups={};
+  MEALS.forEach(m=>{if(!groups[m.carbGroup])groups[m.carbGroup]=[];groups[m.carbGroup].push(m);});
+  let html='<option value="">— Select a meal —</option>';
+  CARB_GROUPS.forEach(g=>{
+    const meals=(groups[g.key]||[]).sort((a,b)=>a.id.localeCompare(b.id));
+    if(!meals.length)return;
+    html+=`<optgroup label="${g.emoji} ${g.label}">`;
+    meals.forEach(m=>{html+=`<option value="${m.id}">${m.id} — ${m.name}</option>`;});
+    html+=`</optgroup>`;
+  });
+  sel.innerHTML=html;
+}
+
+function renderRecipe(id){
+  const wrap=document.getElementById('recipe-display');
+  if(!id){wrap.innerHTML='<div class="recipe-empty"><p>No meal selected</p><small>Choose a meal above to see ingredient amounts and cooking instructions.</small></div>';return;}
+  const m=MEALS.find(x=>x.id===id);
+  if(!m){wrap.innerHTML='';return;}
+  const steps=m.steps||[];
+  const tip=m.tip||'';
+  
+  // Ingredient rows (re-shown so you can measure raw ingredients before cooking)
+  let ingRows='';
+  m.ingredients.forEach(ing=>{
+    if(ing.taste){
+      ingRows+=`<tr><td>${ing.name}</td><td class="amt amt-taste">To taste</td><td class="amt amt-taste">To taste</td></tr>`;
+    } else {
+      ingRows+=`<tr><td>${ing.name}</td>
+        <td class="amt amt-alh">${fmt(ing.alh.v,ing.alh.u)}</td>
+        <td class="amt amt-ato">${fmt(ing.ato.v,ing.ato.u)}</td></tr>`;
+    }
+  });
+  
+  let stepsHtml='';
+  steps.forEach((s,i)=>{
+    stepsHtml+=`<div class="recipe-step">
+      <div class="recipe-step-num">${i+1}</div>
+      <div class="recipe-step-content">
+        <div class="recipe-step-title">${s.title}</div>
+        <div class="recipe-step-text">${s.text}</div>
+      </div>
+    </div>`;
+  });
+  
+  wrap.innerHTML=`<div class="recipe-card">
+    <div class="recipe-header">
+      <div>
+        <div class="recipe-id">${m.id}</div>
+        <div class="recipe-title">${m.name}</div>
+      </div>
+      <div class="recipe-macros">
+        <div class="macro-row"><span class="macro-who alh">ALH</span><span class="macro-val">${m.alhMacros.kcal} kcal · ${m.alhMacros.p}p · ${m.alhMacros.c}c · ${m.alhMacros.f}f</span></div>
+        <div class="macro-row"><span class="macro-who ato">ATO</span><span class="macro-val">${m.atoMacros.kcal} kcal · ${m.atoMacros.p}p · ${m.atoMacros.c}c · ${m.atoMacros.f}f</span></div>
+      </div>
+    </div>
+    <div class="recipe-body">
+      ${m.note?`<div class="recipe-note">🌭 ${m.note}</div>`:''}
+      <div class="recipe-section-label">Ingredients · 5 portions each (weigh before cooking)</div>
+      <table class="recipe-ing-table">
+        <thead><tr>
+          <th>Ingredient</th>
+          <th class="col-alh">ALH · 5 servings</th>
+          <th class="col-ato">ATO · 5 servings</th>
+        </tr></thead>
+        <tbody>${ingRows}</tbody>
+      </table>
+      <div class="recipe-section-label">Method</div>
+      <div class="recipe-steps">${stepsHtml}</div>
+      ${tip?`<div class="recipe-tip"><div class="recipe-tip-label">💡 Tip</div>${tip}</div>`:''}
+    </div>
+  </div>`;
+}
+
+initRecipeSelect();
+renderRecipe('');
+
 renderAll();
 </script>
 </body>
