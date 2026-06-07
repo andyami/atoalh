@@ -1,0 +1,1154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ATO & ALH — Weekly Meal Planner</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0c0e0d;
+  --surface: #141714;
+  --surface2: #1c201c;
+  --border: #222822;
+  --border-light: #1e221e;
+  --text: #dde6df;
+  --text-muted: #586860;
+  --ato: #4a9eff;
+  --ato-bg: rgba(74,158,255,0.08);
+  --ato-label: #4a9eff;
+  --ato-border: rgba(74,158,255,0.22);
+  --alh: #3ddc84;
+  --alh-bg: rgba(61,220,132,0.08);
+  --alh-label: #3ddc84;
+  --alh-border: rgba(61,220,132,0.22);
+  --pantry-accent: #c8a97a;
+  --cereals-accent: #a07ae6;
+  --fridge-accent: #4a9eff;
+  --other-accent: #3ddc84;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  height: 100%;
+  font-family: 'DM Mono', monospace;
+  background: var(--bg);
+  color: var(--text);
+  overflow: hidden;
+}
+
+body { display: flex; flex-direction: column; }
+
+/* ── HEADER ─────────────────────────────────────────────────────────────── */
+
+header {
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+  padding: 14px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+
+.header-left h1 {
+  font-family: 'Syne', sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text);
+  letter-spacing: -0.3px;
+  line-height: 1;
+}
+
+.week-label {
+  font-size: 10px;
+  color: var(--text-muted);
+  margin-top: 3px;
+  font-family: 'DM Mono', monospace;
+  letter-spacing: 0.3px;
+}
+
+.header-right { display: flex; align-items: center; gap: 16px; }
+
+.legend { display: flex; gap: 12px; }
+
+.legend-dot {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+  font-family: 'DM Mono', monospace;
+}
+
+.legend-dot::before {
+  content: '';
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.legend-dot.ato::before { background: var(--ato); }
+.legend-dot.alh::before { background: var(--alh); }
+
+.week-nav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.week-arrow {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  font-size: 14px;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+  flex-shrink: 0;
+  line-height: 1;
+}
+.week-arrow:hover { background: var(--surface); color: var(--text); }
+
+.week-today-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-family: 'DM Mono', monospace;
+  font-size: 9px;
+  cursor: pointer;
+  letter-spacing: 0.5px;
+  padding: 0 2px;
+  transition: color 0.15s;
+  opacity: 0;
+}
+.week-today-btn:hover { color: var(--ato); }
+
+.reset-btn {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.3px;
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.reset-btn:hover { background: var(--surface); color: var(--text); }
+
+/* ── APP BODY ────────────────────────────────────────────────────────────── */
+
+.app-body {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+}
+
+/* ── INVENTORY PANEL ─────────────────────────────────────────────────────── */
+
+.inventory-panel {
+  width: 252px;
+  min-width: 252px;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.panel-header {
+  padding: 12px 12px 10px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.panel-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.add-item-btn {
+  width: 100%;
+  padding: 7px 12px;
+  background: var(--surface2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.4px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+.add-item-btn:hover { background: var(--border); color: var(--text); }
+
+/* Add form */
+.add-form {
+  padding: 10px 12px;
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+  display: none;
+  flex-direction: column;
+  gap: 7px;
+}
+.add-form.open { display: flex; }
+
+.add-form input, .add-form select {
+  width: 100%;
+  padding: 7px 9px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-family: 'DM Mono', monospace;
+  font-size: 12px;
+  background: var(--surface);
+  color: var(--text);
+  outline: none;
+}
+.add-form input:focus, .add-form select:focus {
+  border-color: var(--ato);
+}
+.add-form select option { background: var(--surface); }
+
+.add-form-btns { display: flex; gap: 6px; }
+.add-form-btns button {
+  flex: 1;
+  padding: 7px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-family: 'DM Mono', monospace;
+  font-size: 11px;
+  cursor: pointer;
+  letter-spacing: 0.3px;
+  transition: background 0.15s;
+}
+.btn-confirm { background: var(--ato); color: #fff; border-color: var(--ato); }
+.btn-cancel  { background: var(--surface); color: var(--text-muted); }
+.btn-confirm:hover { opacity: 0.85; }
+.btn-cancel:hover  { background: var(--border); }
+
+/* Inventory groups */
+.inv-groups { overflow-y: auto; flex: 1; padding: 4px 0 10px; }
+
+.inv-group { border-bottom: 1px solid var(--border); }
+.inv-group:last-child { border-bottom: none; }
+
+.inv-group-header {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  cursor: pointer;
+  user-select: none;
+  gap: 5px;
+  transition: background 0.1s;
+}
+.inv-group-header:hover { background: var(--surface2); }
+
+.inv-group-label {
+  font-family: 'Syne', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  flex: 1;
+}
+.inv-group-label.pantry  { color: var(--pantry-accent); }
+.inv-group-label.cereals { color: var(--cereals-accent); }
+.inv-group-label.fridge  { color: var(--fridge-accent); }
+.inv-group-label.other   { color: var(--other-accent); }
+
+.inv-count {
+  font-size: 9px;
+  font-family: 'DM Mono', monospace;
+  color: var(--text-muted);
+  background: var(--surface2);
+  padding: 1px 5px;
+  border-radius: 10px;
+}
+
+.inv-chevron {
+  font-size: 9px;
+  color: var(--text-muted);
+  transition: transform 0.18s;
+}
+.inv-chevron.collapsed { transform: rotate(-90deg); }
+
+.inv-items {
+  padding: 2px 8px 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.inv-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 7px 5px 9px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  cursor: grab;
+  transition: background 0.1s, border-color 0.1s, transform 0.1s;
+  user-select: none;
+  background: var(--surface2);
+}
+.inv-item:hover {
+  background: var(--border);
+  border-color: #2e342e;
+  transform: translateY(-1px);
+}
+.inv-item:active { cursor: grabbing; transform: none; }
+.inv-item.dragging { opacity: 0.35; }
+
+.inv-item-name { font-size: 11.5px; flex: 1; line-height: 1.3; color: var(--text); }
+
+.inv-del {
+  background: none;
+  border: none;
+  color: var(--border);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  transition: color 0.12s;
+  flex-shrink: 0;
+}
+.inv-del:hover { color: #e05252; }
+
+.inv-empty {
+  font-size: 11px;
+  color: var(--text-muted);
+  padding: 3px 7px 5px;
+  font-style: italic;
+}
+
+/* ── GRID AREA ───────────────────────────────────────────────────────────── */
+
+.grid-area {
+  flex: 1;
+  min-width: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.meal-grid {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 820px;
+  table-layout: fixed;
+  flex: 1;
+}
+
+/* Header row */
+.meal-grid thead th {
+  background: var(--surface2);
+  color: var(--text-muted);
+  text-align: center;
+  padding: 8px 6px;
+  font-family: 'DM Mono', monospace;
+  font-weight: 400;
+  border: 1px solid var(--border);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.row-label-header { width: 72px; }
+.day-name  { display: block; font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--text); font-family: 'Syne', sans-serif; font-weight: 700; }
+.day-date  { display: block; font-size: 9.5px; font-family: 'DM Mono', monospace; color: var(--text-muted); margin-top: 2px; }
+
+/* Row label */
+.row-label {
+  background: var(--surface2);
+  width: 72px;
+  vertical-align: middle;
+  padding: 6px 4px;
+  text-align: center;
+  border: 1px solid var(--border);
+}
+.row-label-inner {
+  font-family: 'Syne', sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  white-space: nowrap;
+}
+
+/* Day cells */
+.day-cell {
+  padding: 0;
+  vertical-align: top;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  transition: background 0.12s;
+}
+.day-cell.drag-over {
+  background: rgba(74,158,255,0.06) !important;
+  outline: 2px dashed var(--ato);
+  outline-offset: -2px;
+}
+
+/* Sub-cells */
+.sub-cell {
+  display: flex;
+  flex-direction: column;
+  padding: 5px 7px 5px 6px;
+  gap: 4px;
+  height: 50%;
+  min-height: 60px;
+}
+.sub-cell.ato-sub { background: var(--ato-bg); }
+.sub-cell.alh-sub { background: var(--alh-bg); border-top: 1px solid var(--border); }
+
+/* Person label */
+.person-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 8px;
+  font-weight: 500;
+  letter-spacing: 0.8px;
+  padding: 1px 4px;
+  border-radius: 3px;
+  display: inline-block;
+  flex-shrink: 0;
+  align-self: flex-start;
+  margin-bottom: 1px;
+}
+.ato-sub .person-label { background: var(--ato-border); color: var(--ato); }
+.alh-sub .person-label { background: var(--alh-border); color: var(--alh); }
+
+/* Title row (meal name) */
+.title-row {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  position: relative;
+}
+
+.meal-title {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-family: 'Syne', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text);
+  outline: none;
+  padding: 0;
+  line-height: 1.2;
+  min-width: 0;
+}
+.meal-title::placeholder { color: var(--border); font-weight: 700; font-size: 11.5px; font-family: 'Syne', sans-serif; }
+.ato-sub .meal-title:focus { color: var(--ato); }
+.alh-sub .meal-title:focus { color: var(--alh); }
+
+/* Content row (notes / dragged items) */
+.content-row {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.content-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-family: 'DM Mono', monospace;
+  font-size: 10.5px;
+  color: var(--text-muted);
+  outline: none;
+  padding: 0;
+  line-height: 1.2;
+  min-width: 0;
+}
+.content-input::placeholder { color: var(--border); font-size: 10px; }
+.ato-sub .content-input:focus { color: var(--ato); }
+.alh-sub .content-input:focus { color: var(--alh); }
+
+/* Shared clear × */
+.clear-x {
+  background: none;
+  border: none;
+  color: var(--border);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  transition: color 0.1s;
+  flex-shrink: 0;
+  display: none;
+}
+.clear-x:hover { color: #e05252; }
+.has-value .clear-x { display: block; }
+
+/* Autocomplete */
+.ac-list {
+  position: absolute;
+  top: calc(100% + 2px);
+  left: 0;
+  width: 290px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  z-index: 500;
+  overflow: hidden;
+  display: none;
+}
+.ac-list.open { display: block; }
+
+.ac-item {
+  padding: 7px 11px;
+  font-size: 11.5px;
+  font-family: 'DM Mono', monospace;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  transition: background 0.07s;
+  color: var(--text);
+  border-bottom: 1px solid var(--border);
+}
+.ac-item:last-child { border-bottom: none; }
+.ac-item:hover, .ac-item.active { background: var(--surface2); }
+
+.ac-id {
+  font-family: 'DM Mono', monospace;
+  font-size: 9.5px;
+  color: var(--text-muted);
+  background: var(--surface2);
+  padding: 1px 4px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+
+/* ── TOAST ───────────────────────────────────────────────────────────────── */
+
+.toast {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%) translateY(50px);
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  color: var(--text);
+  padding: 9px 18px;
+  border-radius: 8px;
+  font-size: 11.5px;
+  font-family: 'DM Mono', monospace;
+  z-index: 9999;
+  transition: transform 0.22s cubic-bezier(0.34,1.56,0.64,1), opacity 0.22s;
+  opacity: 0;
+  pointer-events: none;
+  white-space: nowrap;
+}
+.toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #bbb; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <h1>Weekly Meal Planner</h1>
+    <div class="week-nav">
+      <button class="week-arrow" onclick="shiftWeek(-1)" title="Previous week">&#8249;</button>
+      <p class="week-label" id="weekLabel">Loading…</p>
+      <button class="week-arrow" onclick="shiftWeek(1)" title="Next week">&#8250;</button>
+      <button class="week-today-btn" id="todayBtn" onclick="goToday()" title="Jump to current week">TODAY</button>
+    </div>
+  </div>
+  <div class="header-right">
+    <div class="legend">
+      <span class="legend-dot ato">ATO</span>
+      <span class="legend-dot alh">ALH</span>
+    </div>
+    <button class="reset-btn" onclick="confirmReset()">↺ Reset Week</button>
+  </div>
+</header>
+
+<div class="app-body">
+
+  <aside class="inventory-panel">
+    <div class="panel-header">
+      <div class="panel-title">📦 Inventory</div>
+      <button class="add-item-btn" onclick="toggleAddForm()">+ Add Item</button>
+    </div>
+    <div class="add-form" id="addForm">
+      <input type="text" id="newItemName" placeholder="Item name…" autocomplete="off">
+      <select id="newItemGroup">
+        <option value="pantry">🥫 Pantry</option>
+        <option value="cereals">🥣 Cereals</option>
+        <option value="fridge">❄️ Fridge</option>
+        <option value="other">🧴 Other</option>
+      </select>
+      <div class="add-form-btns">
+        <button class="btn-confirm" onclick="addItem()">Add</button>
+        <button class="btn-cancel" onclick="toggleAddForm()">Cancel</button>
+      </div>
+    </div>
+    <div class="inv-groups" id="invGroups"></div>
+  </aside>
+
+  <main class="grid-area" id="gridArea">
+    <table class="meal-grid" id="mealGrid"></table>
+  </main>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════════════════════════════════
+// DATA
+// ══════════════════════════════════════════════════════════════════════════
+
+const MMP_MEALS = [
+  {id:'001',name:'Smoky Beef & Bacon Pasta Bake'},
+  {id:'002',name:'Harissa Turkey, Potato & Egg'},
+  {id:'003',name:'Chicken Meatballs with Creamy Mash'},
+  {id:'004',name:'Sticky Noodle Bowl with Turkey & Bacon'},
+  {id:'005',name:'Creamy Turkey & Bacon Pasta'},
+  {id:'006',name:'BBQ Chicken & Potato Traybake'},
+  {id:'007',name:'Asian Beef & Noodle Stir-Fry'},
+  {id:'008',name:'Cajun Chicken & Rice Bowl'},
+  {id:'009',name:'Teriyaki Turkey & Udon Stir-Fry'},
+  {id:'010',name:'Beef & Sweet Potato Chilli'},
+  {id:'011',name:'Garlic Butter Chicken Gnocchi'},
+  {id:'012',name:'Chipotle Pulled Chicken & Rice'},
+  {id:'013',name:'Pesto Chicken & Orzo'},
+  {id:'014',name:'Honey Garlic Salmon & Rice'},
+  {id:'015',name:'Soy Glazed Pork & Noodles'},
+  {id:'016',name:'Chicken & Chorizo Rice'},
+  {id:'017',name:'Thai Green Turkey & Rice'},
+  {id:'018',name:'Sweet Potato Beef Noodle Stir-Fry'},
+  {id:'019',name:'Chicken & Spinach Bake'},
+  {id:'020',name:'Chicken Arrabiata'},
+  {id:'021',name:'Turkey Pasta Bake'},
+  {id:'022',name:'Sausage & Sun-Dried Tomato Pasta'},
+  {id:'023',name:'Beef Pasta Bake'},
+  {id:'024',name:'Sweet Chilli Beef Noodles'},
+  {id:'025',name:'Honey Garlic Chicken Thighs & Rice'},
+  {id:'026',name:'Turkey & Sweet Potato Chilli'},
+  {id:'027',name:'Slow Cooker Beef Ragu'},
+  {id:'028',name:'Sausage & Pepper Bake'},
+  {id:'029',name:'Cottage Pie'},
+  {id:'030',name:'Firecracker Turkey Noodles'},
+  {id:'031',name:'Korean Beef Bowls'},
+];
+
+const DEFAULT_INVENTORY = {
+  pantry:  ['Tuna','Chicken Soup','Chicken Broth','Sweetcorn','Pasta','Wholegrain Rice','Cup a Soup','Vegetable Rice','Chicken & Mushroom Pasta n Sauce','Curry Pot Noodle','Pesto','Pomodoro Sauce','Udon Noodles'],
+  cereals: ['Chocolate Protein Porridge','Malted Wheats','Rice Krispies','Weetabix','Oats','Crunchy Nut'],
+  fridge:  ['Turkey','Avocado','Fresh Pasta','Pastrami','Ham','Hummus'],
+  other:   ['Almond Butter','Peanut Butter (Smooth)','Golden Syrup','Honey','Chia Seeds','Flaxseeds','Wraps','Bagels'],
+};
+
+const GROUPS = [
+  {key:'pantry',  label:'🥫 Pantry',  color:'pantry'},
+  {key:'cereals', label:'🥣 Cereals', color:'cereals'},
+  {key:'fridge',  label:'❄️ Fridge',  color:'fridge'},
+  {key:'other',   label:'🧴 Other',   color:'other'},
+];
+
+const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+const ROWS = [
+  {key:'breakfast', emoji:'🌅', label:'BREAKFAST'},
+  {key:'lunch',     emoji:'🥗', label:'LUNCH'},
+  {key:'dinner',    emoji:'🍽️', label:'DINNER'},
+];
+
+// ══════════════════════════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════════════════════════
+
+let inventory   = loadInventory();
+let gridState   = loadGrid();       // keys: r_c_person_t (title), r_c_person_c (content)
+let collapsed   = {};
+let lastInput   = null;
+let lastInputAt = 0;
+let weekOffset  = parseInt(localStorage.getItem('wmp_week_offset') || '0', 10);
+
+// ══════════════════════════════════════════════════════════════════════════
+// STORAGE
+// ══════════════════════════════════════════════════════════════════════════
+
+function loadInventory() {
+  try { const s = localStorage.getItem('wmp_inventory'); if (s) return JSON.parse(s); } catch(e){}
+  const inv = {};
+  for (const g of GROUPS) inv[g.key] = [...DEFAULT_INVENTORY[g.key]];
+  return inv;
+}
+function saveInventory() { localStorage.setItem('wmp_inventory', JSON.stringify(inventory)); }
+
+function loadGrid() {
+  try {
+    const s = localStorage.getItem('wmp_grid');
+    if (s) {
+      const raw = JSON.parse(s);
+      // Migrate old single-field keys (r_c_person) → title keys (r_c_person_t)
+      const migrated = {};
+      for (const [k, v] of Object.entries(raw)) {
+        if (!k.endsWith('_t') && !k.endsWith('_c')) {
+          migrated[k + '_t'] = v;
+        } else {
+          migrated[k] = v;
+        }
+      }
+      return migrated;
+    }
+  } catch(e){}
+  return {};
+}
+function saveGrid() { localStorage.setItem('wmp_grid', JSON.stringify(gridState)); }
+
+// ══════════════════════════════════════════════════════════════════════════
+// WEEK DATES
+// ══════════════════════════════════════════════════════════════════════════
+
+function getWeekDates() {
+  const today = new Date();
+  const dow = today.getDay();
+  const diff = (dow === 0) ? -6 : 1 - dow;
+  const mon = new Date(today);
+  mon.setDate(today.getDate() + diff + weekOffset * 7);
+  return Array.from({length:7}, (_, i) => {
+    const d = new Date(mon);
+    d.setDate(mon.getDate() + i);
+    return d;
+  });
+}
+
+function shiftWeek(dir) {
+  weekOffset += dir;
+  localStorage.setItem('wmp_week_offset', weekOffset);
+  updateTodayBtn();
+  renderGrid();
+}
+
+function goToday() {
+  weekOffset = 0;
+  localStorage.setItem('wmp_week_offset', 0);
+  updateTodayBtn();
+  renderGrid();
+}
+
+function updateTodayBtn() {
+  const btn = document.getElementById('todayBtn');
+  if (btn) btn.style.opacity = weekOffset === 0 ? '0' : '1';
+}
+
+function fmtShort(d) {
+  const M = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return `${d.getDate()} ${M[d.getMonth()]}`;
+}
+function fmtLong(d) {
+  const M = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return `${d.getDate()} ${M[d.getMonth()]} ${d.getFullYear()}`;
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// GRID RENDER
+// ══════════════════════════════════════════════════════════════════════════
+
+function renderGrid() {
+  const dates = getWeekDates();
+  document.getElementById('weekLabel').textContent =
+    `Week of Mon ${fmtLong(dates[0])} \u2013 Sun ${fmtLong(dates[6])}`;
+
+  let html = '<thead><tr><th class="row-label-header"></th>';
+  for (let c = 0; c < 7; c++) {
+    html += `<th><span class="day-name">${DAYS[c]}</span><span class="day-date">${fmtShort(dates[c])}</span></th>`;
+  }
+  html += '</tr></thead><tbody>';
+
+  for (let r = 0; r < 3; r++) {
+    const isDinner = (r === 2);
+    html += `<tr><td class="row-label"><div class="row-label-inner">${ROWS[r].emoji} ${ROWS[r].label}</div></td>`;
+    for (let c = 0; c < 7; c++) {
+      html += `<td class="day-cell" ondragover="cellDragOver(event)" ondragleave="cellDragLeave(event)" ondrop="cellDrop(event,${r},${c})">`;
+      html += buildSubCell(r, c, 'ato', isDinner);
+      html += buildSubCell(r, c, 'alh', isDinner);
+      html += '</td>';
+    }
+    html += '</tr>';
+  }
+
+  html += '</tbody>';
+  document.getElementById('mealGrid').innerHTML = html;
+  fitGridHeight();
+}
+
+function buildSubCell(r, c, person, isDinner) {
+  const tKey   = `${r}_${c}_${person}_t`;
+  const cKey   = `${r}_${c}_${person}_c`;
+  const tVal   = ea(gridState[tKey] || '');
+  const cVal   = ea(gridState[cKey] || '');
+  const hasT   = !!gridState[tKey];
+  const hasC   = !!gridState[cKey];
+  const sub    = person === 'ato' ? 'ato-sub' : 'alh-sub';
+
+  return `<div class="sub-cell ${sub}">
+    <span class="person-label">${person.toUpperCase()}</span>
+    <div class="title-row input-wrap${hasT ? ' has-value' : ''}">
+      <input type="text"
+        class="meal-title${isDinner ? ' dinner-title' : ''}"
+        data-key="${tKey}" data-dinner="${isDinner}" data-field="t"
+        value="${tVal}" placeholder="Meal name\u2026"
+        autocomplete="off" spellcheck="false"
+        onfocus="inputFocus(this)"
+        oninput="inputChange(this)"
+        onkeydown="inputKeydown(event,this)"
+        onblur="inputBlur(this)">
+      <button class="clear-x" onclick="clearField(this)" tabindex="-1">\xd7</button>
+      ${isDinner ? `<div class="ac-list" id="ac_${tKey}"></div>` : ''}
+    </div>
+    <div class="content-row input-wrap${hasC ? ' has-value' : ''}">
+      <input type="text"
+        class="content-input"
+        data-key="${cKey}" data-dinner="false" data-field="c"
+        value="${cVal}" placeholder="Notes / items\u2026"
+        autocomplete="off" spellcheck="false"
+        onfocus="inputFocus(this)"
+        oninput="inputChange(this)">
+      <button class="clear-x" onclick="clearField(this)" tabindex="-1">\xd7</button>
+    </div>
+  </div>`;
+}
+
+function ea(s) {
+  return s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// FIT GRID TO PAGE HEIGHT
+// ══════════════════════════════════════════════════════════════════════════
+
+function fitGridHeight() {
+  const headerH = document.querySelector('header').offsetHeight;
+  const total   = window.innerHeight - headerH;
+  document.getElementById('mealGrid').style.height = total + 'px';
+}
+
+window.addEventListener('resize', fitGridHeight);
+
+// ══════════════════════════════════════════════════════════════════════════
+// INVENTORY RENDER
+// ══════════════════════════════════════════════════════════════════════════
+
+function renderInventory() {
+  const container = document.getElementById('invGroups');
+  let html = '';
+  for (const g of GROUPS) {
+    const items = inventory[g.key] || [];
+    const isCol = collapsed[g.key];
+    html += `<div class="inv-group">
+      <div class="inv-group-header" onclick="toggleGroup('${g.key}')">
+        <span class="inv-group-label ${g.color}">${g.label}</span>
+        <span class="inv-count">${items.length}</span>
+        <span class="inv-chevron${isCol ? ' collapsed' : ''}">&#9662;</span>
+      </div>
+      <div class="inv-items" id="invg_${g.key}"${isCol ? ' style="display:none"' : ''}>`;
+    if (!items.length) {
+      html += `<div class="inv-empty">No items</div>`;
+    } else {
+      for (let i = 0; i < items.length; i++) {
+        const name = items[i];
+        const safe = name.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+        html += `<div class="inv-item" draggable="true"
+          title="Drag to cell, or focus a slot then click"
+          ondragstart="itemDragStart(event,'${safe}')"
+          ondragend="itemDragEnd(event)"
+          onclick="itemClick('${safe}')">
+          <span class="inv-item-name">${name}</span>
+          <button class="inv-del" onclick="removeItem(event,'${g.key}',${i})" title="Remove">\xd7</button>
+        </div>`;
+      }
+    }
+    html += `</div></div>`;
+  }
+  container.innerHTML = html;
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// INVENTORY ACTIONS
+// ══════════════════════════════════════════════════════════════════════════
+
+function toggleGroup(key) {
+  collapsed[key] = !collapsed[key];
+  const el   = document.getElementById(`invg_${key}`);
+  const chev = el?.previousElementSibling?.querySelector('.inv-chevron');
+  if (el)   el.style.display = collapsed[key] ? 'none' : '';
+  if (chev) chev.classList.toggle('collapsed', collapsed[key]);
+}
+
+function toggleAddForm() {
+  const f = document.getElementById('addForm');
+  const opening = !f.classList.contains('open');
+  f.classList.toggle('open', opening);
+  if (opening) { document.getElementById('newItemName').value = ''; document.getElementById('newItemName').focus(); }
+}
+
+function addItem() {
+  const name  = document.getElementById('newItemName').value.trim();
+  const group = document.getElementById('newItemGroup').value;
+  if (!name) { document.getElementById('newItemName').focus(); return; }
+  if (!inventory[group]) inventory[group] = [];
+  inventory[group].push(name);
+  saveInventory();
+  document.getElementById('addForm').classList.remove('open');
+  renderInventory();
+  showToast(`"${name}" added`);
+}
+
+function removeItem(e, group, idx) {
+  e.stopPropagation();
+  const name = inventory[group][idx];
+  inventory[group].splice(idx, 1);
+  saveInventory();
+  renderInventory();
+  showToast(`"${name}" removed`);
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// DRAG & DROP
+// ══════════════════════════════════════════════════════════════════════════
+
+let dragging = null;
+
+function itemDragStart(e, name) {
+  dragging = name;
+  e.dataTransfer.setData('text/plain', name);
+  e.dataTransfer.effectAllowed = 'copy';
+  e.currentTarget.classList.add('dragging');
+}
+function itemDragEnd(e) {
+  e.currentTarget.classList.remove('dragging');
+  dragging = null;
+}
+function cellDragOver(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'copy';
+  e.currentTarget.classList.add('drag-over');
+}
+function cellDragLeave(e) {
+  if (!e.currentTarget.contains(e.relatedTarget)) {
+    e.currentTarget.classList.remove('drag-over');
+  }
+}
+function cellDrop(e, r, c) {
+  e.preventDefault();
+  e.currentTarget.classList.remove('drag-over');
+  const name = e.dataTransfer.getData('text/plain') || dragging;
+  if (!name) return;
+
+  // Top half → ATO content, bottom half → ALH content
+  const rect   = e.currentTarget.getBoundingClientRect();
+  const person = (e.clientY - rect.top) < rect.height / 2 ? 'ato' : 'alh';
+  const key    = `${r}_${c}_${person}_c`;
+  fillField(key, name);
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// INPUT HANDLERS
+// ══════════════════════════════════════════════════════════════════════════
+
+function inputFocus(inp) {
+  lastInput   = inp;
+  lastInputAt = Date.now();
+}
+
+function inputChange(inp) {
+  const key = inp.dataset.key;
+  const val = inp.value;
+  if (val) gridState[key] = val; else delete gridState[key];
+  saveGrid();
+  inp.closest('.input-wrap').classList.toggle('has-value', !!val);
+
+  // Autocomplete only on dinner title field
+  if (inp.dataset.field === 't' && inp.dataset.dinner === 'true') {
+    showAC(inp, val);
+  }
+}
+
+function inputKeydown(e, inp) {
+  const acId   = `ac_${inp.dataset.key}`;
+  const acList = document.getElementById(acId);
+  if (!acList) return;
+
+  const items  = acList.querySelectorAll('.ac-item');
+  const active = acList.querySelector('.ac-item.active');
+
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    if (!active && items.length) { items[0].classList.add('active'); }
+    else if (active) {
+      active.classList.remove('active');
+      (active.nextElementSibling || items[0]).classList.add('active');
+    }
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    if (!active && items.length) { items[items.length-1].classList.add('active'); }
+    else if (active) {
+      active.classList.remove('active');
+      (active.previousElementSibling || items[items.length-1]).classList.add('active');
+    }
+  } else if (e.key === 'Enter') {
+    const act = acList.querySelector('.ac-item.active');
+    if (act) { e.preventDefault(); selectAC(inp, act.dataset.value); }
+  } else if (e.key === 'Escape') {
+    closeAC(inp);
+  }
+}
+
+function inputBlur(inp) {
+  if (inp.dataset.field === 't' && inp.dataset.dinner === 'true') {
+    setTimeout(() => closeAC(inp), 160);
+  }
+}
+
+function clearField(btn) {
+  const wrap = btn.closest('.input-wrap');
+  const inp  = wrap.querySelector('input');
+  const key  = inp.dataset.key;
+  inp.value  = '';
+  delete gridState[key];
+  saveGrid();
+  wrap.classList.remove('has-value');
+  if (inp.dataset.field === 't' && inp.dataset.dinner === 'true') closeAC(inp);
+  inp.focus();
+}
+
+function fillField(key, val) {
+  const inp = document.querySelector(`[data-key="${key}"]`);
+  if (!inp) return;
+  inp.value = val;
+  gridState[key] = val;
+  saveGrid();
+  inp.closest('.input-wrap').classList.add('has-value');
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// CLICK-TO-INSERT (fills last focused input)
+// ══════════════════════════════════════════════════════════════════════════
+
+function itemClick(name) {
+  const age = Date.now() - lastInputAt;
+  if (lastInput && age < 15000 && document.body.contains(lastInput)) {
+    fillField(lastInput.dataset.key, name);
+    lastInput.focus();
+  } else {
+    showToast('Click a meal slot first, then click an item to insert');
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// AUTOCOMPLETE
+// ══════════════════════════════════════════════════════════════════════════
+
+function showAC(inp, query) {
+  const acList = document.getElementById(`ac_${inp.dataset.key}`);
+  if (!acList) return;
+  if (!query) { closeAC(inp); return; }
+
+  const q = query.toLowerCase();
+  const matches = MMP_MEALS.filter(m =>
+    m.name.toLowerCase().includes(q) || m.id.startsWith(q)
+  ).slice(0, 7);
+
+  if (!matches.length) { closeAC(inp); return; }
+
+  acList.innerHTML = matches.map(m => {
+    const display = `${m.id} \u2014 ${m.name}`;
+    const safe = display.replace(/'/g,"\\'");
+    return `<div class="ac-item" data-value="${ea(display)}"
+      onmousedown="selectAC(document.querySelector('[data-key=\\'${inp.dataset.key}\\']'),'${safe}')">
+      <span class="ac-id">${m.id}</span>${m.name}
+    </div>`;
+  }).join('');
+  acList.classList.add('open');
+}
+
+function selectAC(inp, val) {
+  if (!inp) return;
+  inp.value = val;
+  const key = inp.dataset.key;
+  gridState[key] = val;
+  saveGrid();
+  inp.closest('.input-wrap').classList.add('has-value');
+  closeAC(inp);
+  inp.focus();
+}
+
+function closeAC(inp) {
+  const acList = document.getElementById(`ac_${inp.dataset.key}`);
+  if (acList) { acList.innerHTML = ''; acList.classList.remove('open'); }
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// RESET
+// ══════════════════════════════════════════════════════════════════════════
+
+function confirmReset() {
+  if (confirm('Clear all meals for this week?\n\nInventory will not be affected.')) {
+    gridState = {};
+    saveGrid();
+    renderGrid();
+    showToast('Week cleared \u2014 ready to plan!');
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════════════════════════════════════════
+
+let _tt;
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(_tt);
+  _tt = setTimeout(() => el.classList.remove('show'), 2600);
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// KEYBOARD
+// ══════════════════════════════════════════════════════════════════════════
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && e.target.id === 'newItemName') { e.preventDefault(); addItem(); }
+});
+
+// ══════════════════════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════════════════════
+
+renderGrid();
+renderInventory();
+updateTodayBtn();
+
+</script>
+</body>
+</html>
