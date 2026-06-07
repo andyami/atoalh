@@ -18,6 +18,7 @@
   --amber:#f0b429;--amber-bg:rgba(240,180,41,0.09);--amber-border:rgba(240,180,41,0.18);
   --red:#ff5757;--red-bg:rgba(255,87,87,0.08);--red-border:rgba(255,87,87,0.18);
   --blue:#4a9eff;--blue-bg:rgba(74,158,255,0.08);--blue-border:rgba(74,158,255,0.2);
+  --teal:#2dd4b0;--teal-bg:rgba(45,212,176,0.08);--teal-border:rgba(45,212,176,0.22);
   --text:#dde6df;--muted:#586860;--muted2:#3a4440;
   --mono:'DM Mono',monospace;--head:'Syne',sans-serif;
   --tab-h:58px;
@@ -40,23 +41,11 @@ html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:var
 .opt-card:active{transform:scale(0.99);background:var(--card2)}
 .opt-icon{width:44px;height:44px;border-radius:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .opt-icon-run{background:var(--gold-bg);border:1px solid var(--gold-border)}
-.opt-icon-jj{background:var(--blue-bg);border:1px solid var(--blue-border)}
 .opt-icon-rest{background:var(--amber-bg);border:1px solid var(--amber-border)}
 .opt-body{flex:1}
 .opt-title{font-size:16px;font-weight:500;color:var(--text);margin-bottom:3px}
 .opt-sub{font-size:12px;color:var(--muted);line-height:1.4}
 .opt-arrow{color:var(--muted);font-size:18px;flex-shrink:0}
-.wcard{display:flex;align-items:center;gap:12px;margin:0 24px 7px;padding:13px 15px;background:var(--card);border:1px solid var(--border);border-radius:11px;cursor:pointer;transition:border-color 0.15s,background 0.15s}
-.wcard:active{transform:scale(0.99)}
-.wcard.sel{background:var(--gold-bg);border-color:var(--gold-border)}
-.wcode{font-size:11px;color:var(--muted);min-width:46px;flex-shrink:0}
-.wcard.sel .wcode{color:var(--gold)}
-.wname{flex:1;font-size:14px;font-weight:500;color:var(--text);line-height:1.3}
-.wnote{display:block;font-size:11px;color:var(--muted);font-weight:400;margin-top:2px}
-.wtag{font-size:10px;letter-spacing:0.06em;text-transform:uppercase;padding:3px 8px;border-radius:4px;flex-shrink:0;font-weight:500}
-.tag-e{background:var(--muted2);color:var(--muted)}
-.tag-q{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-border)}
-.tag-r{background:var(--red-bg);color:var(--red);border:1px solid var(--red-border)}
 .tgrid{padding:8px 24px;display:flex;flex-direction:column;gap:9px}
 .tbtn{background:var(--card);border:1px solid var(--border);border-radius:13px;padding:17px 18px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;transition:border-color 0.15s,background 0.15s;font-family:var(--mono);color:var(--text);width:100%;text-align:left}
 .tbtn:active{transform:scale(0.99)}
@@ -68,6 +57,7 @@ html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:var
 .i-amber{background:var(--amber-bg);border:1px solid var(--amber-border);color:var(--amber)}
 .i-blue{background:var(--blue-bg);border:1px solid var(--blue-border);color:var(--blue)}
 .i-green{background:var(--gold-bg);border:1px solid var(--gold-border);color:var(--gold)}
+.i-teal{background:var(--teal-bg);border:1px solid var(--teal-border);color:var(--teal)}
 .iblock strong{font-weight:500}
 .btn-wrap{position:fixed;bottom:var(--tab-h);left:0;right:0;background:linear-gradient(transparent,var(--bg) 30%);padding:24px 24px 20px}
 .btn-wrap-inner{max-width:420px;margin:0 auto;display:flex;flex-direction:column;gap:9px}
@@ -78,7 +68,6 @@ html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:var
 .done-wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 24px 160px;text-align:center;gap:14px}
 .done-ring{width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center}
 .done-ring-g{border:1px solid var(--gold-border);background:var(--gold-bg)}
-.done-ring-b{border:1px solid var(--blue-border);background:var(--blue-bg)}
 .done-ring-a{border:1px solid var(--amber-border);background:var(--amber-bg)}
 .done-title{font-family:var(--head);font-size:32px;font-weight:800;letter-spacing:-0.02em}
 .done-detail{font-size:13px;color:var(--muted);line-height:1.7}
@@ -177,6 +166,9 @@ html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:var
 .clear-btn{width:100%;padding:11px;border:1px solid var(--border2);border-radius:9px;background:transparent;color:var(--muted);font-size:13px;cursor:pointer;margin-bottom:24px;font-family:var(--mono);-webkit-tap-highlight-color:transparent}
 /* Footer */
 .n-footer{font-size:10px;color:var(--muted2);text-align:center;line-height:1.9;padding-top:16px;border-top:1px solid var(--border)}
+/* Surgery banner */
+.surgery-banner{display:flex;align-items:center;gap:10px;padding:11px 14px;border:1px solid var(--teal-border);border-radius:11px;background:var(--teal-bg);margin-bottom:24px;font-size:12px;color:var(--teal);line-height:1.5}
+.surgery-banner svg{flex-shrink:0}
 </style>
 </head>
 <body>
@@ -190,23 +182,23 @@ html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:var
   <div class="n-eyebrow" id="n-date"></div>
   <div class="n-title" id="n-title">Good morning,<br><span>Andrew</span></div>
 
+  <div class="surgery-banner">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+    <span>Pre-surgery phase &mdash; easy runs only. Targets set for maintenance.</span>
+  </div>
+
   <div class="sync-bar">
     <div class="sync-left">
       <div class="sync-dot loading" id="sync-dot"></div>
       <span id="sync-text">Fetching MFP data…</span>
     </div>
-    <button class="sync-btn" onclick="fetchNutrition()">↻ Refresh</button>
+    <button class="sync-btn" onclick="fetchNutrition()">&#8635; Refresh</button>
   </div>
 
   <div class="n-lbl">Day type</div>
   <select class="day-select" id="day-select" onchange="setDay(this.value)">
     <option value="0">Rest</option>
-    <option value="1">Jiu-Jitsu ~400 kcal</option>
-    <option value="2">Run ≤5k ~310 kcal</option>
-    <option value="3">Run 5–8k ~385 kcal</option>
-    <option value="4">Run 8–12k ~475 kcal</option>
-    <option value="5">Run 12–16k ~550 kcal</option>
-    <option value="6">Run 16–21k ~700 kcal</option>
+    <option value="1">Easy Run 5&ndash;8km</option>
   </select>
 
   <div class="n-lbl">Calories</div>
@@ -286,7 +278,7 @@ html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:var
   <div class="n-div"></div>
 
   <div class="n-chips">
-    <div class="n-chip">VO₂ Max <b>54</b></div>
+    <div class="n-chip">VO&#8322; Max <b>54</b></div>
     <div class="n-chip">RHR <b>56 bpm</b></div>
     <div class="n-chip">Body fat <b>14.7%</b></div>
     <div class="n-chip">Lean mass <b>61.1kg</b></div>
@@ -318,10 +310,10 @@ html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:var
   <button class="clear-btn" onclick="clearInputs()">Clear entries</button>
 
   <div class="n-footer">
-    Katch-McArdle BMR 1,690 kcal · Lean mass 61.1kg · Body fat 14.7%<br>
-    TDEE ~2,320 kcal · Office active + 7k steps · VO₂ Max 54 · RHR 56<br>
-    Run burns calculated from avg HR 145bpm · Mifflin cross-checked<br>
-    Male · 29y · 173cm · 71.6kg · BUPA assessment 23 Mar 2026
+    Katch-McArdle BMR 1,690 kcal &middot; Lean mass 61.1kg &middot; Body fat 14.7%<br>
+    TDEE ~2,320 kcal &middot; Office active + 7k steps &middot; VO&#8322; Max 54 &middot; RHR 56<br>
+    Easy run burn ~380 kcal avg &middot; Maintenance targets &middot; Pre-surgery phase<br>
+    Male &middot; 30y &middot; 172cm &middot; 71kg &middot; BUPA assessment 23 Mar 2026
   </div>
 </div>
 
@@ -353,57 +345,31 @@ var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyNysb2IY2AuYJDU97EV3z
 var SECRET     = 'ato-cal-2026';
 var WORKER_URL = 'https://ato-nutrition.andy1996ohare.workers.dev/nutrition';
 
-/* ── WORKOUT DATA ── */
-var WORKOUTS = [
-  {id:'EXTRA',code:'Extra',name:'Extra Run',               type:'e',week:'__extra__',note:''},
-  {id:'C3_1',code:'CHO3 1',name:'7km Easy',                type:'e',week:'Week 3',note:''},
-  {id:'C3_2',code:'CHO3 2',name:'9km Race Sharpener',      type:'q',week:'Week 3',note:''},
-  {id:'C3_3',code:'CHO3 3',name:'6km Easy Flush',          type:'e',week:'Week 3',note:''},
-  {id:'C4_1',code:'CHO4 1',name:'5km Easy Flush',          type:'e',week:'Week 4',note:''},
-  {id:'C4_2',code:'CHO4 2',name:'5km Activation Strides',  type:'q',week:'Week 4',note:''},
-  {id:'C4_3',code:'CHO4 3',name:'10k Race',                type:'r',week:'Week 4',note:'May 10'},
-  {id:'C5_1',code:'CHO5 1',name:'5km Easy Taper',          type:'e',week:'Race Week',note:''},
-  {id:'C5_2',code:'CHO5 2',name:'4km Pre-Race Activation', type:'q',week:'Race Week',note:''},
-  {id:'C5_3',code:'CHO5 3',name:'Chester Half Marathon',   type:'r',week:'Race Week',note:'May 17'}
-];
-
-/* ── NUTRITION DAY-TYPE MAPPING (workout id → day index) ── */
-var NUT_MAP = {
-  'EXTRA':2,
-  'C3_1':3,  // 7km   → Run 5–8k
-  'C3_2':4,  // 9km   → Run 8–12k
-  'C3_3':3,  // 6km   → Run 5–8k
-  'C4_1':2,  // 5km   → Run ≤5k
-  'C4_2':2,  // 5km   → Run ≤5k
-  'C4_3':4,  // 10k   → Run 8–12k
-  'C5_1':2,  // 5km   → Run ≤5k
-  'C5_2':2,  // 4km   → Run ≤5k
-  'C5_3':6   // HM    → Run 16–21k
-};
-var NUT_LABELS = ['Rest','Jiu-Jitsu','Run ≤5k','Run 5–8k','Run 8–12k','Run 12–16k','Run 16–21k'];
-
-/* ── SLOTS / WEEKS ── */
+/* ── SLOTS ── */
 var SLOTS = [
-  {id:'am',label:'Morning',  sub:'7:00 am', h:7,  m:0},
-  {id:'pm',label:'Afternoon',sub:'12:00 pm',h:12, m:0},
-  {id:'ev',label:'Evening',  sub:'5:30 pm', h:17, m:30}
+  {id:'am',  label:'Morning',   sub:'7:00 am',  h:7,  m:0},
+  {id:'lunch',label:'Lunchtime',sub:'12:30 pm', h:12, m:30},
+  {id:'pm',  label:'Evening',   sub:'5:30 pm',  h:17, m:30}
 ];
-var WEEKS      = ['Week 3','Week 4','Race Week'];
-var TYPE_CLASS = {e:'tag-e',q:'tag-q',r:'tag-r'};
-var TYPE_LABEL = {e:'Easy',q:'Quality',r:'Race'};
 
 /* ── EXERCISE STATE ── */
-var S = {screen:'home',w:null,t:null,busy:false,err:null,step:1};
+var S = {screen:'home', t:null, busy:false, err:null, step:1};
 
 /* ── NUTRITION DATA ── */
+/* Rest:       BMR 1690 × 1.375 (office + 7k steps) = 2,323 ≈ 2,320
+   Easy Run:   +~380 kcal net burn (71kg, 5–8km easy, midpoint ~6.5km)
+   Protein:    ~2.0g/kg lean mass (61.1kg)
+   Fat:        moderate healthy baseline
+   Carbs:      fill remaining calories */
 var days = [
-  {cal:2320,pro:125,carb:293,fat:72, note:"Office job + 7k steps daily covers your base activity. No training today — focus on hitting protein and keeping carbs moderate."},
-  {cal:2720,pro:132,carb:390,fat:70, note:"BJJ is high-intensity and glycolytic. Front-load carbs in your pre-session meal. Protein elevated for muscle repair and recovery."},
-  {cal:2630,pro:128,carb:368,fat:72, note:"Short run — water only, no mid-run fuelling needed. Solid pre-run meal 2–3 hrs before is enough. Electrolytes optional."},
-  {cal:2705,pro:130,carb:390,fat:70, note:"Moderate distance — switch from water to an electrolyte drink. No mid-run carbs needed yet but pre-run carbs should be in place."},
-  {cal:2795,pro:133,carb:413,fat:68, note:"Once over 60–70 min running, start practising mid-run fuelling — 30–45g carbs/hour after the first 40 min. Electrolytes essential."},
-  {cal:2870,pro:136,carb:433,fat:66, note:"Long run territory. 45–60g carbs/hour from 40 min in. Sodium 300–500mg/hour. This is your Chester half marathon prep distance."},
-  {cal:3020,pro:140,carb:469,fat:65, note:"Half marathon distance. 45–60g carbs/hour from 40 min in. Sodium 400–600mg/hour. Practise your exact race day fuelling strategy on these runs."}
+  {
+    cal:2320, pro:125, carb:293, fat:72,
+    note:"Office job + 7k steps covers your base. No training today — hit your protein target and keep carbs moderate. Good day to focus on sleep quality ahead of surgery."
+  },
+  {
+    cal:2700, pro:128, carb:383, fat:70,
+    note:"Easy conversational pace only — if you can't hold a sentence, slow down. No fuelling needed for sub-60 min runs. Electrolytes optional. Pre-run meal 2–3 hrs before. No HBCD required."
+  }
 ];
 var current = 0;
 
@@ -412,48 +378,38 @@ function todayStr(){return new Date().toLocaleDateString('en-GB',{weekday:'long'
 function greeting(){var h=new Date().getHours();return h<12?'Good morning,':h<17?'Good afternoon,':'Good evening,';}
 
 /* ── APPS SCRIPT PROXY ── */
-function calProxy(title,start,end,desc,loc){
+function calProxy(title,start,end,desc){
   var p=new URLSearchParams({secret:SECRET,title:title,start:start.toISOString(),end:end.toISOString(),desc:desc||''});
-  if(loc) p.set('loc',loc);
   return fetch(SCRIPT_URL+'?'+p.toString())
     .then(function(r){return r.json();})
     .then(function(d){if(d.error) throw new Error(d.error); return d;});
 }
 
-function addRun(w,t){
+function addRun(t){
   var now=new Date();
   var st=new Date(now.getFullYear(),now.getMonth(),now.getDate(),t.h,t.m,0);
-  var en=new Date(st.getTime()+90*60*1000);
-  var desc=w.code+' \u00b7 '+w.name+' | Chester HM Block';
-  if(w.type!=='e') desc+='\n\u26a1 HBCD 25g + 400ml water 30 min before';
-  return calProxy(w.code+' | '+w.name,st,en,desc,null);
-}
-
-function addJJ(){
-  var now=new Date();
-  var st=new Date(now.getFullYear(),now.getMonth(),now.getDate(),19,15,0);
-  var en=new Date(now.getFullYear(),now.getMonth(),now.getDate(),21,0,0);
-  return calProxy('Jiu-Jitsu',st,en,'BJJ training session','Unit 2A, Malthouse Business Centre, 48 Southport Rd, Ormskirk L39 1QR');
+  var en=new Date(st.getTime()+60*60*1000);
+  var desc='Easy run 5\u20138km \u00b7 Conversational pace \u00b7 Pre-surgery phase\nNo fuelling needed. Electrolytes optional.';
+  return calProxy('Easy Run | Pre-surgery',st,en,desc);
 }
 
 /* ── SVGs ── */
 function svgCheck(c){return '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="'+c+'" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';}
 function svgMoon(){return '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#f0b429" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';}
 function svgRun(){return '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C59100" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1.5"/><path d="M8 17l2-6 2 2 2-4"/><path d="M6 21l2-4"/><path d="M18 21l-2-4"/></svg>';}
-function svgFist(){return '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4a9eff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="9" width="12" height="10" rx="2"/><path d="M9 9V7a3 3 0 0 1 6 0v2"/></svg>';}
+function svgHeart(){return '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f0b429" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>';}
 
-/* ── EXERCISE CARD BUILDERS ── */
-function hdr(eyebrow,l1,l2){return '<div class="hdr"><div class="hdr-eyebrow">'+eyebrow+'</div><div class="hdr-title">'+l1+'<br><span>'+l2+'</span></div></div>';}
-function pips(){var o='<div class="steps">';for(var i=1;i<=2;i++)o+='<div class="pip'+(S.step>=i?' on':'')+'"></div>';return o+'</div>';}
-function spinner(msg){return '<div class="loading-wrap"><div class="spinner"></div><div>'+(msg||'Working&hellip;')+'</div></div>';}
-function workoutCard(x){
-  var sl=S.w&&S.w.id===x.id;
-  var ns=x.note?'<span class="wnote">'+x.note+'</span>':'';
-  return '<div class="wcard'+(sl?' sel':'')+'" onclick="pick(\''+x.id+'\')">'
-    +'<div class="wcode">'+x.code+'</div>'
-    +'<div class="wname">'+x.name+ns+'</div>'
-    +'<div class="wtag '+TYPE_CLASS[x.type]+'">'+TYPE_LABEL[x.type]+'</div></div>';
+/* ── CARD/BUTTON BUILDERS ── */
+function hdr(eyebrow,l1,l2){
+  return '<div class="hdr"><div class="hdr-eyebrow">'+eyebrow+'</div>'
+    +'<div class="hdr-title">'+l1+'<br><span>'+l2+'</span></div></div>';
 }
+function pips(){
+  var o='<div class="steps">';
+  for(var i=1;i<=2;i++) o+='<div class="pip'+(S.step>=i?' on':'')+'"></div>';
+  return o+'</div>';
+}
+function spinner(msg){return '<div class="loading-wrap"><div class="spinner"></div><div>'+(msg||'Working&hellip;')+'</div></div>';}
 function timeBtn(t){
   var sel=S.t&&S.t.id===t.id;
   return '<button class="tbtn'+(sel?' sel':'')+'" onclick="setTime(\''+t.id+'\')">'
@@ -470,89 +426,61 @@ function render(){
     h='<div class="hdr"><div class="hdr-eyebrow">'+todayStr()+'</div>'
       +'<div class="hdr-title">'+greeting()+'<br><span>Andrew</span></div>'
       +'<div class="hdr-sub">What\'s happening today?</div></div>'
-      +'<div class="scroll" style="padding-top:8px"><div class="sec-lbl">Select activity</div>'
-      +'<div class="opt-card" onclick="go(\'run\')"><div class="opt-icon opt-icon-run">'+svgRun()+'</div><div class="opt-body"><div class="opt-title">Run</div><div class="opt-sub">Pick your session &amp; time slot</div></div><div class="opt-arrow">&rsaquo;</div></div>'
-      +'<div class="opt-card" onclick="go(\'jj\')"><div class="opt-icon opt-icon-jj">'+svgFist()+'</div><div class="opt-body"><div class="opt-title">Jiu-Jitsu</div><div class="opt-sub">7:15 pm &ndash; 9:00 pm &rarr; calendar</div></div><div class="opt-arrow">&rsaquo;</div></div>'
+      +'<div class="scroll" style="padding-top:8px">'
+      +'<div class="sec-lbl">Select activity</div>'
+      +'<div class="opt-card" onclick="go(\'run\')"><div class="opt-icon opt-icon-run">'+svgRun()+'</div><div class="opt-body"><div class="opt-title">Easy Run</div><div class="opt-sub">5&ndash;8km &middot; conversational pace &middot; cardiac-safe</div></div><div class="opt-arrow">&rsaquo;</div></div>'
       +'<div class="opt-card" onclick="go(\'rest\')"><div class="opt-icon opt-icon-rest">'+svgMoon()+'</div><div class="opt-body"><div class="opt-title">Rest</div><div class="opt-sub">Recovery day &mdash; no session</div></div><div class="opt-arrow">&rsaquo;</div></div>'
+      +'<div class="iblock i-teal" style="margin-top:20px"><strong>&#10084; Pre-surgery phase</strong><br>Training paused to easy runs only. Surgery date TBC &mdash; listen to your body and stay at conversational pace.</div>'
       +'</div>';
-
-  }else if(S.screen==='jj_add'){
-    h=hdr(todayStr(),'ADDING','TO CAL')+spinner('Adding Jiu-Jitsu&hellip;');
-
-  }else if(S.screen==='jj_done'){
-    h=hdr(todayStr(),'DONE','OSS.')
-      +'<div class="done-wrap"><div class="done-ring done-ring-b">'+svgCheck('#4a9eff')+'</div>'
-      +'<div class="done-title" style="color:var(--blue)">Added</div>'
-      +'<div class="done-detail">Jiu-Jitsu<br>7:15 pm &mdash; 9:00 pm</div>'
-      +'<div class="done-notice iblock i-blue"><strong>Location</strong><br>Unit 2A, Malthouse Business Centre,<br>48 Southport Rd, Ormskirk L39 1QR</div>'
-      +'<div class="done-notice iblock i-green"><strong>Nutrition updated</strong> &mdash; targets set for Jiu-Jitsu</div>'
-      +'</div>'
-      +'<div class="btn-wrap"><div class="btn-wrap-inner">'
-      +'<button class="btn-pri" style="background:var(--blue);color:#000d1f" onclick="goNutrition()">View Nutrition &rarr;</button>'
-      +'<button class="btn-sec" onclick="reset()">&larr; Change</button>'
-      +'</div></div>';
-
-  }else if(S.screen==='rest'){
-    var msgs=['Recovery is part of training. The work is done \u2014 let your body adapt.','Every elite athlete has scheduled rest. Today is yours.','Your muscles grow during rest, not during the run. Embrace it.','Easy today means stronger tomorrow. Well earned.'];
-    h=hdr(todayStr(),'REST','DAY.')
-      +'<div class="rest-wrap"><div class="done-ring done-ring-a">'+svgMoon()+'</div>'
-      +'<div class="rest-title">Relax.</div>'
-      +'<div class="rest-msg">'+msgs[new Date().getDay()%msgs.length]+'</div>'
-      +'<div class="done-notice iblock i-amber"><strong>Today\'s focus</strong><br>Sleep, nutrition, hydration. No Garmin. No targets.</div>'
-      +'<div class="done-notice iblock i-green"><strong>Nutrition updated</strong> &mdash; targets set for Rest</div>'
-      +'</div>'
-      +'<div class="btn-wrap"><div class="btn-wrap-inner">'
-      +'<button class="btn-pri" style="background:var(--amber);color:#1a0e00" onclick="goNutrition()">View Nutrition &rarr;</button>'
-      +'<button class="btn-sec" onclick="reset()">Got it</button>'
-      +'</div></div>';
-
-  }else if(S.screen==='run_pick'){
-    var extraW=WORKOUTS.filter(function(x){return x.id==='EXTRA';})[0];
-    var rows='<div class="sec-lbl">Always available</div>'+workoutCard(extraW);
-    for(var wi=0;wi<WEEKS.length;wi++){
-      rows+='<div class="sec-lbl">'+WEEKS[wi]+'</div>';
-      var wf=WORKOUTS.filter(function(x){return x.week===WEEKS[wi]&&x.week!=='__extra__';});
-      for(var xi=0;xi<wf.length;xi++) rows+=workoutCard(wf[xi]);
-    }
-    h=hdr(todayStr(),'PICK YOUR','RUN')+pips()
-      +'<div class="scroll">'+rows+'<div style="height:20px"></div></div>'
-      +'<div class="btn-wrap"><div class="btn-wrap-inner">'
-      +(S.err?'<div class="err-msg">'+S.err+'</div>':'')
-      +'<button class="btn-pri"'+(S.w?'':' disabled')+' onclick="nextStep()">Next &rarr;</button>'
-      +'<button class="btn-sec" onclick="reset()">&larr; Home</button>'
-      +'</div></div>';
 
   }else if(S.screen==='run_time'){
     var tbs='';
     for(var si=0;si<SLOTS.length;si++) tbs+=timeBtn(SLOTS[si]);
-    var hbcdBar=S.w&&S.w.type!=='e'
-      ?'<div class="iblock i-amber"><strong>Quality session</strong> &mdash; HBCD 25g + 400ml water 30 min before</div>':'';
-    h=hdr(S.w.code+' &middot; '+S.w.name,'WHEN','ARE YOU?')+pips()
-      +'<div class="scroll"><div class="tgrid" style="margin-top:16px">'+tbs+'</div>'+hbcdBar+'<div style="height:20px"></div></div>'
+    h=hdr('Easy Run &middot; 5&ndash;8km','WHEN','ARE YOU?')+pips()
+      +'<div class="scroll"><div class="tgrid" style="margin-top:16px">'+tbs+'</div>'
+      +'<div class="iblock i-teal"><strong>Easy pace only</strong> &mdash; conversational effort. No HBCD needed. Electrolytes optional. Pre-run meal 2&ndash;3 hrs before.</div>'
+      +'<div style="height:20px"></div></div>'
       +'<div class="btn-wrap"><div class="btn-wrap-inner">'
       +(S.err?'<div class="err-msg">'+S.err+'</div>':'')
       +'<button class="btn-pri"'+(!S.t||S.busy?' disabled':'')+' onclick="confirmRun()">'
       +(S.busy?'Adding to calendar&hellip;':'Add to Calendar')
       +'</button>'
-      +'<button class="btn-sec" onclick="back()">&larr; Back</button>'
+      +'<button class="btn-sec" onclick="reset()">&larr; Home</button>'
       +'</div></div>';
 
   }else if(S.screen==='run_done'){
-    var hbcdNote=S.w.type!=='e'
-      ?'<div class="done-notice iblock i-amber"><strong>HBCD reminder</strong><br>25g with 400ml water &mdash; 30 min before your run</div>'
-      :'<div style="font-size:12px;color:var(--muted)">Easy session &mdash; no HBCD needed</div>';
-    var nIdx=NUT_MAP[S.w.id]||3;
-    var nLabel=NUT_LABELS[nIdx];
     h=hdr(todayStr(),'ADDED','TO CAL')
       +'<div class="done-wrap"><div class="done-ring done-ring-g">'+svgCheck('#3ddc84')+'</div>'
       +'<div class="done-title" style="color:var(--gold)">'+S.t.label+'</div>'
-      +'<div class="done-detail">'+S.w.code+' &middot; '+S.w.name+'<br>'+S.t.sub+' &mdash; 90 min</div>'
-      +hbcdNote
-      +'<div class="done-notice iblock i-green"><strong>Nutrition updated</strong> &mdash; targets set for '+nLabel+'</div>'
+      +'<div class="done-detail">Easy Run &middot; 5&ndash;8km<br>'+S.t.sub+' &mdash; ~60 min</div>'
+      +'<div class="done-notice iblock i-teal"><strong>Pace reminder</strong><br>Conversational effort throughout. If breathless, ease off.</div>'
+      +'<div class="done-notice iblock i-green"><strong>Nutrition updated</strong> &mdash; targets set for Easy Run</div>'
       +'</div>'
       +'<div class="btn-wrap"><div class="btn-wrap-inner">'
       +'<button class="btn-pri" onclick="goNutrition()">View Nutrition &rarr;</button>'
       +'<button class="btn-sec" onclick="reset()">&larr; Change</button>'
+      +'</div></div>';
+
+  }else if(S.screen==='run_add'){
+    h=hdr(todayStr(),'ADDING','TO CAL')+spinner('Adding to calendar&hellip;');
+
+  }else if(S.screen==='rest'){
+    var msgs=[
+      'Recovery is part of training. Rest is where the adaptation happens.',
+      'Pre-surgery is not the time to push. Conserve energy. Let your body prepare.',
+      'Sleep, nutrition, hydration. The best things you can do today.',
+      'Easy days make you stronger. This is one of them.'
+    ];
+    h=hdr(todayStr(),'REST','DAY.')
+      +'<div class="rest-wrap"><div class="done-ring done-ring-a">'+svgMoon()+'</div>'
+      +'<div class="rest-title">Relax.</div>'
+      +'<div class="rest-msg">'+msgs[new Date().getDay()%msgs.length]+'</div>'
+      +'<div class="done-notice iblock i-amber"><strong>Today\'s focus</strong><br>Sleep quality, protein target, hydration. No Garmin. No targets.</div>'
+      +'<div class="done-notice iblock i-green"><strong>Nutrition updated</strong> &mdash; targets set for Rest</div>'
+      +'</div>'
+      +'<div class="btn-wrap"><div class="btn-wrap-inner">'
+      +'<button class="btn-pri" style="background:var(--amber);color:#1a0e00" onclick="goNutrition()">View Nutrition &rarr;</button>'
+      +'<button class="btn-sec" onclick="reset()">Got it</button>'
       +'</div></div>';
   }
 
@@ -578,30 +506,28 @@ function goNutrition(){switchTab('nutrition');}
 
 /* ── EXERCISE ACTIONS ── */
 function go(mode){
-  if(mode==='run'){S.screen='run_pick';S.step=1;render();return;}
+  if(mode==='run'){S.screen='run_time';S.step=1;render();return;}
   if(mode==='rest'){S.screen='rest';setDay(0);render();return;}
-  if(mode==='jj'){
-    S.screen='jj_add';render();
-    addJJ()
-      .then(function(){S.screen='jj_done';setDay(1);render();})
-      .catch(function(e){S.screen='home';S.err='Could not add: '+(e.message||'Unknown error');render();});
+}
+function setTime(id){
+  for(var i=0;i<SLOTS.length;i++){
+    if(SLOTS[i].id===id){S.t=SLOTS[i];S.err=null;render();return;}
   }
 }
-function pick(id){for(var i=0;i<WORKOUTS.length;i++){if(WORKOUTS[i].id===id){S.w=WORKOUTS[i];S.err=null;render();return;}}}
-function nextStep(){if(S.w){S.screen='run_time';S.step=2;render();}}
-function back(){S.screen='run_pick';S.step=1;S.err=null;render();}
-function setTime(id){for(var i=0;i<SLOTS.length;i++){if(SLOTS[i].id===id){S.t=SLOTS[i];S.err=null;render();return;}}}
-function reset(){S={screen:'home',w:null,t:null,busy:false,err:null,step:1};render();}
+function reset(){S={screen:'home',t:null,busy:false,err:null,step:1};render();}
 function confirmRun(){
-  if(!S.w||!S.t||S.busy) return;
-  S.busy=true;S.err=null;render();
-  addRun(S.w,S.t)
+  if(!S.t||S.busy) return;
+  S.busy=true;S.err=null;S.screen='run_add';render();
+  addRun(S.t)
     .then(function(){
       S.screen='run_done';S.busy=false;
-      setDay(NUT_MAP[S.w.id]||3);
+      setDay(1);
       render();
     })
-    .catch(function(e){S.err='Could not add: '+(e.message||'Unknown error');S.busy=false;render();});
+    .catch(function(e){
+      S.err='Could not add: '+(e.message||'Unknown error');
+      S.busy=false;S.screen='run_time';render();
+    });
 }
 
 /* ── NUTRITION: GREETING ── */
@@ -621,7 +547,7 @@ async function fetchNutrition(){
   var dot=document.getElementById('sync-dot');
   var txt=document.getElementById('sync-text');
   dot.className='sync-dot loading';
-  txt.textContent='Fetching MFP data…';
+  txt.textContent='Fetching MFP data\u2026';
   try{
     var res=await fetch(WORKER_URL+'?t='+Date.now());
     if(!res.ok) throw new Error('HTTP '+res.status);
@@ -706,7 +632,6 @@ function update(){
   var calPctEl=document.getElementById('cal-pct');
 
   if(calRem===0){
-    /* exactly on target */
     calNum.textContent='\u2713 Done';
     calNum.className='cal-number done';
     document.getElementById('cal-unit').textContent='target hit!';
@@ -715,7 +640,6 @@ function update(){
     calFill.className='cal-fill done';
     calFill.style.width='100%';
   }else if(calRem<0){
-    /* over target */
     var overPct=Math.round(((cal-d.cal)/d.cal)*100);
     calNum.textContent=overPct+'% over';
     calNum.className='cal-number over';
@@ -725,7 +649,6 @@ function update(){
     calFill.className='cal-fill over';
     calFill.style.width='100%';
   }else{
-    /* under target */
     calNum.textContent=calRem.toLocaleString();
     calNum.className='cal-number';
     document.getElementById('cal-unit').textContent='kcal remaining';
