@@ -450,6 +450,13 @@ header {
 .sub-cell.alh-sub { background: var(--alh-bg); border-top: 1px solid var(--border); }
 
 /* Person label */
+.sub-cell-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+}
+
 .person-label {
   font-family: 'DM Mono', monospace;
   font-size: 8px;
@@ -459,11 +466,36 @@ header {
   border-radius: 3px;
   display: inline-block;
   flex-shrink: 0;
-  align-self: flex-start;
-  margin-bottom: 1px;
 }
 .ato-sub .person-label { background: var(--ato-border); color: var(--ato); }
 .alh-sub .person-label { background: var(--alh-border); color: var(--alh); }
+
+/* Copy/paste block icon */
+.block-copy-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 11px;
+  cursor: grab;
+  padding: 0 1px;
+  line-height: 1;
+  opacity: 0.4;
+  flex-shrink: 0;
+  transition: opacity 0.12s, color 0.12s, transform 0.12s;
+}
+.block-copy-btn:hover { opacity: 1; color: var(--text); transform: scale(1.15); }
+.block-copy-btn:active { cursor: grabbing; }
+.block-copy-btn.dragging { opacity: 0.25; }
+.block-copy-btn.is-source { opacity: 1; color: var(--status-green); }
+.block-copy-btn.paste-armed {
+  opacity: 1;
+  color: var(--status-amber);
+  animation: pasteArmedPulse 1.1s ease-in-out infinite;
+}
+@keyframes pasteArmedPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.3); }
+}
 
 /* Title row (meal name) */
 .title-row {
@@ -493,21 +525,29 @@ header {
 /* Content row (notes / dragged items) */
 .content-row {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 3px;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
 }
+.content-row .clear-x { margin-top: 1px; }
 
 .content-input {
   flex: 1;
+  align-self: stretch;
   border: none;
   background: transparent;
   font-family: 'DM Mono', monospace;
   font-size: 10.5px;
   color: var(--text-muted);
   outline: none;
-  padding: 0;
-  line-height: 1.2;
+  padding: 1px 0;
+  line-height: 1.45;
   min-width: 0;
+  min-height: 0;
+  resize: none;
+  overflow-y: auto;
 }
 .content-input::placeholder { color: var(--border); font-size: 10px; }
 .ato-sub .content-input:focus { color: var(--ato); }
@@ -863,8 +903,22 @@ function buildSubCell(r, c, person, isDinner) {
   const hasC   = !!gridState[cKey];
   const sub    = person === 'ato' ? 'ato-sub' : 'alh-sub';
 
+  const slotKey    = `${r}_${c}_${person}`;
+  const copyActive = isCopyActive();
+  const isSource   = copyActive && copiedFrom === slotKey;
+  const btnClass   = isSource ? 'block-copy-btn is-source' : (copyActive ? 'block-copy-btn paste-armed' : 'block-copy-btn');
+  const btnIcon    = isSource ? '\u2713' : '\u29c9';
+  const btnTitle   = isSource ? 'Copied \u2014 click again to cancel' : (copyActive ? 'Click to paste meal here' : 'Copy this meal (click, or drag onto another slot)');
+
   return `<div class="sub-cell ${sub}">
-    <span class="person-label">${person.toUpperCase()}</span>
+    <div class="sub-cell-head">
+      <span class="person-label">${person.toUpperCase()}</span>
+      <button class="${btnClass}" draggable="true"
+        ondragstart="blockDragStart(event,${r},${c},'${person}')"
+        ondragend="blockDragEnd(event)"
+        onclick="blockCopyClick(event,${r},${c},'${person}')"
+        title="${btnTitle}" tabindex="-1">${btnIcon}</button>
+    </div>
     <div class="title-row input-wrap${hasT ? ' has-value' : ''}">
       <input type="text"
         class="meal-title${isDinner ? ' dinner-title' : ''}"
@@ -879,13 +933,14 @@ function buildSubCell(r, c, person, isDinner) {
       ${isDinner ? `<div class="ac-list" id="ac_${tKey}"></div>` : ''}
     </div>
     <div class="content-row input-wrap${hasC ? ' has-value' : ''}">
-      <input type="text"
+      <textarea
         class="content-input"
         data-key="${cKey}" data-dinner="false" data-field="c"
-        value="${cVal}" placeholder="Notes / items\u2026"
-        autocomplete="off" spellcheck="false"
+        placeholder="Notes / items\u2026"
+        spellcheck="false"
         onfocus="inputFocus(this)"
-        oninput="inputChange(this)">
+        oninput="inputChange(this)"
+        rows="1">${cVal}</textarea>
       <button class="clear-x" onclick="clearField(this)" tabindex="-1">\xd7</button>
     </div>
   </div>`;
@@ -1003,6 +1058,17 @@ function cycleItemStatus(e, group, idx) {
 
 let dragging = null;
 
+// Block copy/paste (single meal entry: name + notes for one person/slot)
+let copiedBlock = null;   // {title, content}
+let copiedFrom  = null;   // `${r}_${c}_${person}` slot key
+let copiedAt    = 0;
+let draggingBlock = null; // {title, content} while a block is mid-drag
+const COPY_EXPIRY_MS = 30000;
+
+function isCopyActive() {
+  return !!copiedBlock && (Date.now() - copiedAt) < COPY_EXPIRY_MS;
+}
+
 function itemDragStart(e, name) {
   dragging = name;
   e.dataTransfer.setData('text/plain', name);
@@ -1012,6 +1078,56 @@ function itemDragStart(e, name) {
 function itemDragEnd(e) {
   e.currentTarget.classList.remove('dragging');
   dragging = null;
+}
+
+function blockDragStart(e, r, c, person) {
+  e.stopPropagation();
+  const tKey  = `${r}_${c}_${person}_t`;
+  const cKey  = `${r}_${c}_${person}_c`;
+  const title   = gridState[tKey] || '';
+  const content = gridState[cKey] || '';
+  if (!title && !content) { e.preventDefault(); return; }
+  draggingBlock = { title, content };
+  e.dataTransfer.setData('text/plain', 'MEAL_BLOCK');
+  e.dataTransfer.effectAllowed = 'copy';
+  e.currentTarget.classList.add('dragging');
+}
+function blockDragEnd(e) {
+  e.currentTarget.classList.remove('dragging');
+  draggingBlock = null;
+}
+
+function blockCopyClick(e, r, c, person) {
+  e.stopPropagation();
+  const slotKey = `${r}_${c}_${person}`;
+  const tKey    = `${r}_${c}_${person}_t`;
+  const cKey    = `${r}_${c}_${person}_c`;
+
+  if (isCopyActive()) {
+    if (copiedFrom === slotKey) {
+      copiedBlock = null; copiedFrom = null; copiedAt = 0;
+      showToast('Copy cancelled');
+      renderGrid();
+      return;
+    }
+    if (copiedBlock.title)   gridState[tKey] = copiedBlock.title;   else delete gridState[tKey];
+    if (copiedBlock.content) gridState[cKey] = copiedBlock.content; else delete gridState[cKey];
+    saveGrid();
+    copiedBlock = null; copiedFrom = null; copiedAt = 0;
+    showToast('Meal pasted');
+    renderGrid();
+    return;
+  }
+
+  const title   = gridState[tKey] || '';
+  const content = gridState[cKey] || '';
+  if (!title && !content) { showToast('Nothing to copy in this slot'); return; }
+  copiedBlock = { title, content };
+  copiedFrom  = slotKey;
+  copiedAt    = Date.now();
+  showToast('Meal copied \u2014 click another copy icon to paste, or drag this icon onto a slot');
+  renderGrid();
+  setTimeout(() => { if (copiedFrom === slotKey && !isCopyActive()) renderGrid(); }, COPY_EXPIRY_MS + 50);
 }
 function cellDragOver(e) {
   e.preventDefault();
@@ -1023,9 +1139,31 @@ function cellDragLeave(e) {
     e.currentTarget.classList.remove('drag-over');
   }
 }
+function mergeFieldValue(existing, val) {
+  const parts = (existing || '').split('\n').map(s => s.trim()).filter(Boolean);
+  if (parts.includes(val)) return parts.join('\n');
+  parts.push(val);
+  return parts.join('\n');
+}
+
 function cellDrop(e, r, c) {
   e.preventDefault();
   e.currentTarget.classList.remove('drag-over');
+
+  if (draggingBlock) {
+    const rect   = e.currentTarget.getBoundingClientRect();
+    const person = (e.clientY - rect.top) < rect.height / 2 ? 'ato' : 'alh';
+    const tKey   = `${r}_${c}_${person}_t`;
+    const cKey   = `${r}_${c}_${person}_c`;
+    if (draggingBlock.title)   gridState[tKey] = draggingBlock.title;   else delete gridState[tKey];
+    if (draggingBlock.content) gridState[cKey] = draggingBlock.content; else delete gridState[cKey];
+    saveGrid();
+    draggingBlock = null;
+    showToast('Meal pasted');
+    renderGrid();
+    return;
+  }
+
   const name = e.dataTransfer.getData('text/plain') || dragging;
   if (!name) return;
 
@@ -1033,7 +1171,8 @@ function cellDrop(e, r, c) {
   const rect   = e.currentTarget.getBoundingClientRect();
   const person = (e.clientY - rect.top) < rect.height / 2 ? 'ato' : 'alh';
   const key    = `${r}_${c}_${person}_c`;
-  fillField(key, name);
+  const merged = mergeFieldValue(gridState[key] || '', name);
+  fillField(key, merged);
 }
 
 // ══════════════════════════════════════════════════════════════════════════
@@ -1096,7 +1235,7 @@ function inputBlur(inp) {
 
 function clearField(btn) {
   const wrap = btn.closest('.input-wrap');
-  const inp  = wrap.querySelector('input');
+  const inp  = wrap.querySelector('input, textarea');
   const key  = inp.dataset.key;
   inp.value  = '';
   delete gridState[key];
@@ -1122,7 +1261,10 @@ function fillField(key, val) {
 function itemClick(name) {
   const age = Date.now() - lastInputAt;
   if (lastInput && age < 15000 && document.body.contains(lastInput)) {
-    fillField(lastInput.dataset.key, name);
+    const key       = lastInput.dataset.key;
+    const isContent = lastInput.dataset.field === 'c';
+    const val       = isContent ? mergeFieldValue(gridState[key] || '', name) : name;
+    fillField(key, val);
     lastInput.focus();
   } else {
     showToast('Click a meal slot first, then click an item to insert');
