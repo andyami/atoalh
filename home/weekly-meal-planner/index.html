@@ -25,7 +25,11 @@
   --pantry-accent: #c8a97a;
   --cereals-accent: #a07ae6;
   --fridge-accent: #4a9eff;
+  --freezer-accent: #5fc9d6;
   --other-accent: #3ddc84;
+  --status-green: #3ddc84;
+  --status-amber: #f0a83c;
+  --status-red: #e0524f;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -268,6 +272,7 @@ header {
 .inv-group-label.pantry  { color: var(--pantry-accent); }
 .inv-group-label.cereals { color: var(--cereals-accent); }
 .inv-group-label.fridge  { color: var(--fridge-accent); }
+.inv-group-label.freezer { color: var(--freezer-accent); }
 .inv-group-label.other   { color: var(--other-accent); }
 
 .inv-count {
@@ -312,6 +317,31 @@ header {
 }
 .inv-item:active { cursor: grabbing; transform: none; }
 .inv-item.dragging { opacity: 0.35; }
+
+.inv-status-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  cursor: pointer;
+  border: 1.5px solid var(--text-muted);
+  background: transparent;
+  opacity: 0.4;
+  transition: transform 0.12s, opacity 0.12s, box-shadow 0.15s;
+}
+.inv-status-dot:hover { transform: scale(1.3); opacity: 0.75; }
+.inv-status-dot.status-green {
+  background: var(--status-green); border-color: var(--status-green);
+  opacity: 1; box-shadow: 0 0 0 2px rgba(61,220,132,0.18);
+}
+.inv-status-dot.status-amber {
+  background: var(--status-amber); border-color: var(--status-amber);
+  opacity: 1; box-shadow: 0 0 0 2px rgba(240,168,60,0.18);
+}
+.inv-status-dot.status-red {
+  background: var(--status-red); border-color: var(--status-red);
+  opacity: 1; box-shadow: 0 0 0 2px rgba(224,82,79,0.18);
+}
 
 .inv-item-name { font-size: 11.5px; flex: 1; line-height: 1.3; color: var(--text); }
 
@@ -602,6 +632,7 @@ header {
         <option value="pantry">🥫 Pantry</option>
         <option value="cereals">🥣 Cereals</option>
         <option value="fridge">❄️ Fridge</option>
+        <option value="freezer">🧊 Freezer</option>
         <option value="other">🧴 Other</option>
       </select>
       <div class="add-form-btns">
@@ -663,6 +694,7 @@ const DEFAULT_INVENTORY = {
   pantry:  ['Tuna','Chicken Soup','Chicken Broth','Sweetcorn','Pasta','Wholegrain Rice','Cup a Soup','Vegetable Rice','Chicken & Mushroom Pasta n Sauce','Curry Pot Noodle','Pesto','Pomodoro Sauce','Udon Noodles'],
   cereals: ['Chocolate Protein Porridge','Malted Wheats','Rice Krispies','Weetabix','Oats','Crunchy Nut'],
   fridge:  ['Turkey','Avocado','Fresh Pasta','Pastrami','Ham','Hummus'],
+  freezer: [],
   other:   ['Almond Butter','Peanut Butter (Smooth)','Golden Syrup','Honey','Chia Seeds','Flaxseeds','Wraps','Bagels'],
 };
 
@@ -670,8 +702,17 @@ const GROUPS = [
   {key:'pantry',  label:'🥫 Pantry',  color:'pantry'},
   {key:'cereals', label:'🥣 Cereals', color:'cereals'},
   {key:'fridge',  label:'❄️ Fridge',  color:'fridge'},
+  {key:'freezer', label:'🧊 Freezer', color:'freezer'},
   {key:'other',   label:'🧴 Other',   color:'other'},
 ];
+
+const STATUS_ORDER = ['red','amber','green','none'];
+function statusRank(s) { const i = STATUS_ORDER.indexOf(s); return i === -1 ? 3 : i; }
+function nextStatus(s) {
+  const order = ['none','green','amber','red'];
+  const i = order.indexOf(s);
+  return order[(i + 1) % order.length];
+}
 
 const DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 const ROWS = [
@@ -685,6 +726,7 @@ const ROWS = [
 // ══════════════════════════════════════════════════════════════════════════
 
 let inventory   = loadInventory();
+saveInventory();
 let gridState   = loadGrid();       // keys: r_c_person_t (title), r_c_person_c (content)
 let collapsed   = {};
 let lastInput   = null;
@@ -695,10 +737,21 @@ let weekOffset  = parseInt(localStorage.getItem('wmp_week_offset') || '0', 10);
 // STORAGE
 // ══════════════════════════════════════════════════════════════════════════
 
+function normalizeItem(it) {
+  if (typeof it === 'string') return { name: it, status: 'none' };
+  if (it && typeof it === 'object' && typeof it.name === 'string') {
+    return { name: it.name, status: ['green','amber','red'].includes(it.status) ? it.status : 'none' };
+  }
+  return null;
+}
 function loadInventory() {
-  try { const s = localStorage.getItem('wmp_inventory'); if (s) return JSON.parse(s); } catch(e){}
+  let raw = null;
+  try { const s = localStorage.getItem('wmp_inventory'); if (s) raw = JSON.parse(s); } catch(e){}
   const inv = {};
-  for (const g of GROUPS) inv[g.key] = [...DEFAULT_INVENTORY[g.key]];
+  for (const g of GROUPS) {
+    const source = (raw && Array.isArray(raw[g.key])) ? raw[g.key] : (DEFAULT_INVENTORY[g.key] || []);
+    inv[g.key] = source.map(normalizeItem).filter(Boolean);
+  }
   return inv;
 }
 function saveInventory() { localStorage.setItem('wmp_inventory', JSON.stringify(inventory)); }
@@ -874,16 +927,19 @@ function renderInventory() {
     if (!items.length) {
       html += `<div class="inv-empty">No items</div>`;
     } else {
-      for (let i = 0; i < items.length; i++) {
-        const name = items[i];
+      const display = items.map((item, idx) => ({item, idx}))
+        .sort((a, b) => statusRank(a.item.status) - statusRank(b.item.status));
+      for (const {item, idx} of display) {
+        const name = item.name;
         const safe = name.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
         html += `<div class="inv-item" draggable="true"
           title="Drag to cell, or focus a slot then click"
           ondragstart="itemDragStart(event,'${safe}')"
           ondragend="itemDragEnd(event)"
           onclick="itemClick('${safe}')">
+          <span class="inv-status-dot status-${item.status}" onclick="cycleItemStatus(event,'${g.key}',${idx})" title="Click to change"></span>
           <span class="inv-item-name">${name}</span>
-          <button class="inv-del" onclick="removeItem(event,'${g.key}',${i})" title="Remove">\xd7</button>
+          <button class="inv-del" onclick="removeItem(event,'${g.key}',${idx})" title="Remove">\xd7</button>
         </div>`;
       }
     }
@@ -916,7 +972,7 @@ function addItem() {
   const group = document.getElementById('newItemGroup').value;
   if (!name) { document.getElementById('newItemName').focus(); return; }
   if (!inventory[group]) inventory[group] = [];
-  inventory[group].push(name);
+  inventory[group].push({name, status:'none'});
   saveInventory();
   document.getElementById('addForm').classList.remove('open');
   renderInventory();
@@ -925,11 +981,20 @@ function addItem() {
 
 function removeItem(e, group, idx) {
   e.stopPropagation();
-  const name = inventory[group][idx];
+  const name = inventory[group][idx].name;
   inventory[group].splice(idx, 1);
   saveInventory();
   renderInventory();
   showToast(`"${name}" removed`);
+}
+
+function cycleItemStatus(e, group, idx) {
+  e.stopPropagation();
+  const item = inventory[group]?.[idx];
+  if (!item) return;
+  item.status = nextStatus(item.status);
+  saveInventory();
+  renderInventory();
 }
 
 // ══════════════════════════════════════════════════════════════════════════
