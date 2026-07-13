@@ -139,15 +139,15 @@ const MEDS = [
   {id:'bisoprolol',   name:'Bisoprolol',   dose:'2.5mg · 1 tablet',   slot:'morning', note:'Heart rate & blood pressure'},
   {id:'lansoprazole', name:'Lansoprazole', dose:'30mg · 1 capsule',   slot:'morning', note:'Acid reflux protection'},
   {id:'aspirin',      name:'Aspirin',      dose:'75mg · 1 tablet',    slot:'morning', note:'Blood thinner'},
-  {id:'finasteride',  name:'Finasteride',  dose:'1mg · 1 tablet',     slot:'morning', note:'Restarted on discharge'},
-  {id:'docusate-am',  name:'Docusate',     dose:'100mg · 2 capsules', slot:'morning', note:'For constipation', group:'Docusate — morning dose'},
-  {id:'docusate-pm',  name:'Docusate',     dose:'100mg · 2 capsules', slot:'night',   note:'For constipation', group:'Docusate — night dose'},
-  {id:'senokot',      name:'Senokot syrup',dose:'10mL',               slot:'night',   note:'For constipation'}
+  {id:'finasteride',  name:'Finasteride',  dose:'1mg · 1 tablet',     slot:'morning', note:'Restarted on discharge'}
 ];
 
 const PRN_MEDS = [
-  {id:'paracetamol', name:'Paracetamol', dose:'2 × 500mg (1g)', note:'Main pain relief', maxPerDay:4, minGapHours:4, single:true},
-  {id:'codeine', name:'Codeine', dose:'30mg tablets', note:'Only if needed — can cause constipation', maxTabsPerDay:8, minGapHours:4, single:false}
+  {id:'paracetamol', name:'Paracetamol', dose:'2 × 500mg (1g)', note:'Main pain relief', maxPerDay:4, minGapHours:4, single:true, category:'pain'},
+  {id:'codeine', name:'Codeine', dose:'30mg tablets', note:'Only if needed — can cause constipation', maxTabsPerDay:8, minGapHours:4, single:false, category:'pain'},
+  {id:'dulcolax', name:'Dulcolax', dose:'5mg tablets', note:'Usually the one that works — 1 to 2 tablets', maxTabsPerDay:4, minGapHours:6, single:false, category:'constipation'},
+  {id:'docusate', name:'Docusate', dose:'100mg capsules', note:'For constipation', maxTabsPerDay:4, minGapHours:6, single:false, category:'constipation'},
+  {id:'senokot', name:'Senokot syrup', dose:'10mL', note:'For constipation', maxPerDay:2, minGapHours:8, single:true, category:'constipation'}
 ];
 
 let currentTab = 'today';
@@ -375,8 +375,16 @@ function renderExpiredNote(dateKey){
 }
 
 function renderPrnSection(data){
-  let html = `<div class="sec-lbl">As needed</div>`;
-  PRN_MEDS.forEach(med=>{
+  let html = `<div class="sec-lbl">As needed — pain relief</div>`;
+  html += renderPrnCards(PRN_MEDS.filter(m=>m.category==='pain'), data);
+  html += `<div class="sec-lbl">As needed — constipation</div>`;
+  html += renderPrnCards(PRN_MEDS.filter(m=>m.category==='constipation'), data);
+  return html;
+}
+
+function renderPrnCards(medsList, data){
+  let html = '';
+  medsList.forEach(med=>{
     const entries = (data.prn && data.prn[med.id]) || [];
     const last = entries.length ? entries[entries.length-1] : null;
     const countLabel = med.single
