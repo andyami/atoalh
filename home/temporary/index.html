@@ -139,7 +139,8 @@ const MEDS = [
   {id:'bisoprolol',   name:'Bisoprolol',   dose:'2.5mg · 1 tablet',   slot:'morning', note:'Heart rate & blood pressure'},
   {id:'lansoprazole', name:'Lansoprazole', dose:'30mg · 1 capsule',   slot:'morning', note:'Acid reflux protection'},
   {id:'aspirin',      name:'Aspirin',      dose:'75mg · 1 tablet',    slot:'morning', note:'Blood thinner'},
-  {id:'finasteride',  name:'Finasteride',  dose:'1mg · 1 tablet',     slot:'morning', note:'Restarted on discharge'}
+  {id:'finasteride',  name:'Finasteride',  dose:'1mg · 1 tablet',     slot:'evening', note:'9pm'},
+  {id:'fexofenadine', name:'Fexofenadine', dose:'120mg · 1 tablet',   slot:'evening', note:'9pm — antihistamine'}
 ];
 
 const PRN_MEDS = [
@@ -147,7 +148,8 @@ const PRN_MEDS = [
   {id:'codeine', name:'Codeine', dose:'30mg tablets', note:'Only if needed — can cause constipation', maxTabsPerDay:8, minGapHours:4, single:false, category:'pain'},
   {id:'dulcolax', name:'Dulcolax', dose:'5mg tablets', note:'Usually the one that works — 1 to 2 tablets', maxTabsPerDay:4, minGapHours:6, single:false, category:'constipation'},
   {id:'docusate', name:'Docusate', dose:'100mg capsules', note:'For constipation', maxTabsPerDay:4, minGapHours:6, single:false, category:'constipation'},
-  {id:'senokot', name:'Senokot syrup', dose:'10mL', note:'For constipation', maxPerDay:2, minGapHours:8, single:true, category:'constipation'}
+  {id:'senokot', name:'Senokot syrup', dose:'10mL', note:'For constipation', maxPerDay:2, minGapHours:8, single:true, category:'constipation'},
+  {id:'lactulose', name:'Lactulose', dose:'15mL', note:'Softens stool — can take 1–3 days to have an effect', maxPerDay:2, minGapHours:8, single:true, category:'constipation'}
 ];
 
 let currentTab = 'today';
@@ -187,26 +189,26 @@ async function loadDay(dateKey){
   if(dayCache[dateKey]) return dayCache[dateKey];
   let data = {scheduled:{}, prn:{}};
   try{
-    const res = await window.storage.get('day:'+dateKey, false);
-    if(res && res.value) data = JSON.parse(res.value);
+    const raw = localStorage.getItem('meds:day:'+dateKey);
+    if(raw) data = JSON.parse(raw);
   }catch(e){ /* no data yet for this date */ }
   dayCache[dateKey] = data;
   return data;
 }
 async function saveDay(dateKey){
   try{
-    await window.storage.set('day:'+dateKey, JSON.stringify(dayCache[dateKey]), false);
+    localStorage.setItem('meds:day:'+dateKey, JSON.stringify(dayCache[dateKey]));
   }catch(e){ console.error('Storage error', e); }
   if(!knownDates.includes(dateKey)){
     knownDates.push(dateKey);
     knownDates.sort();
-    try{ await window.storage.set('known-dates', JSON.stringify(knownDates), false); }catch(e){}
+    try{ localStorage.setItem('meds:known-dates', JSON.stringify(knownDates)); }catch(e){}
   }
 }
 async function loadKnownDates(){
   try{
-    const res = await window.storage.get('known-dates', false);
-    if(res && res.value) knownDates = JSON.parse(res.value);
+    const raw = localStorage.getItem('meds:known-dates');
+    if(raw) knownDates = JSON.parse(raw);
   }catch(e){ knownDates = []; }
 }
 
@@ -301,9 +303,9 @@ function renderToday(){
   const data = dayCache[dateKey] || {scheduled:{}, prn:{}};
   const meds = medsForDate(dateKey);
   const morning = meds.filter(m=>m.slot==='morning');
-  const night = meds.filter(m=>m.slot==='night');
+  const evening = meds.filter(m=>m.slot==='evening');
 
-  const allOrdered = [...morning, ...night];
+  const allOrdered = [...morning, ...evening];
   const nextUndone = allOrdered.find(m => !data.scheduled[m.id]);
   let heroHtml;
   if(nextUndone){
@@ -311,7 +313,7 @@ function renderToday(){
       <div class="hero">
         <div class="hero-eyebrow">Next up</div>
         <div class="hero-headline">${nextUndone.name} — ${nextUndone.dose}</div>
-        <div class="hero-detail">${nextUndone.slot === 'morning' ? 'Morning dose' : 'Night dose'}${nextUndone.note ? ' · ' + nextUndone.note : ''}</div>
+        <div class="hero-detail">${nextUndone.slot === 'morning' ? 'Morning dose' : '9pm dose'}${nextUndone.note ? ' · ' + nextUndone.note : ''}</div>
         ${renderHeroStats(data)}
       </div>`;
   }else{
@@ -326,7 +328,7 @@ function renderToday(){
 
   let html = heroHtml;
   html += renderMedSection('Morning', morning, data, dateKey);
-  html += renderMedSection('Night', night, data, dateKey);
+  html += renderMedSection('9pm', evening, data, dateKey);
   html += renderExpiredNote(dateKey);
   html += renderPrnSection(data);
 
