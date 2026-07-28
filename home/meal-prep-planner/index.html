@@ -269,6 +269,19 @@ input[type="checkbox"] { accent-color: var(--alh); }
   .recipe-ing-table th,.recipe-ing-table td{padding:6px 7px;}
 }
 
+/* ─── PORTION SIZE BAR ─── */
+.portion-bar{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 36px;display:flex;align-items:center;gap:18px;flex-wrap:wrap;}
+.portion-group{display:flex;align-items:center;gap:8px;}
+.portion-who{font-family:'DM Mono',monospace;font-size:11px;font-weight:500;letter-spacing:0.5px;padding:3px 8px;border-radius:4px;}
+.portion-who.alh{background:var(--alh-light);color:var(--alh);}
+.portion-who.ato{background:var(--ato-light);color:var(--ato);}
+.mode-btn.active-alh{background:var(--alh);color:#0c0e0d;}
+.mode-btn.active-ato{background:var(--ato);color:#0c0e0d;}
+.macro-who.both{background:var(--total-light);color:var(--total);}
+.th-lvl{display:block;font-size:9px;font-weight:400;opacity:.75;letter-spacing:.5px;}
+.col-both{color:var(--total-header);}
+.amt-both{color:var(--total);}
+
 </style>
 </head>
 <body>
@@ -284,6 +297,25 @@ input[type="checkbox"] { accent-color: var(--alh); }
     <button class="mode-btn" id="btn-diff" onclick="setMode('diff')">— Different Meals</button>
   </div>
   <div class="mode-hint" id="mode-hint">Both cooking the same meals — one selection applies to both</div>
+</div>
+
+<div class="portion-bar">
+  <div class="mode-label">Portion Size</div>
+  <div class="portion-group">
+    <span class="portion-who alh">ALH</span>
+    <div class="mode-toggle">
+      <button class="mode-btn active-alh" id="btn-alh-light" onclick="setLevel('alh','light')">Light ~500</button>
+      <button class="mode-btn" id="btn-alh-full" onclick="setLevel('alh','full')">Full ~800</button>
+    </div>
+  </div>
+  <div class="portion-group">
+    <span class="portion-who ato">ATO</span>
+    <div class="mode-toggle">
+      <button class="mode-btn" id="btn-ato-light" onclick="setLevel('ato','light')">Light ~500</button>
+      <button class="mode-btn active-ato" id="btn-ato-full" onclick="setLevel('ato','full')">Full ~800</button>
+    </div>
+  </div>
+  <div class="mode-hint" id="portion-hint">Standard setup — separate quantities for each</div>
 </div>
 
 <div class="main">
@@ -343,7 +375,7 @@ const FOOD_DB = {
   "MEAT004":{name:"Turkey breast strips",desc:"",shops:{Aldi:"Y",Lidl:"Y","M&S":"Y",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
   "MEAT005":{name:"Bacon medallions",desc:"",shops:{Aldi:"Y",Lidl:"Y","M&S":"Y",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
   "MEAT006":{name:"Salmon fillets",desc:"",shops:{Aldi:"Y",Lidl:"Y","M&S":"Y",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
-  "MEAT007":{name:"Pork mince",desc:"",shops:{Aldi:"Y",Lidl:"Y","M&S":"N",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
+  "MEAT007":{name:"Pork mince (10% fat)",desc:"10% fat, not 20% \u2014 macros assume 10%",shops:{Aldi:"Y",Lidl:"Y","M&S":"N",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
   "MEAT008":{name:"Fresh cooking chorizo",desc:"",shops:{Aldi:"Y",Lidl:"N","M&S":"Y",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
   "MEAT009":{name:"Minced chicken",desc:"",shops:{Aldi:"Y",Lidl:"N","M&S":"N",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
   "PROD001":{name:"Spring onions",desc:"",shops:{Aldi:"Y",Lidl:"Y","M&S":"Y",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
@@ -368,7 +400,12 @@ const FOOD_DB = {
   "DRY003":{name:"Long grain rice",desc:"",shops:{Aldi:"Y",Lidl:"Y","M&S":"Y",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
   "DRY004":{name:"Jasmine rice",desc:"",shops:{Aldi:"N",Lidl:"Y","M&S":"N",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
   "DRY005":{name:"Egg noodles",desc:"",shops:{Aldi:"Y",Lidl:"Y","M&S":"N",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
-  "DRY006":{name:"Udon noodles",desc:"",shops:{Aldi:"Y",Lidl:"N","M&S":"N",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"Y"}},
+  "DRY006":{name:"Dried udon noodles",desc:"Dried, not straight-to-wok (e.g. Clearspring)",shops:{Aldi:"Y",Lidl:"N","M&S":"N",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"Y"}},
+  "DRY009":{name:"Panko breadcrumbs",desc:"",shops:{Aldi:"N",Lidl:"N","M&S":"Y",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"Y"}},
+  "DRY010":{name:"Rigatoni",desc:"",shops:{Aldi:"Y",Lidl:"Y","M&S":"Y",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
+  "SAU022":{name:"Gochujang paste",desc:"Korean red chilli paste",shops:{Aldi:"N",Lidl:"N","M&S":"Y",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"Y"}},
+  "SAU023":{name:"Rice vinegar",desc:"",shops:{Aldi:"N",Lidl:"N","M&S":"Y",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"Y"}},
+  "DAIR008":{name:"Low-fat cottage cheese",desc:"",shops:{Aldi:"Y",Lidl:"Y","M&S":"Y",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
   "DRY007":{name:"Rice noodles",desc:"",shops:{Aldi:"Y",Lidl:"Y","M&S":"N",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
   "DRY008":{name:"Gnocchi",desc:"",shops:{Aldi:"Y",Lidl:"Y","M&S":"Y",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
   "SAU001":{name:"Tomato passata",desc:"",shops:{Aldi:"Y",Lidl:"Y","M&S":"Y",Tesco:"Y",Asda:"Y",Morrisons:"Y","Sainsbury's":"Y",Online:"N"}},
@@ -440,6 +477,7 @@ const KEY_TO_ID = {
   "broccoli":"PROD013","onion":"PROD014","frozen-peas":"PROD015","snap-peas":"PROD016",
   "mozzarella":"DAIR006","single-cream":"DAIR007",
   "worcestershire-sauce":"SAU018","sweet-chilli-sauce":"SAU019","beef-stock":"SAU020","sun-dried-tomatoes":"SAU021",
+  "panko-breadcrumbs":"DRY009","rigatoni":"DRY010","gochujang":"SAU022","rice-vinegar":"SAU023","cottage-cheese":"DAIR008",
 };
 
 const SHOP_TIERS = [
@@ -618,7 +656,7 @@ const MEALS=[
    alhMacros:{kcal:494,p:40,c:64,f:6},atoMacros:{kcal:792,p:64,c:102,f:11},
    ingredients:[
     {key:"turkey-breast-strips",name:"Turkey breast strips",cat:"meat",alh:{v:700,u:"g"},ato:{v:1100,u:"g"}},
-    {key:"udon-noodles",name:"Udon noodles",cat:"dry",alh:{v:425,u:"g"},ato:{v:675,u:"g"}},
+    {key:"udon-noodles",name:"Dried udon noodles",cat:"dry",alh:{v:425,u:"g"},ato:{v:675,u:"g"}},
     {key:"teriyaki-sauce",name:"Teriyaki sauce",cat:"sauce",alh:{v:125,u:"ml"},ato:{v:200,u:"ml"}},
     {key:"sesame-oil",name:"Sesame oil",cat:"sauce",alh:{v:1.5,u:"tsp"},ato:{v:2.5,u:"tsp"}},
     {key:"sesame-seeds",name:"Sesame seeds",cat:"pantry",taste:true},
@@ -633,7 +671,7 @@ const MEALS=[
     {title:"Combine",text:"Add the cooked udon noodles to the wok and toss to coat. Stir-fry for 1 minute over high heat."},
     {title:"Portion up",text:"Divide across 5 containers. Top with sliced spring onions and sesame seeds."}
    ],
-   tip:"If you have access to fresh udon (vac-packed), use those \u2014 the texture is far better than dried."},
+   tip:"Weights are for dried udon \u2014 the macros depend on it. If you swap to fresh vac-packed udon, use roughly 2.5\u00d7 the weight (about 210g fresh per 85g dried) or the meal comes out ~180 kcal light per portion."},
   {id:"010",name:"Beef & Sweet Potato Chilli",short:"Beef Chilli",carbGroup:"other",color:"#D81B60",
    alhMacros:{kcal:496,p:43,c:36,f:18},atoMacros:{kcal:692,p:56,c:57,f:24},
    ingredients:[
@@ -738,9 +776,9 @@ const MEALS=[
    ],
    tip:"Salmon reheats best at 60% power for 90 seconds in the microwave \u2014 high heat makes it rubbery."},
   {id:"015",name:"Soy Glazed Pork & Noodles",short:"Soy Pork",carbGroup:"noodles",color:"#6D4C41",
-   alhMacros:{kcal:504,p:32,c:49,f:21},atoMacros:{kcal:739,p:46,c:75,f:29},
+   alhMacros:{kcal:500,p:32,c:48,f:17},atoMacros:{kcal:725,p:47,c:73,f:24},
    ingredients:[
-    {key:"pork-mince",name:"Pork mince",cat:"meat",alh:{v:625,u:"g"},ato:{v:875,u:"g"}},
+    {key:"pork-mince",name:"Pork mince (10% fat)",cat:"meat",alh:{v:625,u:"g"},ato:{v:875,u:"g"}},
     {key:"egg-noodles",name:"Egg noodles",cat:"dry",alh:{v:325,u:"g"},ato:{v:500,u:"g"}},
     {key:"soy-sauce",name:"Soy sauce",cat:"sauce",alh:{v:5.5,u:"tsp"},ato:{v:8.5,u:"tsp"}},
     {key:"hoisin-sauce",name:"Hoisin sauce",cat:"sauce",alh:{v:4.5,u:"tsp"},ato:{v:6.5,u:"tsp"}},
@@ -1075,6 +1113,53 @@ const MEALS=[
     {title:"Portion up",text:"Divide across 5 containers. Top with sliced spring onions and sesame seeds."}
    ],
    tip:"Add a fried egg per portion if you want to make this more like classic Korean bibimbap (would add ~75 kcal per portion)."},
+  {id:"032",name:"Chicken Kiev Meatballs & Pesto Rigatoni",short:"Kiev Meatballs",carbGroup:"pasta",color:"#00695C",
+   alhMacros:{kcal:505,p:40,c:51,f:15},atoMacros:{kcal:780,p:58,c:82,f:24},
+   ingredients:[
+    {key:"minced-chicken",name:"Minced chicken",cat:"meat",alh:{v:650,u:"g"},ato:{v:900,u:"g"}},
+    {key:"panko-breadcrumbs",name:"Panko breadcrumbs",cat:"dry",alh:{v:40,u:"g"},ato:{v:60,u:"g"}},
+    {key:"rigatoni",name:"Rigatoni",cat:"dry",alh:{v:275,u:"g"},ato:{v:450,u:"g"}},
+    {key:"green-pesto",name:"Green pesto (reduced fat if possible)",cat:"sauce",alh:{v:50,u:"g"},ato:{v:75,u:"g"}},
+    {key:"single-cream",name:"Single cream",cat:"dairy",alh:{v:75,u:"ml"},ato:{v:125,u:"ml"}},
+    {key:"parmesan",name:"Parmesan",cat:"dairy",alh:{v:35,u:"g"},ato:{v:60,u:"g"}},
+    {key:"butter",name:"Butter",cat:"dairy",alh:{v:15,u:"g"},ato:{v:25,u:"g"}},
+    {key:"onion",name:"Onion",cat:"produce",alh:{v:1,u:"pcs"},ato:{v:1,u:"pcs"}},
+    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:4,u:"pcs"},ato:{v:6,u:"pcs"}},
+    {key:"tomato-puree",name:"Tomato puree",cat:"sauce",alh:{v:3,u:"tsp"},ato:{v:5,u:"tsp"}},
+    {key:"garlic-powder",name:"Garlic granules",cat:"spice",alh:{v:2,u:"tsp"},ato:{v:3,u:"tsp"}},
+    {key:"italian-herbs",name:"Mixed herbs",cat:"spice",alh:{v:2,u:"tsp"},ato:{v:3,u:"tsp"}}
+   ],
+   steps:[
+    {title:"Make the meatballs",text:"Mix the minced chicken with the panko, garlic granules, half the mixed herbs and a good pinch of salt and pepper. Shape into about 25 meatballs (5 per portion) \u2014 the panko in the mix means no messy flour-egg-crumb coating is needed."},
+    {title:"Air-fry the meatballs",text:"Spray the meatballs with oil and air-fry at 180\u00b0C for 12\u201315 minutes, shaking halfway, until golden and cooked through. No air fryer? 200\u00b0C fan oven for 18\u201320 minutes on a lined tray works too."},
+    {title:"Start the sauce",text:"Meanwhile, heat a large frying pan over medium heat with a spray of oil. Cook the diced onion with a pinch of salt for 5\u20137 minutes until soft. Put the rigatoni on to boil in salted water."},
+    {title:"Build the sauce",text:"Add two-thirds of the minced garlic, the tomato puree and the pesto to the onions. Cook for 1 minute, then stir in the single cream and a big ladle of pasta water. Simmer gently for 2\u20133 minutes."},
+    {title:"Combine",text:"Drain the rigatoni (reserving a mug of pasta water) and stir through the sauce, loosening with pasta water until silky. Stir in half the parmesan."},
+    {title:"Garlic butter finish",text:"Melt the butter with the remaining minced garlic and mixed herbs for 30 seconds. Portion the pasta into 5 containers, top with the meatballs, then spoon over the garlic butter and remaining parmesan \u2014 that's the Kiev bit."}
+   ],
+   tip:"Simplified from the original \u2014 the panko goes inside the meatballs instead of a three-stage coating, so there's no flour, egg or dredging station and they still come out crispy from the air fryer."},
+  {id:"033",name:"Crispy Gochujang Beef Noodles",short:"Gochujang Beef",carbGroup:"noodles",color:"#B71C1C",
+   alhMacros:{kcal:495,p:39,c:69,f:8},atoMacros:{kcal:780,p:63,c:107,f:12},
+   ingredients:[
+    {key:"lean-beef-mince",name:"Lean beef mince",cat:"meat",alh:{v:600,u:"g"},ato:{v:1000,u:"g"}},
+    {key:"udon-noodles",name:"Dried udon noodles",cat:"dry",alh:{v:350,u:"g"},ato:{v:550,u:"g"}},
+    {key:"cottage-cheese",name:"Low-fat cottage cheese",cat:"dairy",alh:{v:200,u:"g"},ato:{v:300,u:"g"}},
+    {key:"gochujang",name:"Gochujang paste",cat:"sauce",alh:{v:75,u:"g"},ato:{v:100,u:"g"}},
+    {key:"honey",name:"Honey",cat:"sauce",alh:{v:5,u:"tsp"},ato:{v:8,u:"tsp"}},
+    {key:"soy-sauce",name:"Soy sauce",cat:"sauce",alh:{v:8,u:"tsp"},ato:{v:10,u:"tsp"}},
+    {key:"rice-vinegar",name:"Rice vinegar",cat:"sauce",alh:{v:5,u:"tsp"},ato:{v:7.5,u:"tsp"}},
+    {key:"spring-onions",name:"Spring onions",cat:"produce",alh:{v:5,u:"pcs"},ato:{v:8,u:"pcs"}},
+    {key:"fresh-garlic-cloves",name:"Fresh garlic cloves",cat:"produce",alh:{v:3,u:"pcs"},ato:{v:5,u:"pcs"}}
+   ],
+   steps:[
+    {title:"Make the glaze",text:"Mix the soy sauce, honey, rice vinegar and minced garlic in a small bowl. Slice the spring onions, add the white parts to the glaze and save the greens for garnish. Bring a large pan of water to the boil for the noodles."},
+    {title:"Blend the gochujang sauce",text:"Blend the cottage cheese, gochujang and a splash of water (about 100ml) until completely smooth \u2014 a stick blender is easiest. It looks odd but turns into a silky, creamy sauce. Set aside."},
+    {title:"Crisp the beef",text:"Brown the lean beef mince in a hot, dry frying pan. Press it flat and leave it untouched for 3\u20134 minutes so one side forms a proper browned crust \u2014 that's the crispy bit \u2014 then break up and cook through."},
+    {title:"Caramelise",text:"Pour the glaze over the beef, stir, and cook for 2\u20133 minutes until it reduces and starts to caramelise on the meat. Turn the heat right down to keep warm."},
+    {title:"Cook the noodles",text:"Cook the dried udon according to the packet (usually 8\u201310 minutes). Reserve a mug of the cooking water, then drain."},
+    {title:"Bring together",text:"Toss the noodles with the gochujang sauce, adding reserved noodle water a splash at a time until smooth and creamy. Fold in about two-thirds of the beef, then portion into 5 containers and top with the remaining crispy beef and the spring onion greens."}
+   ],
+   tip:"UK version of the Trader Joe's original \u2014 dried udon stands in for the squiggly knife-cut noodles (same thick, chewy bite) and the soy-honey glaze replaces the sauce packets. Blend the cottage cheese properly smooth and nobody will ever guess what's in the sauce."},
 ];
 
 const CARB_GROUPS=[
@@ -1096,6 +1181,7 @@ const CATEGORIES={
 
 // ─── STATE ─────────────────────────────────────────────────────────────────
 let mode='same';
+let levels={alh:'light',ato:'full'};   // 'light' = ~500 kcal set, 'full' = ~800 kcal set
 let selSame=new Set(), selAlh=new Set(), selAto=new Set();
 let haveRows=new Set(); // row keys that are ticked "have it"
 let overrides={}; // key → shop
@@ -1111,6 +1197,36 @@ function fmt(v,u){v=parseFloat(v.toFixed(1));
   if(u==="bunch") return Math.ceil(v)+" bunch";
   return v+" "+u;
 }
+// ─── PORTION LEVELS ────────────────────────────────────────────────────────
+function amtFor(ing,who){return levels[who]==='light'?ing.alh:ing.ato;}
+function macrosFor(m,who){return levels[who]==='light'?m.alhMacros:m.atoMacros;}
+function levelsMatch(){return levels.alh===levels.ato;}
+function levelLabel(who){return levels[who]==='light'?'Light':'Full';}
+// Columns collapse to a single total only when both people eat the same amount
+// AND are cooking the same meals — otherwise the per-person split still matters.
+function isCollapsed(){return mode==='same'&&levelsMatch();}
+function macroLine(x){return`${x.kcal} kcal · ${x.p}p · ${x.c}c · ${x.f}f`;}
+
+function setLevel(who,lvl){
+  levels[who]=lvl;
+  ['alh','ato'].forEach(w=>{
+    ['light','full'].forEach(l=>{
+      const b=document.getElementById(`btn-${w}-${l}`);
+      b.className='mode-btn'+(levels[w]===l?` active-${w}`:'');
+    });
+  });
+  const hint=levelsMatch()
+    ? (levels.alh==='light'
+        ? 'Both on light portions — one batch of 10 identical servings'
+        : 'Both on full portions — one batch of 10 identical servings')
+    : (levels.alh==='light'
+        ? 'Standard setup — separate quantities for each'
+        : 'Reversed — ALH on full portions, ATO on light');
+  document.getElementById('portion-hint').textContent=hint;
+  overrides={};
+  renderAll();
+}
+
 function tagHtml(mealId,who){
   const m=MEALS.find(x=>x.id===mealId);if(!m)return"";
   const c=m.color,wl=who==="alh"?" · ALH":who==="ato"?" · ATO":"";
@@ -1173,8 +1289,10 @@ function mealCard(m,who){
     <div class="meal-name">${m.name}</div>
     ${m.note?`<div class="meal-note">🌭 ${m.note}</div>`:""}
     <div class="meal-macros">
-      <div class="macro-row"><span class="macro-who alh">ALH</span><span class="macro-val">${m.alhMacros.kcal} kcal · ${m.alhMacros.p}p · ${m.alhMacros.c}c · ${m.alhMacros.f}f</span></div>
-      <div class="macro-row"><span class="macro-who ato">ATO</span><span class="macro-val">${m.atoMacros.kcal} kcal · ${m.atoMacros.p}p · ${m.atoMacros.c}c · ${m.atoMacros.f}f</span></div>
+      ${levelsMatch()
+        ?`<div class="macro-row"><span class="macro-who both">BOTH</span><span class="macro-val">${macroLine(macrosFor(m,'alh'))}</span></div>`
+        :`<div class="macro-row"><span class="macro-who alh">ALH</span><span class="macro-val">${macroLine(macrosFor(m,'alh'))}</span></div>
+          <div class="macro-row"><span class="macro-who ato">ATO</span><span class="macro-val">${macroLine(macrosFor(m,'ato'))}</span></div>`}
     </div>
   </div>`;
 }
@@ -1211,8 +1329,8 @@ function buildShoppingList(){
       } else {
         const k=ing.key+"|"+ing.alh.u;
         if(!measured[k])measured[k]={name:ing.name,cat:ing.cat,u:ing.alh.u,alh:0,ato:0,tags:[],rowKey:k,key:ing.key};
-        if(who==="alh"||who==="both")measured[k].alh+=ing.alh.v;
-        if(who==="ato"||who==="both")measured[k].ato+=ing.ato.v;
+        if(who==="alh"||who==="both")measured[k].alh+=amtFor(ing,'alh').v;
+        if(who==="ato"||who==="both")measured[k].ato+=amtFor(ing,'ato').v;
         measured[k].tags.push({id:meal.id,who});
       }
     });
@@ -1250,6 +1368,7 @@ function renderShopping(){
   }
   document.getElementById('selected-pills').innerHTML=pillsHtml;
 
+  const collapsed=isCollapsed();
   const byCat=buildShoppingList();
   const sortedCats=Object.keys(byCat).sort((a,b)=>(CATEGORIES[a]?.order||99)-(CATEGORIES[b]?.order||99));
   let html="";
@@ -1258,8 +1377,12 @@ function renderShopping(){
     html+=`<div class="table-section"><div class="cat-header">${CATEGORIES[cat].label}</div>
     <table class="shopping-table"><thead><tr>
       <th class="th-check"></th><th class="th-item">Ingredient</th>
-      <th class="th-total">Total to Buy</th><th class="th-ato">ATO (5 servings)</th>
-      <th class="th-alh">ALH (5 servings)</th><th class="th-tags">Meals</th>
+      ${collapsed
+        ?`<th class="th-total">Total · 10 servings</th>`
+        :`<th class="th-total">Total to Buy</th>
+          <th class="th-ato">ATO (5 servings)<span class="th-lvl">${levelLabel('ato')}</span></th>
+          <th class="th-alh">ALH (5 servings)<span class="th-lvl">${levelLabel('alh')}</span></th>`}
+      <th class="th-tags">Meals</th>
     </tr></thead><tbody>`;
     items.forEach(item=>{
       const rk=(item.rowKey||item.name).replace(/[^a-zA-Z0-9-]/g,"_");
@@ -1270,8 +1393,8 @@ function renderShopping(){
           <td class="td-check"><input type="checkbox" ${haveRows.has(rk)?"checked":""} onchange="toggleHave('${rk}')"></td>
           <td class="td-item">${item.name}</td>
           <td class="td-total td-taste">To taste</td>
-          <td class="td-ato td-taste">To taste</td>
-          <td class="td-alh td-taste">To taste</td>
+          ${collapsed?"":`<td class="td-ato td-taste">To taste</td>
+          <td class="td-alh td-taste">To taste</td>`}
           <td>${tagsHtml}</td></tr>`;
       } else {
         const total=fmt(item.alh+item.ato,item.u);
@@ -1281,8 +1404,8 @@ function renderShopping(){
           <td class="td-check"><input type="checkbox" ${haveRows.has(rk)?"checked":""} onchange="toggleHave('${rk}')"></td>
           <td class="td-item">${item.name}</td>
           <td class="td-total">${total}</td>
-          <td class="td-ato">${ato}</td>
-          <td class="td-alh">${alh}</td>
+          ${collapsed?"":`<td class="td-ato">${ato}</td>
+          <td class="td-alh">${alh}</td>`}
           <td>${tagsHtml}</td></tr>`;
       }
     });
@@ -1425,7 +1548,11 @@ function renderShopPlan(byCat){
 
 function reassign(key,newShop){overrides[key]=newShop;renderShopping();}
 function clearAll(){selSame.clear();selAlh.clear();selAto.clear();haveRows.clear();overrides={};renderAll();}
-function renderAll(){renderMealSelector();renderShopping();}
+function renderAll(){
+  renderMealSelector();
+  renderShopping();
+  if(typeof renderRecipe==='function'&&typeof currentRecipe==='string'&&currentRecipe)renderRecipe(currentRecipe);
+}
 
 // ─── RECIPE VIEW ─────────────────────────────────────────────────
 function initRecipeSelect(){
@@ -1444,7 +1571,9 @@ function initRecipeSelect(){
   sel.innerHTML=html;
 }
 
+let currentRecipe='';
 function renderRecipe(id){
+  currentRecipe=id||'';
   const wrap=document.getElementById('recipe-display');
   if(!id){wrap.innerHTML='<div class="recipe-empty"><p>No meal selected</p><small>Choose a meal above to see ingredient amounts and cooking instructions.</small></div>';return;}
   const m=MEALS.find(x=>x.id===id);
@@ -1453,14 +1582,21 @@ function renderRecipe(id){
   const tip=m.tip||'';
   
   // Ingredient rows (re-shown so you can measure raw ingredients before cooking)
+  const matched=levelsMatch();
   let ingRows='';
   m.ingredients.forEach(ing=>{
     if(ing.taste){
       ingRows+=`<tr><td>${ing.name}</td><td class="amt amt-taste">To taste</td><td class="amt amt-taste">To taste</td></tr>`;
-    } else {
+    } else if(matched){
+      const a=amtFor(ing,'alh');
       ingRows+=`<tr><td>${ing.name}</td>
-        <td class="amt amt-alh">${fmt(ing.alh.v,ing.alh.u)}</td>
-        <td class="amt amt-ato">${fmt(ing.ato.v,ing.ato.u)}</td></tr>`;
+        <td class="amt amt-alh">${fmt(a.v,a.u)}</td>
+        <td class="amt amt-both">${fmt(a.v*2,a.u)}</td></tr>`;
+    } else {
+      const a=amtFor(ing,'alh'),b=amtFor(ing,'ato');
+      ingRows+=`<tr><td>${ing.name}</td>
+        <td class="amt amt-alh">${fmt(a.v,a.u)}</td>
+        <td class="amt amt-ato">${fmt(b.v,b.u)}</td></tr>`;
     }
   });
   
@@ -1482,18 +1618,25 @@ function renderRecipe(id){
         <div class="recipe-title">${m.name}</div>
       </div>
       <div class="recipe-macros">
-        <div class="macro-row"><span class="macro-who alh">ALH</span><span class="macro-val">${m.alhMacros.kcal} kcal · ${m.alhMacros.p}p · ${m.alhMacros.c}c · ${m.alhMacros.f}f</span></div>
-        <div class="macro-row"><span class="macro-who ato">ATO</span><span class="macro-val">${m.atoMacros.kcal} kcal · ${m.atoMacros.p}p · ${m.atoMacros.c}c · ${m.atoMacros.f}f</span></div>
+        ${matched
+          ?`<div class="macro-row"><span class="macro-who both">BOTH</span><span class="macro-val">${macroLine(macrosFor(m,'alh'))}</span></div>`
+          :`<div class="macro-row"><span class="macro-who alh">ALH</span><span class="macro-val">${macroLine(macrosFor(m,'alh'))}</span></div>
+            <div class="macro-row"><span class="macro-who ato">ATO</span><span class="macro-val">${macroLine(macrosFor(m,'ato'))}</span></div>`}
       </div>
     </div>
     <div class="recipe-body">
       ${m.note?`<div class="recipe-note">🌭 ${m.note}</div>`:''}
-      <div class="recipe-section-label">Ingredients · 5 portions each (weigh before cooking)</div>
+      <div class="recipe-section-label">${matched
+        ?'Ingredients · both on '+levelLabel('alh').toLowerCase()+' portions (weigh before cooking)'
+        :'Ingredients · 5 portions each (weigh before cooking)'}</div>
       <table class="recipe-ing-table">
         <thead><tr>
           <th>Ingredient</th>
-          <th class="col-alh">ALH · 5 servings</th>
-          <th class="col-ato">ATO · 5 servings</th>
+          ${matched
+            ?`<th class="col-alh">Per person · 5 servings</th>
+              <th class="col-both">Both · 10 servings</th>`
+            :`<th class="col-alh">ALH · 5 servings (${levelLabel('alh')})</th>
+              <th class="col-ato">ATO · 5 servings (${levelLabel('ato')})</th>`}
         </tr></thead>
         <tbody>${ingRows}</tbody>
       </table>
