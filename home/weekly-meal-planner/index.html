@@ -200,6 +200,36 @@ header {
 }
 .add-item-btn:hover { background: var(--border); color: var(--text); }
 
+/* Export buttons */
+.panel-btn-row {
+  display: flex;
+  gap: 5px;
+  margin-top: 6px;
+}
+
+.mini-btn {
+  flex: 1;
+  padding: 6px 4px;
+  background: rgba(255,255,255,0.03);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-family: 'DM Mono', monospace;
+  font-size: 9.5px;
+  letter-spacing: 0.4px;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.mini-btn:hover { background: var(--surface2); color: var(--text); border-color: #2e342e; }
+.mini-btn.primary {
+  color: var(--ato);
+  border-color: var(--ato-border);
+  background: var(--ato-bg);
+  flex: 1.5;
+}
+.mini-btn.primary:hover { background: rgba(74,158,255,0.16); color: var(--ato); }
+
 /* Add form */
 .add-form {
   padding: 10px 12px;
@@ -665,6 +695,11 @@ header {
     <div class="panel-header">
       <div class="panel-title">📦 Inventory</div>
       <button class="add-item-btn" onclick="toggleAddForm()">+ Add Item</button>
+      <div class="panel-btn-row">
+        <button class="mini-btn primary" onclick="copyInventory()" title="Copy the full inventory to your clipboard — paste straight into a chat">📋 COPY</button>
+        <button class="mini-btn" onclick="exportInventory('txt')" title="Download as a .txt file">TXT</button>
+        <button class="mini-btn" onclick="exportInventory('csv')" title="Download as a .csv file (opens in Excel)">CSV</button>
+      </div>
     </div>
     <div class="add-form" id="addForm">
       <input type="text" id="newItemName" placeholder="Item name…" autocomplete="off">
@@ -730,12 +765,62 @@ const MMP_MEALS = [
   {id:'031',name:'Korean Beef Bowls'},
 ];
 
+// Current inventory as at 31 July 2026.
+// status: 'green' = good stock, 'amber' = getting low, 'red' = nearly out, 'none' = not marked
 const DEFAULT_INVENTORY = {
-  pantry:  ['Tuna','Chicken Soup','Chicken Broth','Sweetcorn','Pasta','Wholegrain Rice','Cup a Soup','Vegetable Rice','Chicken & Mushroom Pasta n Sauce','Curry Pot Noodle','Pesto','Pomodoro Sauce','Udon Noodles'],
-  cereals: ['Chocolate Protein Porridge','Malted Wheats','Rice Krispies','Weetabix','Oats','Crunchy Nut'],
-  fridge:  ['Turkey','Avocado','Fresh Pasta','Pastrami','Ham','Hummus'],
-  freezer: [],
-  other:   ['Almond Butter','Peanut Butter (Smooth)','Golden Syrup','Honey','Chia Seeds','Flaxseeds','Wraps','Bagels'],
+  pantry: [
+    {name:'Pesto',                             status:'amber'},
+    {name:'Tuna',                              status:'green'},
+    {name:'Sweetcorn',                         status:'green'},
+    {name:'Pasta',                             status:'green'},
+    {name:'Wholegrain Rice',                   status:'green'},
+    {name:'Cup a Soup',                        status:'green'},
+    {name:'Vegetable Rice',                    status:'green'},
+    {name:'Chicken & Mushroom Pasta n Sauce',  status:'green'},
+    {name:'Udon Noodles',                      status:'green'},
+    {name:'Ramen Noodles',                     status:'green'},
+    {name:'Chicken Broth Soup',                status:'green'},
+    {name:'Pomodoro Sauce',                    status:'green'},
+    {name:'Chia Seeds',                        status:'green'},
+    {name:'Flaxseeds',                         status:'green'},
+    {name:'Almond Butter',                     status:'green'},
+    {name:'Peanut Butter (Smooth)',            status:'green'},
+    {name:'Peanut Butter (Sea Salt)',          status:'green'},
+    {name:'Golden Syrup',                      status:'green'},
+    {name:'Maple Syrup',                       status:'green'},
+    {name:'Honey',                             status:'green'},
+  ],
+  cereals: [
+    {name:'Malted Wheats',                     status:'amber'},
+    {name:'Rice Krispies',                     status:'amber'},
+    {name:'Weetabix',                          status:'green'},
+    {name:'Oats',                              status:'green'},
+    {name:'Crunchy Nut',                       status:'green'},
+    {name:'Honey & Mixed Nut Crunch',          status:'green'},
+  ],
+  fridge: [
+    {name:'Milk',                              status:'amber'},
+    {name:'Garlic & Herb Cheese Spread',       status:'none'},
+    {name:'Greek Yoghurt',                     status:'none'},
+  ],
+  freezer: [
+    {name:'Salmon',                            status:'green'},
+    {name:'Bagels',                            status:'green'},
+    {name:'Mango Chunks',                      status:'green'},
+    {name:'Pineapple',                         status:'green'},
+    {name:'Blueberries',                       status:'green'},
+    {name:'Breakfast Topper',                  status:'green'},
+    {name:'Smoothie Mix',                      status:'green'},
+    {name:'Four Berry Medley',                 status:'green'},
+    {name:'Onions',                            status:'green'},
+    {name:'Diced Onions',                      status:'green'},
+    {name:'Chicken Breast',                    status:'green'},
+  ],
+  other: [
+    {name:'Meal Replacement Shake',            status:'green'},
+    {name:'Vanilla Protein Powder',            status:'green'},
+    {name:'Psyllium Husk',                     status:'green'},
+  ],
 };
 
 const GROUPS = [
@@ -1050,6 +1135,129 @@ function cycleItemStatus(e, group, idx) {
   item.status = nextStatus(item.status);
   saveInventory();
   renderInventory();
+}
+
+// ══════════════════════════════════════════════════════════════════════════
+// INVENTORY EXPORT
+// ══════════════════════════════════════════════════════════════════════════
+
+const STATUS_LABEL = {
+  green: 'good stock',
+  amber: 'getting low',
+  red:   'nearly out',
+  none:  'not marked',
+};
+
+// "🥫 Pantry" → "Pantry"  (strips the emoji for clean text/CSV output)
+function plainLabel(label) {
+  return label.replace(/[^\x20-\x7E]/g, '').trim();
+}
+
+function exportStamp() {
+  const d = new Date();
+  const pad = n => String(n).padStart(2, '0');
+  return {
+    iso:   `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`,
+    human: d.toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'long', year:'numeric' }),
+  };
+}
+
+function buildInventoryText() {
+  const stamp = exportStamp();
+  const lines = [];
+  let total = 0;
+
+  lines.push('KITCHEN INVENTORY — ATO & ALH');
+  lines.push(`Exported: ${stamp.human}`);
+  lines.push('');
+  lines.push('Each item is listed under its storage location, with a stock note in brackets.');
+  lines.push('');
+
+  for (const g of GROUPS) {
+    const items = inventory[g.key] || [];
+    lines.push(`${plainLabel(g.label).toUpperCase()} (${items.length})`);
+    if (!items.length) {
+      lines.push('  - nothing recorded');
+    } else {
+      const sorted = items.slice().sort((a, b) =>
+        statusRank(a.status) - statusRank(b.status) || a.name.localeCompare(b.name));
+      for (const it of sorted) {
+        lines.push(`  - ${it.name} [${STATUS_LABEL[it.status] || 'not marked'}]`);
+      }
+    }
+    lines.push('');
+    total += items.length;
+  }
+
+  lines.push(`TOTAL ITEMS: ${total}`);
+  return lines.join('\n');
+}
+
+function buildInventoryCSV() {
+  const stamp = exportStamp();
+  const esc = v => `"${String(v).replace(/"/g, '""')}"`;
+  const rows = [['Location', 'Item', 'Stock', 'Exported'].join(',')];
+
+  for (const g of GROUPS) {
+    const items = (inventory[g.key] || []).slice()
+      .sort((a, b) => statusRank(a.status) - statusRank(b.status) || a.name.localeCompare(b.name));
+    for (const it of items) {
+      rows.push([
+        esc(plainLabel(g.label)),
+        esc(it.name),
+        esc(STATUS_LABEL[it.status] || 'not marked'),
+        esc(stamp.iso),
+      ].join(','));
+    }
+  }
+  return rows.join('\r\n');
+}
+
+function downloadFile(filename, content, mime) {
+  const blob = new Blob([content], { type: mime });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+function exportInventory(fmt) {
+  const stamp = exportStamp();
+  if (fmt === 'csv') {
+    // BOM so Excel reads UTF-8 correctly
+    downloadFile(`inventory_${stamp.iso}.csv`, '\uFEFF' + buildInventoryCSV(), 'text/csv;charset=utf-8');
+    showToast('CSV downloaded \u2014 opens straight in Excel');
+  } else {
+    downloadFile(`inventory_${stamp.iso}.txt`, buildInventoryText(), 'text/plain;charset=utf-8');
+    showToast('TXT downloaded');
+  }
+}
+
+function copyInventory() {
+  const text = buildInventoryText();
+  const done = () => showToast('Inventory copied \u2014 paste it into a new chat');
+  const fail = () => {
+    // Fallback for browsers / contexts where the clipboard API is blocked
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.cssText = 'position:fixed;top:-1000px;left:-1000px;';
+    document.body.appendChild(ta);
+    ta.select();
+    let ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) {}
+    document.body.removeChild(ta);
+    ok ? done() : showToast('Copy blocked by browser \u2014 use the TXT button instead');
+  };
+
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(text).then(done).catch(fail);
+  } else {
+    fail();
+  }
 }
 
 // ══════════════════════════════════════════════════════════════════════════
