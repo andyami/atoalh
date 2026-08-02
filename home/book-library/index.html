@@ -149,6 +149,11 @@ select:focus,input:focus,textarea:focus{outline:none;border-color:var(--total);}
 .fchip{background:var(--surface2);border:1.5px solid var(--border);border-radius:20px;padding:5px 12px;font-size:11px;color:var(--text-muted);cursor:pointer;white-space:nowrap;flex-shrink:0;font-family:'DM Mono',monospace;transition:border-color .15s,color .15s;}
 .fchip:hover{color:var(--text);}
 .fchip.on{border-color:var(--total);color:var(--total);}
+.fchip.who-chip{font-weight:500;}
+.fchip.on-ato{border-color:var(--ato);color:var(--ato);background:var(--ato-light);}
+.fchip.on-alh{border-color:var(--alh);color:var(--alh);background:var(--alh-light);}
+.fchip.on-both{border-color:var(--both);color:var(--both);background:var(--both-light);}
+.fdiv{width:1px;align-self:stretch;background:var(--border);flex-shrink:0;margin:0 4px;}
 .fchip .dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;vertical-align:middle;}
 .count-line{font-size:11.5px;color:var(--text-muted);margin-bottom:16px;}
 
@@ -336,8 +341,8 @@ select:focus,input:focus,textarea:focus{outline:none;border-color:var(--total);}
   <div class="mode-hint" id="tab-hint">Both shelves at a glance</div>
 </div>
 
-<div class="who-bar">
-  <div class="mode-label">Working as</div>
+<div class="who-bar" id="who-bar" style="display:none">
+  <div class="mode-label">Stats for</div>
   <div class="mode-toggle" id="who-toggle"></div>
   <div class="mode-hint" id="who-hint"></div>
 </div>
@@ -370,7 +375,6 @@ select:focus,input:focus,textarea:focus{outline:none;border-color:var(--total);}
         <option value="table">Table</option>
       </select>
     </div>
-    <div class="filter-line"><span class="filter-lab">Whose</span><div class="filters" id="f-person"></div></div>
     <div class="filter-line"><span class="filter-lab">Status</span><div class="filters" id="f-status"></div></div>
     <div class="filter-line"><span class="filter-lab">Genre</span><div class="filters" id="f-cat"></div></div>
     <div class="count-line" id="count-line"></div>
@@ -418,6 +422,7 @@ select:focus,input:focus,textarea:focus{outline:none;border-color:var(--total);}
           <div class="mrow"><label>Title</label><input type="text" id="m-title"></div>
           <div class="mrow"><label>Author</label><input type="text" id="m-author"></div>
           <div class="mrow"><label>Category</label><select id="m-cat"></select></div>
+          <div class="mrow"><label>Reading list for</label><select id="m-for"></select></div>
           <div class="mrow"><label>Status</label><select id="m-status"></select></div>
           <div class="mrow"><label>Date read</label><input type="date" id="m-date"></div>
           <button class="btn btn-primary btn-full" onclick="manualAdd()">Add to library</button>
@@ -426,7 +431,13 @@ select:focus,input:focus,textarea:focus{outline:none;border-color:var(--total);}
 
       <div>
         <div class="section-title">Import from Libib</div>
-        <div class="notice" id="import-who"></div>
+        <div class="notice">
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px">
+            <span style="font-size:10px;text-transform:uppercase;letter-spacing:1px">Record ratings and dates as</span>
+            <div class="mode-toggle" id="import-toggle"></div>
+          </div>
+          <span id="import-who"></span>
+        </div>
         <button class="file-btn" onclick="document.getElementById('csv-in').click()">
           <b>Choose a Libib CSV export</b>
           Columns are matched automatically. Existing books are updated, not duplicated.
@@ -439,7 +450,7 @@ select:focus,input:focus,textarea:focus{outline:none;border-color:var(--total);}
         <div class="note">
           Recognised <code>status</code> values:
           <code>Read</code> <code>Currently Reading</code> <code>Up Next</code>
-          <code>Owned – Unread</code> <code>Wishlist</code> <code>Did Not Finish</code> <code>Loaned Out</code>
+          <code>Unread</code> <code>Wishlist</code> <code>Did Not Finish</code> <code>Loaned Out</code>
         </div>
 
         <div class="section-title spaced">Covers &amp; page counts</div>
@@ -485,7 +496,7 @@ const STATUSES = {
   read:{label:'Read', short:'Read', color:'var(--total)'},
   reading:{label:'Currently Reading', short:'Reading', color:'#3ddc84'},
   next:{label:'Up Next', short:'Up next', color:'#4a9eff'},
-  owned:{label:'Owned – Unread', short:'On the shelf', color:'#94a3b8'},
+  owned:{label:'Unread', short:'Unread', color:'#94a3b8'},
   wishlist:{label:'Wishlist', short:'Wishlist', color:'#a78bfa'},
   dnf:{label:'Did Not Finish', short:'Gave up', color:'var(--red)'},
   loaned:{label:'Loaned Out', short:'Loaned', color:'#f97316'}
@@ -495,7 +506,7 @@ const STATUS_ALIASES = {
   'read':'read','finished':'read','completed':'read','complete':'read','done':'read',
   'currently reading':'reading','reading':'reading','started':'reading','in progress':'reading',
   'up next':'next','next':'next','to read':'next','on deck':'next',
-  'owned - unread':'owned','owned – unread':'owned','owned':'owned',
+  'owned - unread':'owned','owned – unread':'owned','owned':'owned','on the shelf':'owned',
   'not begun':'owned','unread':'owned','to-read':'owned','tbr':'owned','shelved':'owned',
   'wishlist':'wishlist','want to read':'wishlist','wanted':'wishlist',
   'did not finish':'dnf','dnf':'dnf','abandoned':'dnf','gave up':'dnf',
@@ -523,7 +534,7 @@ function daysTaken(r){
   return n >= 0 ? n : null;
 }
 
-let state = { books:[], goals:{ato:36, alh:36}, active:'ato' };
+let state = { books:[], goals:{ato:36, alh:36}, active:'ato', importAs:'ato' };
 let filters = { status:'all', cat:'all', person:'all', q:'' };
 let activeTab = 0;
 
@@ -554,6 +565,7 @@ function loadState(){
         if(state.active === 'andy') state.active = 'ato';
         if(state.active === 'ami')  state.active = 'alh';
         state.active = p.active && PEOPLE[p.active] ? p.active : 'ato';
+        state.importAs = p.importAs && PEOPLE[p.importAs] ? p.importAs : state.active;
         return;
       }
     }catch(e){}
@@ -587,7 +599,8 @@ function migrate(b){
 
 function saveState(){
   store.set('bookshelf_v2', JSON.stringify({
-    books:state.books, goals:state.goals, active:state.active, updated:Date.now()}));
+    books:state.books, goals:state.goals, active:state.active,
+    importAs:state.importAs, updated:Date.now()}));
   if(SYNC_URL){
     fetch(SYNC_URL+'/update',{method:'POST',headers:{'Content-Type':'application/json'},
       body:JSON.stringify({books:state.books,goals:state.goals})}).catch(()=>{});
@@ -775,17 +788,25 @@ function renderWho(){
   document.getElementById('who-toggle').innerHTML = Object.keys(PEOPLE).map(k=>
     `<button class="mode-btn ${state.active===k?'active-'+k:''}" onclick="setWho('${k}')">${PEOPLE[k]}</button>`
   ).join('');
-  const o = other();
   document.getElementById('who-hint').innerHTML =
-    Object.keys(PEOPLE).map(k=>`<span class="who-count ${k}">${PEOPLE[k]} ${readBooks(k).length} read</span>`).join(' ')
-    + ` <span style="color:var(--text-muted)">· sets the Stats tab, and who imports and new books belong to</span>`;
+    `<span class="who-count ${state.active}">${nameOf(state.active)} · ${readBooks(state.active).length} read</span>`;
+
+  const it = document.getElementById('import-toggle');
+  if(it) it.innerHTML = Object.keys(PEOPLE).map(k=>
+    `<button class="mode-btn ${state.importAs===k?'active-'+k:''}" onclick="setImportAs('${k}')">${PEOPLE[k]}</button>`
+  ).join('');
   const iw = document.getElementById('import-who');
-  if(iw) iw.innerHTML = `Books go into the shared library. Ratings, dates and statuses in the file are recorded as <b style="color:${PCOL(state.active)}">${nameOf(state.active)}</b> — switch at the top if that's wrong.`;
+  if(iw) iw.innerHTML = `Every book joins the shared family library. Only the ratings, dates and statuses inside the file are filed under <b style="color:${PCOL(state.importAs)}">${nameOf(state.importAs)}</b>.`;
 }
 function setWho(k){
-  state.active = k; filters.shelf='mine'; filters.status='all';
-  saveState(); renderWho(); renderAll();
-  toast(`Showing ${nameOf(k)}'s dashboard`);
+  state.active = k;
+  saveState(); renderWho(); renderStats();
+  toast(`Stats for ${nameOf(k)}`);
+}
+function setImportAs(k){
+  state.importAs = k;
+  saveState(); renderWho();
+  toast(`Imports will be filed under ${nameOf(k)}`);
 }
 
 /* ─── QUICK ACTIONS ──────────────────────────────────────────────────────
@@ -837,8 +858,8 @@ function actionRow(b, pk){
 
 /* ─── TABS ───────────────────────────────────────────────────────────────── */
 const TAB_HINTS = ['Both shelves at a glance',
-  'Everything you own — move a book onto either shelf',
-  'Reading habits for whoever is selected above',
+  'The whole family library — move any book onto either shelf',
+  'Reading habits, one person at a time',
   'Bring in your Libib export, or add one book at a time'];
 function switchTab(n){
   activeTab = n;
@@ -846,6 +867,7 @@ function switchTab(n){
   document.querySelectorAll('.mode-bar .mode-btn').forEach((b,i)=>
     b.classList.toggle('active-total', i===n));
   document.getElementById('tab-hint').textContent = TAB_HINTS[n];
+  document.getElementById('who-bar').style.display = n===2 ? '' : 'none';
   if(window.scrollTo) window.scrollTo({top:0});
   if(n===1) renderLibrary(); if(n===2) renderStats(); if(n===3) renderCovStatus();
 }
@@ -1070,18 +1092,23 @@ function statusOf(b, who){
   return [P(b, who).status];
 }
 function renderFilters(){
-  document.getElementById('f-person').innerHTML =
-    [['all','Everyone']].concat(Object.keys(PEOPLE).map(k=>[k, nameOf(k)]))
-    .map(([k,l])=>`<div class="fchip ${filters.person===k?'on':''}" onclick="setF('person','${k}')">
-      ${k!=='all'?`<span class="dot" style="background:${PCOL(k)}"></span>`:''}${esc(l)}</div>`).join('');
+  /* One control: who you're asking about, then what state the book is in.
+     "Both" means the status is true for either of them.                */
+  const who = [['all','Both'], ...Object.keys(PEOPLE).map(k=>[k, nameOf(k)])]
+    .map(([k,l])=>{
+      const cls = filters.person===k ? (k==='all' ? 'on-both' : 'on-'+k) : '';
+      return `<div class="fchip who-chip ${cls}" onclick="setF('person','${k}')">${esc(l)}</div>`;
+    }).join('');
 
   const counts = {};
   state.books.forEach(b=>statusOf(b, filters.person).forEach(st=>counts[st]=(counts[st]||0)+1));
-  document.getElementById('f-status').innerHTML =
+  const status =
     `<div class="fchip ${filters.status==='all'?'on':''}" onclick="setF('status','all')">Any ${state.books.length}</div>` +
     Object.keys(STATUSES).filter(k=>counts[k]).map(k=>
       `<div class="fchip ${filters.status===k?'on':''}" onclick="setF('status','${k}')">
         <span class="dot" style="background:${STATUSES[k].color}"></span>${STATUSES[k].label} ${counts[k]}</div>`).join('');
+
+  document.getElementById('f-status').innerHTML = who + `<span class="fdiv"></span>` + status;
 
   const cc = {};
   state.books.forEach(b=>cc[b.category||'Uncategorised']=(cc[b.category||'Uncategorised']||0)+1);
@@ -1134,9 +1161,11 @@ function renderLibrary(){
     return 0;
   });
 
+  const wLab = who==='all'
+    ? (filters.status==='all' ? '' : ` · ${STATUSES[filters.status].label.toLowerCase()} by either of us`)
+    : ` · ${STATUSES[filters.status]?STATUSES[filters.status].label.toLowerCase()+' by ':''}${nameOf(who)}`;
   document.getElementById('count-line').textContent =
-    `${list.length} of ${state.books.length} book${state.books.length===1?'':'s'}`
-    + (who==='all' ? '' : ` · ${nameOf(who)}'s shelf`);
+    `${list.length} of ${state.books.length} book${state.books.length===1?'':'s'}${wLab}`;
 
   const out = document.getElementById('lib-out');
   if(!list.length){ out.innerHTML = `<div class="empty-box">Nothing matches.<br>Try clearing the search or filters.</div>`; return; }
@@ -1460,14 +1489,16 @@ function fillSelects(){
   const cats = [...new Set([...Object.keys(CATS), ...state.books.map(x=>x.category).filter(Boolean)])];
   document.getElementById('m-cat').innerHTML = cats.map(c=>`<option>${esc(c)}</option>`).join('');
   document.getElementById('m-status').innerHTML = Object.entries(STATUSES)
-    .map(([k,v])=>`<option value="${k}"${k==='read'?' selected':''}>${v.label}</option>`).join('');
+    .map(([k,v])=>`<option value="${k}"${k==='owned'?' selected':''}>${v.label}</option>`).join('');
+  document.getElementById('m-for').innerHTML = Object.keys(PEOPLE)
+    .map(k=>`<option value="${k}"${k===state.importAs?' selected':''}>${PEOPLE[k]}</option>`).join('');
 }
 function manualAdd(){
   const t = document.getElementById('m-title').value.trim();
   if(!t){ toast('A title is needed','bad'); return; }
   const b = newBook({ title:t, author:document.getElementById('m-author').value.trim(),
     category:document.getElementById('m-cat').value });
-  const r = P(b);
+  const r = P(b, document.getElementById('m-for').value);
   r.status   = document.getElementById('m-status').value;
   r.dateRead = document.getElementById('m-date').value;
   if(r.dateRead && r.status==='owned') r.status = 'read';
@@ -1590,7 +1621,7 @@ function importCSV(text){
   const idx = mapHeaders(rows[0]);
   if(idx.title===undefined){ toast('No title column found — check the header row','bad'); return; }
 
-  const pk = state.active;
+  const pk = state.importAs || state.active;
   let added=0, updated=0, skipped=0, nonBook=0;
   /* Libib writes authors inconsistently ("HESSION" vs "Ronan Hession"), so
      match on the surname of the first author rather than the whole string. */
@@ -1735,7 +1766,7 @@ document.getElementById('json-in').addEventListener('change', e=>{
 function resetAll(){
   if(!confirm('This wipes everything — both dashboards, ratings, Top 10s and imports — and restores the original 78 books. Continue?')) return;
   state.books = JSON.parse(JSON.stringify(SEED)).map(migrate);
-  state.goals = {ato:36, alh:36}; state.active='ato';
+  state.goals = {ato:36, alh:36}; state.active='ato'; state.importAs='ato';
   saveState(); renderWho(); renderAll(); toast('Reset to the original 78');
 }
 
