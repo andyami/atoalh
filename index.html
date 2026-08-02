@@ -14,42 +14,45 @@ body {
   font-family: 'DM Mono', monospace;
   background: #0c0e0d;
   color: #dde6df;
-  padding: 20px 16px 48px;
-  max-width: 480px;
-  margin: 0 auto;
+  padding: 40px 32px 64px;
   min-height: 100vh;
 }
 
-.page-header { margin-bottom: 28px; }
+.dashboard {
+  max-width: 1160px;
+  margin: 0 auto;
+}
+
+.page-header { margin-bottom: 36px; }
 .page-header h1 {
   font-family: 'Syne', sans-serif;
-  font-size: 30px; font-weight: 800;
-  letter-spacing: -0.5px; margin-bottom: 2px;
+  font-size: 34px; font-weight: 800;
+  letter-spacing: -0.5px; margin-bottom: 4px;
   color: #dde6df;
 }
 .page-header p { font-size: 13px; color: #586860; }
 
-.group { margin-bottom: 24px; }
-.group-header {
-  border-radius: 14px; padding: 14px 16px; margin-bottom: 10px;
-  display: flex; align-items: center; justify-content: space-between;
+/* ---- Desktop-first 4-column board ---- */
+.board {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
 }
-.group-header h2 {
+
+.column { flex: 1 1 0; min-width: 0; }
+
+.column-header {
+  border-radius: 14px; padding: 14px 16px; margin-bottom: 10px;
+}
+.column-header h2 {
   font-family: 'Syne', sans-serif;
   font-size: 15px; font-weight: 700; letter-spacing: 0.01em;
 }
-.group-header .count { font-size: 12px; font-weight: 500; opacity: 0.65; }
 
-/* Home group */
-.group-home .group-header {
-  background: #1c201c; color: #c8a97a;
-  border: 1px solid #2e362e;
-}
-/* ATO Life group */
-.group-life .group-header {
-  background: rgba(230,184,0,0.10); color: #e6b800;
-  border: 1px solid rgba(230,184,0,0.18);
-}
+.column-finances .column-header { background: rgba(230,184,0,0.10); color: #e6b800; border: 1px solid rgba(230,184,0,0.18); }
+.column-food     .column-header { background: rgba(200,169,122,0.12); color: #c8a97a; border: 1px solid rgba(200,169,122,0.20); }
+.column-other    .column-header { background: rgba(255,107,92,0.10);  color: #ff6b5c; border: 1px solid rgba(255,107,92,0.18); }
+.column-life     .column-header { background: rgba(74,158,255,0.10); color: #4a9eff; border: 1px solid rgba(74,158,255,0.18); }
 
 .tool-card {
   display: flex; align-items: center; justify-content: space-between;
@@ -57,11 +60,13 @@ body {
   border: 1px solid #222822;
   border-radius: 12px; padding: 14px 16px; margin-bottom: 8px;
   text-decoration: none; color: #dde6df;
-  transition: background 0.12s, transform 0.1s;
+  transition: background 0.12s, transform 0.1s, border-color 0.12s;
   -webkit-tap-highlight-color: transparent; cursor: pointer;
 }
-.tool-card:active { transform: scale(0.98); background: #1c201c; }
-.tool-left { display: flex; align-items: center; gap: 12px; }
+.tool-card:hover { background: #1c201c; border-color: #2e362e; }
+.tool-card:active { transform: scale(0.98); }
+
+.tool-left { display: flex; align-items: center; gap: 12px; min-width: 0; }
 .tool-icon {
   width: 40px; height: 40px; border-radius: 10px;
   display: flex; align-items: center; justify-content: center;
@@ -79,135 +84,152 @@ body {
 .icon-stretching    { background: rgba(230,184,0,0.10); }
 .icon-exercise-plan { background: rgba(74,158,255,0.10); }
 .icon-temporary     { background: rgba(255,87,87,0.10); }
+.icon-booklibrary   { background: rgba(196,154,108,0.14); }
 
-.tool-info h3 { font-size: 15px; font-weight: 600; margin-bottom: 2px; color: #dde6df; }
+.tool-info { min-width: 0; }
+.tool-info h3 { font-size: 15px; font-weight: 600; margin-bottom: 2px; color: #dde6df; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .tool-info p  { font-size: 12px; color: #586860; }
-.tool-arrow   { font-size: 18px; color: #3a4440; flex-shrink: 0; }
+.tool-arrow   { font-size: 18px; color: #3a4440; flex-shrink: 0; margin-left: 8px; }
 
-.footer { text-align: center; font-size: 11px; color: #3a4440; margin-top: 8px; }
+.footer { text-align: center; font-size: 11px; color: #3a4440; margin-top: 28px; }
+
+/* ---- Responsive fallback for tablet / mobile ---- */
+@media (max-width: 980px) {
+  body { padding: 28px 20px 48px; }
+  .board { flex-wrap: wrap; }
+  .column { flex: 1 1 calc(50% - 12px); }
+}
+
+@media (max-width: 560px) {
+  body { padding: 20px 16px 48px; }
+  .board { flex-direction: column; }
+  .column { flex: 1 1 100%; }
+}
 </style>
 </head>
 <body>
+<div class="dashboard">
 
-<div class="page-header">
-  <h1>ATO ALH</h1>
-</div>
-
-<!-- Home Group -->
-<div class="group group-home">
-  <div class="group-header">
-    <h2>🏠 Home</h2>
+  <div class="page-header">
+    <h1>ATO ALH</h1>
+    <p>Household dashboard</p>
   </div>
 
-  <a class="tool-card" href="home/finance-ato/index.html">
-    <div class="tool-left">
-      <div class="tool-icon icon-finance-ato">💳</div>
-      <div class="tool-info">
-        <h3>ATO Finance</h3>
-      </div>
-    </div>
-    <span class="tool-arrow">›</span>
-  </a>
+  <div class="board">
 
-  <a class="tool-card" href="home/finance-alh/index.html">
-    <div class="tool-left">
-      <div class="tool-icon icon-finance-alh">💳</div>
-      <div class="tool-info">
-        <h3>ALH Finance</h3>
-      </div>
-    </div>
-    <span class="tool-arrow">›</span>
-  </a>
+    <!-- Finances -->
+    <div class="column column-finances">
+      <div class="column-header"><h2>💰 Finances</h2></div>
 
-  <a class="tool-card" href="home/food-database/index.html">
-    <div class="tool-left">
-      <div class="tool-icon icon-food">🥦</div>
-      <div class="tool-info">
-        <h3>Food Database</h3>
-      </div>
-    </div>
-    <span class="tool-arrow">›</span>
-  </a>
+      <a class="tool-card" href="home/finance-ato/index.html">
+        <div class="tool-left">
+          <div class="tool-icon icon-finance-ato">💳</div>
+          <div class="tool-info"><h3>ATO Finance</h3></div>
+        </div>
+        <span class="tool-arrow">›</span>
+      </a>
 
-  <a class="tool-card" href="home/recipe-database/index.html">
-    <div class="tool-left">
-      <div class="tool-icon icon-recipe">📖</div>
-      <div class="tool-info">
-        <h3>Recipe Database</h3>
-      </div>
+      <a class="tool-card" href="home/finance-alh/index.html">
+        <div class="tool-left">
+          <div class="tool-icon icon-finance-alh">💳</div>
+          <div class="tool-info"><h3>ALH Finance</h3></div>
+        </div>
+        <span class="tool-arrow">›</span>
+      </a>
     </div>
-    <span class="tool-arrow">›</span>
-  </a>
 
-  <a class="tool-card" href="home/meal-prep-planner/index.html">
-    <div class="tool-left">
-      <div class="tool-icon icon-mealprep">🥗</div>
-      <div class="tool-info">
-        <h3>Meal Prep Planner</h3>
-      </div>
+    <!-- Food -->
+    <div class="column column-food">
+      <div class="column-header"><h2>🍽️ Food</h2></div>
+
+      <a class="tool-card" href="home/weekly-meal-planner/index.html">
+        <div class="tool-left">
+          <div class="tool-icon icon-mealweek">📅</div>
+          <div class="tool-info"><h3>Weekly Meal Planner</h3></div>
+        </div>
+        <span class="tool-arrow">›</span>
+      </a>
+
+      <a class="tool-card" href="home/meal-prep-planner/index.html">
+        <div class="tool-left">
+          <div class="tool-icon icon-mealprep">🥗</div>
+          <div class="tool-info"><h3>Meal Prep Planner</h3></div>
+        </div>
+        <span class="tool-arrow">›</span>
+      </a>
+
+      <a class="tool-card" href="home/recipe-database/index.html">
+        <div class="tool-left">
+          <div class="tool-icon icon-recipe">📖</div>
+          <div class="tool-info"><h3>Recipe Database</h3></div>
+        </div>
+        <span class="tool-arrow">›</span>
+      </a>
+
+      <a class="tool-card" href="home/food-database/index.html">
+        <div class="tool-left">
+          <div class="tool-icon icon-food">🥦</div>
+          <div class="tool-info"><h3>Food Database</h3></div>
+        </div>
+        <span class="tool-arrow">›</span>
+      </a>
     </div>
-    <span class="tool-arrow">›</span>
-  </a>
 
-  <a class="tool-card" href="home/weekly-meal-planner/index.html">
-    <div class="tool-left">
-      <div class="tool-icon icon-mealweek">📅</div>
-      <div class="tool-info">
-        <h3>Weekly Meal Planner</h3>
-      </div>
+    <!-- Other -->
+    <div class="column column-other">
+      <div class="column-header"><h2>🗂️ Other</h2></div>
+
+      <a class="tool-card" href="home/temporary/index.html">
+        <div class="tool-left">
+          <div class="tool-icon icon-temporary">🗂️</div>
+          <div class="tool-info">
+            <h3>Temporary</h3>
+            <p>Meds Tracker</p>
+          </div>
+        </div>
+        <span class="tool-arrow">›</span>
+      </a>
+
+      <a class="tool-card" href="home/book-library/index.html">
+        <div class="tool-left">
+          <div class="tool-icon icon-booklibrary">📚</div>
+          <div class="tool-info"><h3>Book Library</h3></div>
+        </div>
+        <span class="tool-arrow">›</span>
+      </a>
     </div>
-    <span class="tool-arrow">›</span>
-  </a>
 
-  <a class="tool-card" href="home/temporary/index.html">
-    <div class="tool-left">
-      <div class="tool-icon icon-temporary">🗂️</div>
-      <div class="tool-info">
-        <h3>Temporary</h3>
-        <p>Meds Tracker</p>
-      </div>
+    <!-- Life & Health -->
+    <div class="column column-life">
+      <div class="column-header"><h2>⚡ Life & Health</h2></div>
+
+      <a class="tool-card" href="ato-life/exercise-nutrition-today/index.html">
+        <div class="tool-left">
+          <div class="tool-icon icon-nutrition">🥑</div>
+          <div class="tool-info"><h3>Exercise & Nutrition</h3></div>
+        </div>
+        <span class="tool-arrow">›</span>
+      </a>
+
+      <a class="tool-card" href="ato-life/srsandp/index.html">
+        <div class="tool-left">
+          <div class="tool-icon icon-stretching">🏃</div>
+          <div class="tool-info"><h3>SRS&P</h3></div>
+        </div>
+        <span class="tool-arrow">›</span>
+      </a>
+
+      <a class="tool-card" href="ato-life/exercise-planner/index.html">
+        <div class="tool-left">
+          <div class="tool-icon icon-exercise-plan">📅</div>
+          <div class="tool-info"><h3>Exercise Planner</h3></div>
+        </div>
+        <span class="tool-arrow">›</span>
+      </a>
     </div>
-    <span class="tool-arrow">›</span>
-  </a>
-</div>
 
-<!-- ATO Life Group -->
-<div class="group group-life">
-  <div class="group-header">
-    <h2>⚡ Life & Health</h2>
   </div>
 
-  <a class="tool-card" href="ato-life/exercise-nutrition-today/index.html">
-    <div class="tool-left">
-      <div class="tool-icon icon-nutrition">🥑</div>
-      <div class="tool-info">
-        <h3>Exercise & Nutrition</h3>
-      </div>
-    </div>
-    <span class="tool-arrow">›</span>
-  </a>
-
-  <a class="tool-card" href="ato-life/srsandp/index.html">
-    <div class="tool-left">
-      <div class="tool-icon icon-stretching">🏃</div>
-      <div class="tool-info">
-        <h3>SRS&P</h3>
-      </div>
-    </div>
-    <span class="tool-arrow">›</span>
-  </a>
-
-  <a class="tool-card" href="ato-life/exercise-planner/index.html">
-    <div class="tool-left">
-      <div class="tool-icon icon-exercise-plan">📅</div>
-      <div class="tool-info">
-        <h3>Exercise Planner</h3>
-      </div>
-    </div>
-    <span class="tool-arrow">›</span>
-  </a>
-
 </div>
-
 </body>
 </html>
