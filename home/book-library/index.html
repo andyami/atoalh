@@ -1,0 +1,1666 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Bookshelf">
+<title>Bookshelf</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0c0e0d; --surface:#141714; --surface2:#1c201c;
+  --header-bg:#0c0e0d;
+  --text:#dde6df; --text-muted:#586860; --border:#222822;
+  --andy:#3ddc84; --andy-light:rgba(61,220,132,0.08);
+  --ami:#4a9eff;  --ami-light:rgba(74,158,255,0.08);
+  --total:#f0b429; --total-light:rgba(240,180,41,0.09);
+  --both:#c8a97a; --both-light:rgba(200,169,122,0.07);
+  --red:#ff5757;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+body{font-family:'DM Mono',monospace;background:var(--bg);color:var(--text);min-height:100vh;}
+
+/* HEADER + BARS */
+.header{background:var(--header-bg);border-bottom:1px solid var(--border);padding:22px 36px 18px;display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;}
+.header h1{font-family:'Syne',sans-serif;font-size:28px;font-weight:800;line-height:1;letter-spacing:-0.01em;color:var(--text);}
+.header .hdr-sub{font-size:12px;color:var(--text-muted);}
+.mode-bar,.who-bar{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 36px;display:flex;align-items:center;gap:18px;flex-wrap:wrap;}
+.mode-label{font-family:'DM Mono',monospace;font-size:12px;font-weight:500;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);}
+.mode-toggle{display:flex;border-radius:10px;overflow:hidden;border:1.5px solid var(--border);background:var(--surface2);}
+.mode-btn{padding:8px 18px;font-family:'DM Mono',monospace;font-size:12.5px;font-weight:500;letter-spacing:.4px;cursor:pointer;border:none;background:transparent;color:var(--text-muted);transition:background .15s,color .15s;}
+.mode-btn:hover{color:var(--text);}
+.mode-btn.active-total{background:var(--total);color:#0c0e0d;}
+.mode-btn.active-andy{background:var(--andy);color:#0c0e0d;}
+.mode-btn.active-ami{background:var(--ami);color:#0c0e0d;}
+.mode-hint{font-size:12px;color:var(--text-muted);font-style:italic;}
+.who-count{font-family:'DM Mono',monospace;font-size:11px;padding:3px 8px;border-radius:4px;letter-spacing:.5px;}
+.who-count.andy{background:var(--andy-light);color:var(--andy);}
+.who-count.ami{background:var(--ami-light);color:var(--ami);}
+
+.main{padding:28px 36px 60px;max-width:1400px;margin:0 auto;}
+.view{display:none;}
+.view.active{display:block;}
+
+.section-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;letter-spacing:.2px;margin-bottom:16px;color:var(--text);display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;}
+.section-title .sub{font-family:'DM Mono',monospace;font-size:12px;font-weight:400;color:var(--text-muted);}
+.section-title.spaced{margin-top:34px;}
+.divider{border:none;border-top:1px solid var(--border);margin:30px 0;}
+.panel{background:var(--surface);border:2px solid var(--border);border-radius:12px;padding:16px 18px;}
+.empty-box{background:var(--surface);border:2px dashed var(--border);border-radius:10px;padding:26px 22px;text-align:center;color:var(--text-muted);font-size:13px;line-height:1.7;}
+.empty-box b{color:var(--text);font-weight:500;}
+
+/* PERSON PANELS */
+.person-panels{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.person-panel{background:var(--surface);border:2px solid var(--border);border-radius:12px;padding:18px;}
+.person-panel.panel-andy{border-color:rgba(61,220,132,0.3);}
+.person-panel.panel-ami{border-color:rgba(74,158,255,0.3);}
+.panel-header{display:flex;align-items:center;gap:10px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px solid var(--border);}
+.panel-badge{font-family:'DM Mono',monospace;font-size:12px;font-weight:500;padding:4px 12px;border-radius:6px;letter-spacing:.5px;}
+.panel-badge.andy{background:var(--andy-light);color:var(--andy);}
+.panel-badge.ami{background:var(--ami-light);color:var(--ami);}
+.panel-count{font-size:11px;color:var(--text-muted);margin-left:auto;}
+.panel-slot{margin-bottom:12px;}
+.panel-slot:last-child{margin-bottom:0;}
+.slot-label{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);margin-bottom:6px;}
+.slot-empty{font-size:12px;color:var(--text-muted);font-style:italic;padding:4px 0;}
+
+/* BOOK ROW */
+.brow{display:flex;gap:11px;align-items:center;padding:8px 0;cursor:pointer;border-bottom:1px solid var(--border);}
+.brow:last-child{border-bottom:none;}
+.brow:hover .brow-t{color:var(--total);}
+.brow-body{flex:1;min-width:0;}
+.brow-t{font-size:13px;line-height:1.3;transition:color .15s;}
+.brow-a{font-size:11px;color:var(--text-muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.brow-r{font-size:11px;color:var(--total);flex-shrink:0;}
+
+/* COVERS */
+.cov{border-radius:5px;overflow:hidden;flex-shrink:0;background:var(--surface2);position:relative;display:flex;align-items:center;justify-content:center;}
+.cov img{width:100%;height:100%;object-fit:cover;display:block;}
+.cov-fb{width:100%;height:100%;display:flex;align-items:center;justify-content:center;padding:6% 8%;text-align:center;font-family:'Syne',sans-serif;font-weight:700;line-height:1.15;overflow:hidden;word-break:break-word;}
+.cov-46{width:44px;height:66px;}
+.cov-big{width:92px;height:138px;}
+.cov-full{width:100%;aspect-ratio:2/3;}
+.rank-badge{position:absolute;top:0;left:0;background:var(--total);color:#0c0e0d;font-family:'Syne',sans-serif;font-weight:800;font-size:12px;width:20px;height:20px;display:flex;align-items:center;justify-content:center;border-bottom-right-radius:6px;z-index:2;}
+.rank-badge.r2{background:#94a3b8;} .rank-badge.r3{background:#a3703c;}
+
+/* TILES */
+.tiles{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;}
+.tile{background:var(--surface);border:2px solid var(--border);border-radius:10px;padding:14px 10px;text-align:center;}
+.tile .n{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;line-height:1;color:var(--total);}
+.tile .n.sm{font-size:17px;}
+.tile .l{font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:var(--text-muted);margin-top:7px;line-height:1.3;}
+
+/* GOAL */
+.goal{display:flex;align-items:center;gap:18px;}
+.ring{width:92px;height:92px;flex-shrink:0;position:relative;}
+.ring svg{transform:rotate(-90deg);}
+.ring-mid{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.ring-mid .p{font-family:'Syne',sans-serif;font-size:20px;font-weight:800;line-height:1;}
+.ring-mid .s{font-size:10px;color:var(--text-muted);margin-top:3px;}
+.goal-info{flex:1;font-size:12.5px;line-height:1.8;color:var(--text-muted);}
+.goal-info b{color:var(--text);font-weight:500;}
+.btn-mini{background:none;border:1.5px solid var(--border);border-radius:6px;padding:4px 10px;font-family:'DM Mono',monospace;font-size:11px;color:var(--text-muted);cursor:pointer;transition:border-color .15s,color .15s;margin-top:8px;}
+.btn-mini:hover{border-color:var(--total);color:var(--total);}
+
+/* BARS */
+.bar-row{display:flex;align-items:center;gap:10px;margin-bottom:9px;font-size:12px;}
+.bar-row:last-child{margin-bottom:0;}
+.bar-name{width:96px;flex-shrink:0;color:var(--text-muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.bar-track{background:var(--surface2);height:7px;border-radius:9999px;flex:1;overflow:hidden;}
+.bar-fill{height:100%;border-radius:9999px;transition:width .4s;}
+.bar-val{font-family:'Syne',sans-serif;font-size:13px;width:30px;text-align:right;flex-shrink:0;}
+.bar-val.sub{font-size:11px;font-family:'DM Mono',monospace;color:var(--text-muted);width:52px;}
+.kv-row{display:flex;align-items:flex-start;gap:10px;margin-bottom:9px;font-size:12px;}
+.kv-row:last-child{margin-bottom:0;}
+.kv-k{width:118px;flex-shrink:0;color:var(--text-muted);}
+.kv-v{flex:1;text-align:right;line-height:1.5;}
+
+/* CALENDAR */
+.mgrid{display:grid;grid-template-columns:repeat(12,1fr);gap:3px;}
+.mcell{aspect-ratio:1;border-radius:3px;background:var(--surface2);}
+.mlabels{display:grid;grid-template-columns:repeat(12,1fr);gap:3px;margin-top:4px;}
+.mlabels div{font-size:9px;color:var(--text-muted);text-align:center;}
+.yr-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.yr-lab{font-family:'Syne',sans-serif;font-size:13px;width:40px;flex-shrink:0;color:var(--text-muted);}
+.yr-lab.cur{color:var(--total);}
+
+/* TOP 10 RAIL */
+.top-rail{display:flex;gap:12px;overflow-x:auto;padding-bottom:8px;}
+.top-rail::-webkit-scrollbar{height:6px;} .top-rail::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+.top-item{width:86px;flex-shrink:0;cursor:pointer;}
+.top-item .cov{width:86px;height:129px;margin-bottom:7px;}
+.top-item:hover .tt{color:var(--total);}
+.top-item .tt{font-size:11px;line-height:1.3;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;transition:color .15s;}
+.top-item .ta{font-size:10px;color:var(--text-muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+
+/* LIBRARY CONTROLS */
+.controls{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:14px;}
+.search-wrap{position:relative;flex:1;min-width:220px;}
+.search{width:100%;background:var(--surface);border:2px solid var(--border);border-radius:10px;padding:10px 36px 10px 13px;color:var(--text);font-family:'DM Mono',monospace;font-size:13.5px;}
+.search:focus{outline:none;border-color:var(--total);}
+.search-clear{position:absolute;right:10px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--text-muted);font-size:17px;cursor:pointer;display:none;}
+select,input[type=date],input[type=text],input[type=number],textarea{background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;padding:9px 11px;color:var(--text);font-family:'DM Mono',monospace;font-size:13px;width:100%;}
+select:focus,input:focus,textarea:focus{outline:none;border-color:var(--total);}
+.sel-inline{width:auto;min-width:150px;}
+.filters{display:flex;gap:6px;overflow-x:auto;padding-bottom:9px;margin-bottom:4px;}
+.filters::-webkit-scrollbar{height:5px;} .filters::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px;}
+.fchip{background:var(--surface2);border:1.5px solid var(--border);border-radius:20px;padding:5px 12px;font-size:11px;color:var(--text-muted);cursor:pointer;white-space:nowrap;flex-shrink:0;font-family:'DM Mono',monospace;transition:border-color .15s,color .15s;}
+.fchip:hover{color:var(--text);}
+.fchip.on{border-color:var(--total);color:var(--total);}
+.fchip .dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;vertical-align:middle;}
+.count-line{font-size:11.5px;color:var(--text-muted);margin-bottom:16px;}
+
+/* BOOK CARDS */
+.book-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(176px,1fr));gap:12px;}
+.book-card{background:var(--surface);border:2px solid var(--border);border-radius:10px;padding:10px;transition:border-color .15s,box-shadow .15s,transform .1s;position:relative;}
+.book-card:hover{box-shadow:0 4px 14px rgba(0,0,0,.4);transform:translateY(-1px);}
+.book-card.sel-andy{border-color:var(--andy);background:var(--andy-light);}
+.book-card.sel-ami{border-color:var(--ami);background:var(--ami-light);}
+.book-card.sel-both{border-color:var(--both);background:var(--both-light);}
+.book-card .cov-full{margin-bottom:9px;cursor:pointer;}
+.bc-title{font-size:12px;font-weight:500;line-height:1.3;cursor:pointer;overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;}
+.bc-title:hover{color:var(--total);}
+.bc-author{font-size:10.5px;color:var(--text-muted);margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.bc-meta{display:flex;align-items:center;gap:6px;margin-top:5px;min-height:15px;}
+.bc-rate{font-size:10px;}
+.bc-rate.andy{color:var(--andy);} .bc-rate.ami{color:var(--ami);}
+.bc-coll{font-size:9px;color:var(--text-muted);border:1px solid var(--border);border-radius:3px;padding:1px 5px;margin-left:auto;white-space:nowrap;}
+.bc-actions{margin-top:8px;padding-top:8px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:5px;}
+.act-row{display:flex;align-items:center;gap:5px;}
+.act-who{font-size:9px;font-weight:500;padding:2px 5px;border-radius:3px;min-width:34px;text-align:center;letter-spacing:.3px;flex-shrink:0;}
+.act-who.andy{background:var(--andy-light);color:var(--andy);}
+.act-who.ami{background:var(--ami-light);color:var(--ami);}
+.act-btn{flex:1;font-family:'DM Mono',monospace;font-size:9.5px;padding:3px 2px;border-radius:4px;border:1px solid var(--border);background:transparent;color:var(--text-muted);cursor:pointer;transition:all .12s;white-space:nowrap;}
+.act-btn:hover{color:var(--text);border-color:var(--text-muted);}
+.act-btn.on-andy{background:var(--andy);border-color:var(--andy);color:#0c0e0d;}
+.act-btn.on-ami{background:var(--ami);border-color:var(--ami);color:#0c0e0d;}
+.act-btn.done{border-color:var(--total);color:var(--total);}
+
+/* TABLE VIEW */
+.tbl-wrap{overflow-x:auto;border-radius:8px;}
+.book-table{width:100%;border-collapse:collapse;background:var(--surface);font-size:12.5px;border-radius:8px;overflow:hidden;}
+.book-table th{padding:9px 12px;font-family:'DM Mono',monospace;font-size:10.5px;font-weight:500;text-transform:uppercase;letter-spacing:.8px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap;}
+.th-book{background:var(--surface2);color:var(--text);min-width:210px;}
+.th-cat{background:var(--surface2);color:var(--text-muted);}
+.th-andy{background:var(--andy-light);color:var(--andy);min-width:150px;}
+.th-ami{background:var(--ami-light);color:var(--ami);min-width:150px;}
+.book-table td{padding:8px 12px;border-bottom:1px solid var(--border);vertical-align:middle;}
+.book-table tr:last-child td{border-bottom:none;}
+.book-table tr:hover td{background:rgba(255,255,255,.02);}
+.td-andy{background:var(--andy-light);} .td-ami{background:var(--ami-light);}
+.td-book{cursor:pointer;} .td-book:hover .tb-t{color:var(--total);}
+.tb-t{font-weight:500;transition:color .15s;}
+.tb-a{font-size:11px;color:var(--text-muted);margin-top:2px;}
+.mini-actions{display:flex;gap:4px;align-items:center;}
+.stat-tag{display:inline-block;font-size:9.5px;padding:2px 7px;border-radius:4px;border:1px solid;white-space:nowrap;}
+
+/* STARS */
+.stars{display:inline-flex;gap:3px;user-select:none;}
+.star{position:relative;width:24px;height:24px;cursor:pointer;}
+.star svg{width:100%;height:100%;display:block;}
+.star .half{position:absolute;inset:0;width:50%;overflow:hidden;}
+.star .half svg{width:24px;}
+.stars.ro .star{cursor:default;}
+.rate-line{display:flex;align-items:center;gap:12px;}
+.rate-num{font-family:'Syne',sans-serif;font-size:15px;color:var(--total);width:44px;}
+.rate-clear{background:none;border:none;color:var(--text-muted);font-size:11px;cursor:pointer;font-family:'DM Mono',monospace;text-decoration:underline;}
+
+/* MODAL */
+.modal{display:none;position:fixed;inset:0;background:rgba(12,14,13,.94);z-index:100;overflow-y:auto;padding:24px 0;}
+.modal.open{display:flex;align-items:flex-start;justify-content:center;}
+.modal-content{background:var(--surface);border:2px solid var(--border);border-radius:12px;width:calc(100% - 32px);max-width:520px;padding:22px;margin:auto;}
+.mrow{margin-bottom:14px;}
+.mrow label{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--text-muted);display:block;margin-bottom:6px;}
+.mhead{display:flex;gap:16px;margin-bottom:16px;}
+.mhead-body{flex:1;min-width:0;}
+.mtitle{font-family:'Syne',sans-serif;font-size:19px;font-weight:700;line-height:1.2;}
+.mauthor{font-size:12px;color:var(--text-muted);margin-top:5px;}
+.mmeta{font-size:11px;color:var(--text-muted);margin-top:9px;line-height:1.7;}
+.notice{border-radius:8px;padding:10px 13px;font-size:11.5px;line-height:1.6;margin-bottom:14px;background:var(--total-light);border:1px solid rgba(240,180,41,.25);color:var(--text-muted);}
+.notice b{font-weight:500;}
+.quick-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;}
+.quick-box{border:1.5px solid var(--border);border-radius:8px;padding:10px;}
+.quick-box.andy{border-color:rgba(61,220,132,.3);} .quick-box.ami{border-color:rgba(74,158,255,.3);}
+.quick-box .qb-h{font-size:10px;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px;}
+.quick-box.andy .qb-h{color:var(--andy);} .quick-box.ami .qb-h{color:var(--ami);}
+.qb-btns{display:flex;gap:5px;}
+.btn-row{display:flex;gap:9px;margin-top:6px;}
+.btn{border:none;padding:11px 18px;border-radius:8px;font-family:'DM Mono',monospace;font-size:12.5px;font-weight:500;letter-spacing:.4px;cursor:pointer;transition:opacity .15s,transform .1s;}
+.btn:active{transform:scale(.98);}
+.btn:hover{opacity:.88;}
+.btn-primary{background:var(--total);color:#0c0e0d;flex:1;}
+.btn-ghost{background:var(--surface2);color:var(--text-muted);border:1.5px solid var(--border);flex:1;}
+.btn-ghost:hover{border-color:var(--text-muted);color:var(--text);opacity:1;}
+.btn-ghost.danger{color:var(--red);border-color:rgba(255,87,87,.3);}
+.btn-full{width:100%;margin-bottom:9px;}
+.toggle{display:flex;align-items:center;gap:10px;background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;padding:11px 13px;cursor:pointer;font-size:13px;}
+.toggle.on{border-color:var(--total);color:var(--total);}
+.toggle .box{width:16px;height:16px;border:1.5px solid var(--text-muted);border-radius:4px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;}
+.toggle.on .box{border-color:var(--total);background:var(--total);color:#0c0e0d;}
+
+/* ADD VIEW */
+.add-cols{display:grid;grid-template-columns:1fr 1fr;gap:28px;align-items:start;}
+.res-row{display:flex;gap:11px;padding:10px;background:var(--surface);border:1.5px solid var(--border);border-radius:10px;margin-bottom:8px;align-items:center;cursor:pointer;}
+.res-row:hover{border-color:var(--total);}
+.file-btn{display:block;width:100%;background:transparent;border:2px dashed var(--border);border-radius:10px;padding:18px;text-align:center;color:var(--text-muted);font-size:12px;cursor:pointer;line-height:1.6;font-family:'DM Mono',monospace;}
+.file-btn:hover{border-color:var(--total);color:var(--total);}
+.file-btn b{display:block;color:var(--text);font-weight:500;margin-bottom:4px;font-size:13px;}
+.note{font-size:11px;color:var(--text-muted);line-height:1.7;margin-top:10px;}
+.note code{background:var(--surface2);padding:1px 6px;border-radius:4px;color:var(--total);font-size:10.5px;}
+
+/* TOAST + SPINNER */
+.toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(90px);background:var(--surface2);border:1.5px solid var(--border);border-radius:10px;padding:12px 20px;font-size:12px;z-index:200;transition:transform .25s;pointer-events:none;max-width:calc(100% - 40px);text-align:center;}
+.toast.show{transform:translateX(-50%) translateY(0);}
+.toast.good{border-color:var(--andy);color:var(--andy);}
+.toast.bad{border-color:var(--red);color:var(--red);}
+.spin{display:inline-block;width:11px;height:11px;border:2px solid var(--border);border-top-color:var(--total);border-radius:50%;animation:sp .7s linear infinite;vertical-align:-1px;}
+@keyframes sp{to{transform:rotate(360deg);}}
+
+/* RESPONSIVE */
+@media(max-width:900px){
+  .header{padding:18px 16px 14px;}
+  .header h1{font-size:23px;}
+  .mode-bar,.who-bar{padding:11px 16px;gap:10px;}
+  .mode-hint{display:none;}
+  .main{padding:20px 16px 50px;}
+  .person-panels{grid-template-columns:1fr;gap:14px;}
+  .add-cols{grid-template-columns:1fr;gap:0;}
+  .tiles{grid-template-columns:repeat(3,1fr);}
+  .book-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;}
+  .goal{gap:14px;}
+  .mode-toggle{flex:1;} .mode-btn{flex:1;padding:8px 10px;font-size:12px;}
+  .stats-cols{grid-template-columns:1fr!important;}
+}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;}}
+.stats-cols{display:grid;grid-template-columns:1fr 1fr;gap:0 28px;align-items:start;}
+.dash-cols{display:grid;grid-template-columns:1fr 1fr;gap:0 28px;align-items:start;}
+@media(max-width:900px){.dash-cols{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>BOOKSHELF</h1>
+  <div class="hdr-sub" id="hdr-sub">—</div>
+</div>
+
+<div class="mode-bar">
+  <div class="mode-label">Section</div>
+  <div class="mode-toggle">
+    <button class="mode-btn active-total" onclick="switchTab(0)">Dashboard</button>
+    <button class="mode-btn" onclick="switchTab(1)">Library</button>
+    <button class="mode-btn" onclick="switchTab(2)">Stats</button>
+    <button class="mode-btn" onclick="switchTab(3)">Add</button>
+  </div>
+  <div class="mode-hint" id="tab-hint">Both shelves at a glance</div>
+</div>
+
+<div class="who-bar">
+  <div class="mode-label">Viewing as</div>
+  <div class="mode-toggle" id="who-toggle"></div>
+  <div class="mode-hint" id="who-hint"></div>
+</div>
+
+<div class="main">
+
+  <!-- ══ DASHBOARD ══ -->
+  <div class="view active" id="view-0">
+    <div class="section-title">On the go <span class="sub">Currently reading and what's queued up</span></div>
+    <div class="person-panels" id="person-panels"></div>
+
+    <hr class="divider">
+
+    <div class="section-title">Top 10 of all time <span class="sub" id="top-hint"></span></div>
+    <div id="top-rail-wrap"></div>
+
+    <hr class="divider">
+
+    <div class="section-title">The numbers <span class="sub" id="numbers-sub"></span></div>
+    <div class="tiles" id="tiles"></div>
+
+    <div class="dash-cols" style="margin-top:22px">
+      <div>
+        <div class="section-title">Reading goal <span class="sub" id="goal-year"></span></div>
+        <div class="panel goal" id="goal-card"></div>
+        <div class="section-title spaced">This month by category</div>
+        <div class="panel" id="month-cats"></div>
+      </div>
+      <div>
+        <div class="section-title" id="year-cat-label">This year by category</div>
+        <div class="panel" id="year-cats"></div>
+        <div class="section-title spaced">Rhythm</div>
+        <div class="panel" id="rhythm"></div>
+      </div>
+    </div>
+
+    <hr class="divider">
+
+    <div class="dash-cols">
+      <div>
+        <div class="section-title">On this day</div>
+        <div id="onthisday"></div>
+      </div>
+      <div>
+        <div class="section-title">Recently finished</div>
+        <div class="panel" id="recent"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ LIBRARY ══ -->
+  <div class="view" id="view-1">
+    <div class="controls">
+      <div class="search-wrap">
+        <input class="search" id="q" placeholder="Search title, author, category, notes…" autocomplete="off">
+        <button class="search-clear" id="q-clear" onclick="clearQ()">&times;</button>
+      </div>
+      <select id="sort" class="sel-inline" onchange="renderLibrary()">
+        <option value="date-desc">Date read · newest</option>
+        <option value="date-asc">Date read · oldest</option>
+        <option value="rating-desc">Rating · highest</option>
+        <option value="rating-asc">Rating · lowest</option>
+        <option value="title">Title A–Z</option>
+        <option value="author">Author A–Z</option>
+        <option value="added">Recently added</option>
+      </select>
+      <select id="viewmode" class="sel-inline" style="min-width:110px" onchange="renderLibrary()">
+        <option value="grid">Covers</option>
+        <option value="table">Table</option>
+      </select>
+    </div>
+    <div class="filters" id="f-shelf"></div>
+    <div class="filters" id="f-status"></div>
+    <div class="filters" id="f-cat"></div>
+    <div class="filters" id="f-coll"></div>
+    <div class="count-line" id="count-line"></div>
+    <div id="lib-out"></div>
+  </div>
+
+  <!-- ══ STATS ══ -->
+  <div class="view" id="view-2">
+    <div class="stats-cols">
+      <div>
+        <div class="section-title">Most read categories <span class="sub">all time</span></div>
+        <div class="panel" id="s-cats"></div>
+        <div class="section-title spaced">Most read authors</div>
+        <div class="panel" id="s-authors"></div>
+        <div class="section-title spaced">Rating spread</div>
+        <div class="panel" id="s-ratings"></div>
+      </div>
+      <div>
+        <div class="section-title">Year on year</div>
+        <div class="panel" id="s-years"></div>
+        <div class="section-title spaced">Reading calendar</div>
+        <div class="panel" id="s-calendar"></div>
+        <div class="section-title spaced">Records</div>
+        <div class="panel" id="s-records"></div>
+      </div>
+    </div>
+    <hr class="divider">
+    <div class="section-title">Year in review
+      <select id="yir-year" class="sel-inline" style="min-width:100px" onchange="renderStats()"></select></div>
+    <div class="panel" id="s-yir"></div>
+  </div>
+
+  <!-- ══ ADD ══ -->
+  <div class="view" id="view-3">
+    <div class="add-cols">
+      <div>
+        <div class="section-title">Search for a book <span class="sub">Adds to the shared library</span></div>
+        <div class="search-wrap" style="margin-bottom:12px">
+          <input class="search" id="gq" placeholder="Title, author or ISBN…" autocomplete="off">
+        </div>
+        <div id="gq-out"></div>
+
+        <div class="section-title spaced">Or add by hand</div>
+        <div class="panel">
+          <div class="mrow"><label>Title</label><input type="text" id="m-title"></div>
+          <div class="mrow"><label>Author</label><input type="text" id="m-author"></div>
+          <div class="mrow"><label>Category</label><select id="m-cat"></select></div>
+          <div class="mrow"><label>Status</label><select id="m-status"></select></div>
+          <div class="mrow"><label>Date read</label><input type="date" id="m-date"></div>
+          <button class="btn btn-primary btn-full" onclick="manualAdd()">Add to library</button>
+        </div>
+      </div>
+
+      <div>
+        <div class="section-title">Import from Libib</div>
+        <div class="notice" id="import-who"></div>
+        <button class="file-btn" onclick="document.getElementById('csv-in').click()">
+          <b>Choose a Libib CSV export</b>
+          Columns are matched automatically. Existing books are updated, not duplicated.
+        </button>
+        <input type="file" id="csv-in" accept=".csv,text/csv" style="display:none">
+        <div class="note">
+          <b style="color:var(--total)">Import the file exactly as Libib gives it to you.</b>
+          Opening it in Excel first rewrites long ISBNs as <code>9.78198E+12</code> and breaks them.
+        </div>
+        <div class="note">
+          Recognised <code>status</code> values:
+          <code>Read</code> <code>Currently Reading</code> <code>Up Next</code>
+          <code>Owned – Unread</code> <code>Wishlist</code> <code>Did Not Finish</code> <code>Loaned Out</code>
+        </div>
+
+        <div class="section-title spaced">Covers &amp; page counts</div>
+        <div class="panel">
+          <div id="cov-status" style="font-size:12px;color:var(--text-muted);line-height:1.7;margin-bottom:11px"></div>
+          <button class="btn btn-primary btn-full" onclick="retryCovers()" id="cov-btn">Fetch missing covers</button>
+        </div>
+
+        <div class="section-title spaced">Backup</div>
+        <button class="btn btn-ghost btn-full" onclick="exportJSON()">Download backup (.json)</button>
+        <button class="btn btn-ghost btn-full" onclick="document.getElementById('json-in').click()">Restore from backup</button>
+        <input type="file" id="json-in" accept=".json,application/json" style="display:none">
+        <button class="btn btn-ghost btn-full" onclick="exportCSV()">Export library (.csv)</button>
+        <button class="btn btn-ghost danger btn-full" onclick="resetAll()">Reset everything</button>
+        <div class="note">The library lives in this browser. Download a backup before switching device, then restore it on the other one.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<div class="modal" id="modal"><div class="modal-content" id="modal-content"></div></div>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ═══ BOOKSHELF ═════════════════════════════════════════════════════════════
+   Shared library, one dashboard each.
+   Optional sync: paste a Cloudflare Worker URL to sync across devices.      */
+const SYNC_URL = '';
+
+const SEED = [{"id":"b001","title":"The Family Friend","author":"Claire Douglas","category":"Thriller","status":"read","dateRead":"2026-04-21","approxDate":false,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b002","title":"The God of the Woods","author":"Liz Moore","category":"Thriller","status":"read","dateRead":"2026-01-21","approxDate":false,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b003","title":"Local Girl Missing","author":"Claire Douglas","category":"Thriller","status":"read","dateRead":"2026-01-12","approxDate":false,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b004","title":"Then She Vanishes","author":"Claire Douglas","category":"Thriller","status":"read","dateRead":"2025-12-29","approxDate":false,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b005","title":"The New Neighbours","author":"Claire Douglas","category":"Thriller","status":"read","dateRead":"2025-11-19","approxDate":false,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b006","title":"The Couple at Number 9","author":"Claire Douglas","category":"Thriller","status":"read","dateRead":"2025-11-22","approxDate":false,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b007","title":"The Girls Who Disappeared","author":"Claire Douglas","category":"Thriller","status":"read","dateRead":"2025-11-11","approxDate":false,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b008","title":"The Wrong Sister","author":"Claire Douglas","category":"Thriller","status":"read","dateRead":"2025-11-10","approxDate":false,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b009","title":"We Used to Live Here","author":"Marcus Kliewer","category":"Horror","status":"read","dateRead":"2025-10-10","approxDate":false,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b010","title":"The Wedding People","author":"Alison Espach","category":"Literary Fiction","status":"read","dateRead":"2025-10-06","approxDate":false,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b011","title":"The Invisible Life of Addie LaRue","author":"Victoria Schwab","category":"Fantasy","status":"read","dateRead":"2025-09-29","approxDate":false,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b012","title":"The Ministry of Time","author":"Kaliane Bradley","category":"Sci-Fi","status":"read","dateRead":"2025-08-20","approxDate":false,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b013","title":"Wild Dark Shore","author":"Charlotte McConaghy","category":"Literary Fiction","status":"read","dateRead":"2025-08-06","approxDate":false,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b014","title":"The Glass Castle","author":"Jeannette Walls","category":"Memoir","status":"read","dateRead":"2025-07-24","approxDate":false,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b015","title":"Hide and Seek","author":"Andrea Mara","category":"Thriller","status":"read","dateRead":"2025-07-15","approxDate":false,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b016","title":"Service Model","author":"Adrian Tchaikovsky","category":"Sci-Fi","status":"read","dateRead":"2025-07-07","approxDate":false,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b017","title":"The End of Loneliness","author":"Benedict Wells","category":"Literary Fiction","status":"read","dateRead":"2025-06-16","approxDate":false,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b018","title":"A Little Life","author":"Hanya Yanagihara","category":"Literary Fiction","status":"read","dateRead":"2025-06-09","approxDate":false,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b019","title":"Love and Other Words","author":"Christina Lauren","category":"Romance","status":"read","dateRead":"2025-05-15","approxDate":false,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b020","title":"A Short History of the World in 50 Lies","author":"Natasha Tidd","category":"Non-Fiction","status":"read","dateRead":"2025-05-01","approxDate":false,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b021","title":"White Nights","author":"Fyodor Dostoyevsky","category":"Classic","status":"read","dateRead":"2025-04-30","approxDate":false,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b022","title":"Nuclear War","author":"Annie Jacobsen","category":"Non-Fiction","status":"read","dateRead":"2025-04-09","approxDate":false,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b023","title":"Strange Sally Diamond","author":"Liz Nugent","category":"Thriller","status":"read","dateRead":"2025-03-20","approxDate":false,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b024","title":"Educated","author":"Tara Westover","category":"Memoir","status":"read","dateRead":"2025-03-17","approxDate":false,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b025","title":"Hard Rain Falling","author":"Don Carpenter","category":"Classic","status":"read","dateRead":"2025-03-10","approxDate":false,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b026","title":"Greenlights","author":"Matthew McConaughey","category":"Memoir","status":"read","dateRead":"2025-02-28","approxDate":false,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b027","title":"The Seven Year Slip","author":"Ashley Poston","category":"Romance","status":"read","dateRead":"2025-02-24","approxDate":false,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b028","title":"How to Win the Premier League","author":"Ian Graham","category":"Sport","status":"read","dateRead":"2025-02-06","approxDate":false,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b029","title":"The Moustache","author":"Emmanuel Carrere","category":"Literary Fiction","status":"read","dateRead":"2025-02-12","approxDate":false,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b030","title":"A Man Called Ove","author":"Fredrik Backman","category":"Literary Fiction","status":"read","dateRead":"2025-02-07","approxDate":false,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b031","title":"Data Game: The Story of Liverpool FC's Analytics Revolution","author":"Josh Williams","category":"Sport","status":"read","dateRead":"2025-02-03","approxDate":false,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b032","title":"All Her Fault","author":"Andrea Mara","category":"Thriller","status":"read","dateRead":"2025-01-29","approxDate":false,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b033","title":"Panenka","author":"Ronan Hession","category":"Literary Fiction","status":"read","dateRead":"2025-01-21","approxDate":false,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b034","title":"The Country Will Bring Us No Peace","author":"Matthieu Simard","category":"Literary Fiction","status":"read","dateRead":"2025-01-21","approxDate":false,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b035","title":"All the Sinners Bleed","author":"S. A. Cosby","category":"Thriller","status":"read","dateRead":"2025-01-12","approxDate":false,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b036","title":"A Short Stay in Hell","author":"Steven L. Peck","category":"Sci-Fi","status":"read","dateRead":"2025-01-09","approxDate":false,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b037","title":"Hello Beautiful","author":"Ann Napolitano","category":"Literary Fiction","status":"read","dateRead":"2025-01-02","approxDate":false,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b038","title":"A Stranger in the Family (Maeve Kerrigan #11)","author":"Jane Casey","category":"Thriller","status":"read","dateRead":"2024-12-17","approxDate":false,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b039","title":"Intermezzo","author":"Sally Rooney","category":"Literary Fiction","status":"read","dateRead":"2024-11-23","approxDate":false,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b040","title":"Transformer","author":"Neil Atkinson","category":"Sport","status":"read","dateRead":"2024-10-07","approxDate":false,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b041","title":"All the Colors of the Dark","author":"Chris Whitaker","category":"Thriller","status":"read","dateRead":"2024-09-16","approxDate":false,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b042","title":"The Intruders","author":"Louise Jensen","category":"Thriller","status":"read","dateRead":"2024-09-08","approxDate":false,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b043","title":"Small Things Like These","author":"Claire Keegan","category":"Literary Fiction","status":"read","dateRead":"2024-09-02","approxDate":false,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b044","title":"'Salem's Lot","author":"Stephen King","category":"Horror","status":"read","dateRead":"2024-08-29","approxDate":false,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b045","title":"Thirty Days of Darkness","author":"Jenny Lund Madsen","category":"Thriller","status":"read","dateRead":"2024-08-17","approxDate":false,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b046","title":"The War of the Worlds","author":"H. G. Wells","category":"Classic","status":"read","dateRead":"2024-08-07","approxDate":false,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b047","title":"Project Hail Mary","author":"Andy Weir","category":"Sci-Fi","status":"read","dateRead":"2024-08-03","approxDate":false,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b048","title":"Someone in the Attic","author":"Andrea Mara","category":"Thriller","status":"read","dateRead":"2024-07-22","approxDate":false,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b049","title":"The Trading Game","author":"Gary Stevenson","category":"Memoir","status":"read","dateRead":"2024-07-02","approxDate":false,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b050","title":"The Last Goodbye (David Raker #12)","author":"Tim Weaver","category":"Thriller","status":"read","dateRead":"2024-06-19","approxDate":false,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b051","title":"Penance","author":"Eliza Clark","category":"Thriller","status":"read","dateRead":"2024-05-16","approxDate":false,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b052","title":"The Wager","author":"David Grann","category":"Non-Fiction","status":"read","dateRead":"2024-04-28","approxDate":false,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b053","title":"No One Saw a Thing","author":"Andrea Mara","category":"Thriller","status":"read","dateRead":"2024-04-15","approxDate":false,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b054","title":"One Day","author":"David Nicholls","category":"Romance","status":"read","dateRead":"2024-03-31","approxDate":false,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b055","title":"The Accomplice","author":"Steve Cavanagh","category":"Thriller","status":"read","dateRead":"2024-03-14","approxDate":false,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b056","title":"Harlequin Butterfly","author":"Toh EnJoe","category":"Literary Fiction","status":"read","dateRead":"2024-03-10","approxDate":false,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b057","title":"I Who Have Never Known Men","author":"Jacqueline Harpman","category":"Sci-Fi","status":"read","dateRead":"2024-03-04","approxDate":false,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b058","title":"Predictably Irrational Revised and Expanded Edition","author":"Dan Ariely","category":"Non-Fiction","status":"read","dateRead":"2024-02-27","approxDate":false,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b059","title":"Tuesdays with Morrie","author":"Mitch Albom","category":"Memoir","status":"read","dateRead":"2024-02-12","approxDate":false,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b060","title":"Dear Dolly","author":"Dolly Alderton","category":"Non-Fiction","status":"read","dateRead":"2024-02-10","approxDate":false,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b061","title":"Termush","author":"Sven Holm","category":"Sci-Fi","status":"read","dateRead":"2024-02-09","approxDate":false,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b062","title":"The House in the Cerulean Sea","author":"TJ Klune","category":"Fantasy","status":"read","dateRead":"2024-02-04","approxDate":false,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b063","title":"The Night Circus","author":"Erin Morgenstern","category":"Fantasy","status":"read","dateRead":"2024-01-28","approxDate":false,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b064","title":"The Things You Can See Only When You Slow Down","author":"Haemin Sunim","category":"Self-Help","status":"read","dateRead":"2024-01-20","approxDate":false,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b065","title":"Everything I Know About Love","author":"Dolly Alderton","category":"Memoir","status":"read","dateRead":"2024-01-14","approxDate":false,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b066","title":"So Late in the Day","author":"Claire Keegan","category":"Short Stories","status":"read","dateRead":"2024-01-12","approxDate":false,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b067","title":"Atomic Habits","author":"James Clear","category":"Self-Help","status":"read","dateRead":"2024-01-09","approxDate":false,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b068","title":"Yellowface","author":"R. F. Kuang","category":"Literary Fiction","status":"read","dateRead":"2024-01-09","approxDate":false,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b069","title":"The Silent Patient","author":"Alex Michaelides","category":"Thriller","status":"read","dateRead":"2024-01-09","approxDate":false,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b070","title":"Never Let Me Go","author":"Kazuo Ishiguro","category":"Literary Fiction","status":"read","dateRead":"2023-12-13","approxDate":false,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b071","title":"When Breath Becomes Air","author":"Paul Kalanithi","category":"Memoir","status":"read","dateRead":"2023-01-01","approxDate":true,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b072","title":"Isaac and the Egg","author":"Bobby Palmer","category":"Literary Fiction","status":"read","dateRead":"2023-01-01","approxDate":true,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b073","title":"The Woman Who Lied","author":"Claire Douglas","category":"Thriller","status":"read","dateRead":"2023-01-01","approxDate":true,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b074","title":"Tomorrow and Tomorrow and Tomorrow","author":"Gabrielle Zevin","category":"Literary Fiction","status":"read","dateRead":"2023-01-01","approxDate":true,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b075","title":"The Art of Thinking Clearly","author":"Rolf Dobelli","category":"Non-Fiction","status":"read","dateRead":"2023-11-15","approxDate":false,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b076","title":"Talking at Night","author":"Claire Daverley","category":"Romance","status":"read","dateRead":"2023-09-06","approxDate":false,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b077","title":"The Midnight Library","author":"Matt Haig","category":"Literary Fiction","status":"read","dateRead":"2023-01-01","approxDate":true,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""},{"id":"b078","title":"The Alchemist","author":"Paulo Coelho","category":"Classic","status":"read","dateRead":"2023-01-01","approxDate":true,"rating":0,"top10":false,"topRank":0,"notes":"","isbn":"","pages":0,"published":"","cover":""}];
+
+const PEOPLE = { andy:'Andy', ami:'Ami' };
+
+const CATS = {
+  'Thriller':'#ff5757', 'Literary Fiction':'#f0b429', 'Sci-Fi':'#4a9eff',
+  'Fantasy':'#a78bfa', 'Horror':'#f97316', 'Romance':'#f472b6',
+  'Memoir':'#3ddc84', 'Non-Fiction':'#22d3ee', 'Sport':'#c8a97a',
+  'Classic':'#94a3b8', 'Self-Help':'#34d399', 'Short Stories':'#c084fc',
+  'Poetry':'#e879a0', 'Crime':'#ef6d6d', 'History':'#b5a06a', 'Uncategorised':'#586860'
+};
+const STATUSES = {
+  read:{label:'Read', short:'Read', color:'var(--total)'},
+  reading:{label:'Currently Reading', short:'Reading', color:'var(--andy)'},
+  next:{label:'Up Next', short:'Up next', color:'var(--ami)'},
+  owned:{label:'Owned – Unread', short:'On the shelf', color:'#94a3b8'},
+  wishlist:{label:'Wishlist', short:'Wishlist', color:'#a78bfa'},
+  dnf:{label:'Did Not Finish', short:'Gave up', color:'var(--red)'},
+  loaned:{label:'Loaned Out', short:'Loaned', color:'#f97316'}
+};
+const PCOL = k => k==='andy' ? 'var(--andy)' : 'var(--ami)';
+const STATUS_ALIASES = {
+  'read':'read','finished':'read','completed':'read','complete':'read','done':'read',
+  'currently reading':'reading','reading':'reading','started':'reading','in progress':'reading',
+  'up next':'next','next':'next','to read':'next','on deck':'next',
+  'owned - unread':'owned','owned – unread':'owned','owned':'owned',
+  'not begun':'owned','unread':'owned','to-read':'owned','tbr':'owned','shelved':'owned',
+  'wishlist':'wishlist','want to read':'wishlist','wanted':'wishlist',
+  'did not finish':'dnf','dnf':'dnf','abandoned':'dnf','gave up':'dnf',
+  'loaned out':'loaned','loaned':'loaned','lent':'loaned','on loan':'loaned','checked out':'loaned',
+  'currentlyreading':'reading','inprogress':'reading','upnext':'next','ondeck':'next',
+  'ownedunread':'owned','notbegun':'owned','toread':'next','wanttoread':'wishlist',
+  'didnotfinish':'dnf','gaveup':'dnf','loanedout':'loaned','onloan':'loaned','checkedout':'loaned'
+};
+const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+/* ─── STORAGE ────────────────────────────────────────────────────────────── */
+let memStore = {};
+const store = {
+  get(k){ try{ return localStorage.getItem(k); }catch(e){ return memStore[k] ?? null; } },
+  set(k,v){ try{ localStorage.setItem(k,v); }catch(e){ memStore[k]=v; } }
+};
+
+const blankP = () => ({rating:0, top10:false, topRank:0, status:'owned',
+  dateRead:'', dateStarted:'', approxDate:false, notes:''});
+
+let state = { books:[], goals:{andy:36, ami:36}, active:'andy' };
+let filters = { status:'all', cat:'all', coll:'all', q:'', shelf:'mine' };
+let activeTab = 0;
+
+const other = () => state.active==='andy' ? 'ami' : 'andy';
+const nameOf = k => PEOPLE[k];
+/* personal record for a book, for a given person */
+function P(b, k){
+  k = k || state.active;
+  if(!b.p) b.p = {};
+  if(!b.p[k]) b.p[k] = blankP();
+  return b.p[k];
+}
+
+function loadState(){
+  const raw = store.get('bookshelf_v2') || store.get('bookshelf_v1');
+  if(raw){
+    try{
+      const p = JSON.parse(raw);
+      if(Array.isArray(p.books) && p.books.length){
+        state.books = p.books.map(migrate);
+        state.goals = p.goals || {andy: p.goal || 36, ami: 36};
+        state.active = p.active && PEOPLE[p.active] ? p.active : 'andy';
+        return;
+      }
+    }catch(e){}
+  }
+  state.books = JSON.parse(JSON.stringify(SEED)).map(migrate);
+  saveState();
+}
+/* v1 books kept rating/status at the top level — those were Andy's */
+function migrate(b){
+  if(!b.p){
+    b.p = { andy: {
+      rating:b.rating||0, top10:!!b.top10, topRank:b.topRank||0,
+      status:b.status||'owned', dateRead:b.dateRead||'', dateStarted:b.dateStarted||'',
+      approxDate:!!b.approxDate, notes:b.notes||''
+    }, ami: blankP() };
+    ['rating','top10','topRank','status','dateRead','dateStarted','approxDate','notes']
+      .forEach(k=>delete b[k]);
+  }
+  if(!b.p.ami)  b.p.ami  = blankP();
+  if(!b.p.andy) b.p.andy = blankP();
+  return b;
+}
+function saveState(){
+  store.set('bookshelf_v2', JSON.stringify({
+    books:state.books, goals:state.goals, active:state.active, updated:Date.now()}));
+  if(SYNC_URL){
+    fetch(SYNC_URL+'/update',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({books:state.books,goals:state.goals})}).catch(()=>{});
+  }
+}
+
+/* ─── UTILS ──────────────────────────────────────────────────────────────── */
+const esc = s => String(s??'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid = () => 'b' + Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+const norm = s => String(s??'').toLowerCase().replace(/[^a-z0-9]/g,'');
+function d(b,k){ const r=P(b,k); return r.dateRead ? new Date(r.dateRead+'T00:00:00') : null; }
+function fmtDate(s){ if(!s) return '—'; const x=new Date(s+'T00:00:00');
+  return x.toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}); }
+function catColor(c){ if(CATS[c]) return CATS[c]; const h=hashNum(c)%360; return `hsl(${h} 55% 58%)`; }
+function hashNum(s){ let h=0; for(let i=0;i<String(s).length;i++) h=(h*31+String(s).charCodeAt(i))>>>0; return h; }
+function toast(msg,kind){ const t=document.getElementById('toast');
+  t.innerHTML=msg; t.className='toast show '+(kind||''); clearTimeout(t._t);
+  t._t=setTimeout(()=>{t.className='toast '+(kind||'')},3200); }
+function daysBetween(a,b){ return Math.round((b-a)/86400000); }
+const readBooks = k => state.books.filter(b=>P(b,k).status==='read' && P(b,k).dateRead);
+const exactRead = k => readBooks(k).filter(b=>!P(b,k).approxDate);
+const goal = () => state.goals[state.active] || 36;
+
+/* ─── COVERS ─────────────────────────────────────────────────────────────── */
+function covHTML(b, cls, badge){
+  const h = hashNum(b.title)%360;
+  const words = String(b.title).split(' ').slice(0,6).join(' ');
+  const fs = cls==='cov-full'||cls==='cov-big' ? '13px' : cls==='cov-46' ? '7px' : '8px';
+  return `<div class="cov ${cls}">
+    ${badge||''}
+    <div class="cov-fb" style="background:linear-gradient(150deg,hsl(${h} 20% 17%),hsl(${h} 28% 9%));color:hsl(${h} 45% 64%);font-size:${fs}">${esc(words)}</div>
+    ${b.cover ? `<img src="${esc(b.cover)}" alt="" loading="lazy" style="position:absolute;inset:0" onerror="this.remove()">` : ''}
+  </div>`;
+}
+const cleanISBN = s => {
+  s = String(s||'').replace(/[^0-9Xx]/g,'').toUpperCase();
+  return (s.length===10 || s.length===13) ? s : '';
+};
+const olCover = isbn => isbn ? `https://covers.openlibrary.org/b/isbn/${isbn}-L.jpg?default=false` : '';
+
+let lastCoverError = '';
+const isFile = (typeof location!=='undefined' && location.protocol === 'file:');
+
+/* Chrome refuses fetch() from a file:// page. Google's API also answers via
+   JSONP, which is a plain <script> tag and works anywhere — so fall back. */
+function jsonp(url){
+  return new Promise((res, rej) => {
+    const cb = '__bs' + Math.random().toString(36).slice(2);
+    const s = document.createElement('script');
+    const done = ok => { clearTimeout(t); try{ delete window[cb]; }catch(e){} s.remove(); ok; };
+    const t = setTimeout(() => { done(); rej(new Error('lookup timed out')); }, 9000);
+    window[cb] = data => { done(); res(data); };
+    s.onerror = () => { done(); rej(new Error('lookup blocked')); };
+    s.src = url + (url.indexOf('?')>-1 ? '&' : '?') + 'callback=' + cb;
+    document.head.appendChild(s);
+  });
+}
+async function getJSON(url, canJsonp){
+  try{
+    const r = await fetch(url);
+    if(!r.ok) throw new Error('server returned ' + r.status);
+    return await r.json();
+  }catch(e){
+    if(canJsonp) return jsonp(url);
+    throw e;
+  }
+}
+
+async function fetchMetaFor(b){
+  const clean = String(b.title).replace(/\(.*?\)/g,'').replace(/\s*[:–—].*$/,'').trim();
+  const firstAuthor = String(b.author||'').split(/[,;]| and /)[0].trim();
+
+  /* 1 — Google Books: best coverage, also gives pages and year */
+  try{
+    const q = b.isbn ? 'isbn:'+b.isbn
+      : 'intitle:'+clean + (firstAuthor ? ' inauthor:'+firstAuthor : '');
+    const j = await getJSON('https://www.googleapis.com/books/v1/volumes?maxResults=5&q='+encodeURIComponent(q), true);
+    const it = (j.items||[]).find(x=>x.volumeInfo && x.volumeInfo.imageLinks) || (j.items||[])[0];
+    if(it){
+      const v = it.volumeInfo||{};
+      if(v.imageLinks){
+        b.cover = (v.imageLinks.thumbnail||v.imageLinks.smallThumbnail||'')
+          .replace(/^http:/,'https:').replace('&edge=curl','');
+      }
+      if(v.pageCount && !b.pages) b.pages = v.pageCount;
+      if(v.publishedDate && !b.published) b.published = String(v.publishedDate).slice(0,4);
+      if(!b.isbn){
+        const i = (v.industryIdentifiers||[]).find(x=>x.type==='ISBN_13')
+               || (v.industryIdentifiers||[]).find(x=>x.type==='ISBN_10');
+        if(i) b.isbn = i.identifier;
+      }
+      if(b.cover){ b.coverSrc='google'; b.metaTried=true; return true; }
+    }
+  }catch(e){ lastCoverError = e.message; }
+
+  /* 2 — Open Library search */
+  try{
+    const url = b.isbn
+      ? 'https://openlibrary.org/search.json?limit=1&isbn='+encodeURIComponent(b.isbn)
+      : 'https://openlibrary.org/search.json?limit=1&title='+encodeURIComponent(clean)
+        + (firstAuthor?'&author='+encodeURIComponent(firstAuthor):'');
+    const j2 = await getJSON(url, false);
+    const doc = (j2.docs||[])[0];
+    if(doc){
+      if(doc.cover_i) b.cover = 'https://covers.openlibrary.org/b/id/'+doc.cover_i+'-L.jpg';
+      if(!b.pages && doc.number_of_pages_median) b.pages = doc.number_of_pages_median;
+      if(!b.published && doc.first_publish_year) b.published = String(doc.first_publish_year);
+      if(!b.isbn && doc.isbn && doc.isbn[0]) b.isbn = cleanISBN(doc.isbn[0]);
+      if(b.cover){ b.coverSrc='openlibrary'; b.metaTried=true; return true; }
+    }
+  }catch(e){ lastCoverError = e.message; }
+
+  /* 3 — last resort: build the cover URL straight from the ISBN, no lookup */
+  if(b.isbn){ b.cover = olCover(b.isbn); b.coverSrc='isbn'; b.metaTried=true; return true; }
+
+  b.coverTried = true; b.metaTried = true;
+  return false;
+}
+
+let fetching = false;
+async function fetchAllMeta(silent){
+  if(fetching) return;
+  const todo = state.books.filter(b=>!b.metaTried && (!b.cover || !b.pages));
+  if(!todo.length){ if(!silent) toast('Nothing left to look up','good'); renderCovStatus(); return; }
+  fetching = true; lastCoverError = '';
+  const btn = document.getElementById('cov-btn');
+  const st  = document.getElementById('cov-status');
+  if(btn) btn.disabled = true;
+  let got = 0;
+  for(let i=0;i<todo.length;i++){
+    if(st) st.innerHTML = `<span class="spin"></span> Fetching ${i+1} of ${todo.length} — ${esc(todo[i].title)}`;
+    if(btn) btn.textContent = `Fetching… ${i+1}/${todo.length}`;
+    if(await fetchMetaFor(todo[i]) || todo[i].cover) got++;
+    if(i%5===4){ saveState(); renderAll(); }
+    await new Promise(r=>setTimeout(r,140));
+  }
+  saveState(); fetching = false;
+  if(btn) btn.disabled = false;
+  renderAll();
+  const failed = todo.length - got;
+  if(failed && lastCoverError){
+    toast(`${got} covers found, ${failed} failed.<br><span style="color:var(--text-muted)">${esc(lastCoverError)}</span>`,'bad');
+  } else if(!silent || got){
+    toast(`${got} cover${got===1?'':'s'} found`, 'good');
+  }
+}
+function renderCovStatus(){
+  const el = document.getElementById('cov-status'); if(!el) return;
+  const have   = state.books.filter(b=>b.cover).length;
+  const miss   = state.books.filter(b=>!b.metaTried && (!b.cover || !b.pages)).length;
+  const failed = state.books.filter(b=>!b.cover && b.coverTried).length;
+  el.innerHTML = `<b style="color:var(--text)">${have}</b> of ${state.books.length} have artwork`
+    + (miss ? ` · ${miss} still to fetch` : '')
+    + (failed ? ` · <span style="color:var(--total)">${failed} not found</span>` : '')
+    + (lastCoverError ? `<br><span style="color:var(--red);font-size:11px">Last error: ${esc(lastCoverError)}</span>` : '')
+    + (isFile ? `<br><span style="color:var(--text-muted);font-size:11px">Opened as a local file — lookups use the JSONP fallback.</span>` : '');
+  const btn = document.getElementById('cov-btn');
+  if(btn && !fetching) btn.textContent = miss ? `Fetch ${miss} missing covers` : 'Retry the ones that failed';
+}
+function retryCovers(){
+  state.books.forEach(b=>{ if(!b.cover || !b.pages){ b.coverTried = false; b.metaTried = false; } });
+  saveState(); fetchAllMeta();
+}
+
+/* ─── STARS ──────────────────────────────────────────────────────────────── */
+const starPath = 'M12 2l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.3 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8z';
+const starSVG = c => `<svg viewBox="0 0 24 24" fill="${c}"><path d="${starPath}"/></svg>`;
+function starsHTML(r, o){
+  o = o||{};
+  let h = `<div class="stars${o.sm?' sm':''}${o.live?'':' ro'}">`;
+  for(let i=1;i<=5;i++){
+    const full = r>=i, half = !full && r>=i-0.5;
+    h += '<div class="star">' + starSVG(full?'var(--total)':'var(--text-muted)');
+    if(half) h += `<div class="half">${starSVG('var(--total)')}</div>`;
+    if(o.live) h += `<div style="position:absolute;inset:0;display:flex">
+      <div style="flex:1" data-set="${i-0.5}"></div><div style="flex:1" data-set="${i}"></div></div>`;
+    h += '</div>';
+  }
+  return h + '</div>';
+}
+const ratingText = r => r ? r.toFixed(1).replace('.0','') + '★' : '';
+
+/* ─── PERSON SWITCH ──────────────────────────────────────────────────────── */
+function renderWho(){
+  document.getElementById('who-toggle').innerHTML = Object.keys(PEOPLE).map(k=>
+    `<button class="mode-btn ${state.active===k?'active-'+k:''}" onclick="setWho('${k}')">${PEOPLE[k]}</button>`
+  ).join('');
+  const o = other();
+  document.getElementById('who-hint').innerHTML =
+    `<span class="who-count ${state.active}">${nameOf(state.active)} ${readBooks(state.active).length} read</span>`
+  + ` <span class="who-count ${o}">${nameOf(o)} ${readBooks(o).length} read</span>`;
+  const iw = document.getElementById('import-who');
+  if(iw) iw.innerHTML = `Books go into the shared library. Ratings, dates and statuses in the file are recorded as <b style="color:${PCOL(state.active)}">${nameOf(state.active)}</b> — switch at the top if that's wrong.`;
+}
+function setWho(k){
+  state.active = k; filters.shelf='mine'; filters.status='all';
+  saveState(); renderWho(); renderAll();
+  toast(`Showing ${nameOf(k)}'s dashboard`);
+}
+
+/* ─── QUICK ACTIONS ──────────────────────────────────────────────────────
+   Move any book straight onto someone's "reading" or "up next" shelf.
+   Pressing the same button again puts it back where it was.            */
+function quickSet(id, pk, want, ev){
+  if(ev) ev.stopPropagation();
+  const b = state.books.find(x=>x.id===id); if(!b) return;
+  const r = P(b, pk);
+  if(r.status === want){
+    r.status = r.prevStatus || (r.dateRead ? 'read' : 'owned');
+    r.prevStatus = '';
+    if(want === 'reading') r.dateStarted = '';
+    toast(`${b.title} → ${STATUSES[r.status].short} for ${nameOf(pk)}`);
+  } else {
+    if(r.status !== 'reading' && r.status !== 'next') r.prevStatus = r.status;
+    r.status = want;
+    if(want === 'reading' && !r.dateStarted) r.dateStarted = new Date().toISOString().slice(0,10);
+    toast(`${b.title} → ${STATUSES[want].short} for ${nameOf(pk)}`, 'good');
+  }
+  saveState(); renderWho(); renderAll();
+  if(editing === id) openBook(id);
+}
+function actionRow(b, pk){
+  const r = P(b, pk);
+  const on = s => r.status===s ? ' on-'+pk : '';
+  return `<div class="act-row">
+    <span class="act-who ${pk}">${nameOf(pk).slice(0,4).toUpperCase()}</span>
+    <button class="act-btn${on('reading')}" onclick="quickSet('${b.id}','${pk}','reading',event)">Reading</button>
+    <button class="act-btn${on('next')}" onclick="quickSet('${b.id}','${pk}','next',event)">Up next</button>
+  </div>`;
+}
+
+/* ─── TABS ───────────────────────────────────────────────────────────────── */
+const TAB_HINTS = ['Both shelves at a glance',
+  'Everything you own — move a book onto either shelf',
+  'Reading habits for whoever is selected above',
+  'Bring in your Libib export, or add one book at a time'];
+function switchTab(n){
+  activeTab = n;
+  document.querySelectorAll('.view').forEach((v,i)=>v.classList.toggle('active',i===n));
+  document.querySelectorAll('.mode-bar .mode-btn').forEach((b,i)=>
+    b.classList.toggle('active-total', i===n));
+  document.getElementById('tab-hint').textContent = TAB_HINTS[n];
+  if(window.scrollTo) window.scrollTo({top:0});
+  if(n===1) renderLibrary(); if(n===2) renderStats(); if(n===3) renderCovStatus();
+}
+
+/* ─── DASHBOARD ──────────────────────────────────────────────────────────── */
+function renderDash(){
+  const now = new Date(), yr = now.getFullYear(), mo = now.getMonth();
+  const read = readBooks(), exact = exactRead();
+
+  document.getElementById('hdr-sub').textContent =
+    `${state.books.length} in the library · ${read.filter(b=>d(b).getFullYear()===yr).length} read by ${nameOf(state.active)} in ${yr}`;
+
+  /* Person panels — both shelves, side by side */
+  document.getElementById('person-panels').innerHTML =
+    Object.keys(PEOPLE).map(k=>personPanel(k, yr)).join('');
+
+  /* Top 10 */
+  const top = state.books.filter(b=>P(b).top10)
+    .sort((a,b)=> (P(a).topRank||99)-(P(b).topRank||99) || (P(b).rating||0)-(P(a).rating||0));
+  document.getElementById('top-hint').textContent = top.length ? `${top.length} of 10 chosen` : '';
+  document.getElementById('top-rail-wrap').innerHTML = top.length
+    ? `<div class="top-rail">` + top.map(b=>{
+        const rk = P(b).topRank;
+        return `<div class="top-item" onclick="openBook('${b.id}')">
+          ${covHTML(b,'',rk?`<div class="rank-badge r${rk}">${rk}</div>`:'')}
+          <div class="tt">${esc(b.title)}</div>
+          <div class="ta">${esc(b.author)}</div></div>`;
+      }).join('') + `</div>`
+    : `<div class="empty-box">${nameOf(state.active)} hasn't picked any favourites yet.<br>Open any book and switch on <b>In my Top 10</b> — then rank the best three.</div>`;
+
+  /* Tiles */
+  document.getElementById('numbers-sub').textContent = nameOf(state.active) + "'s reading";
+  const thisMonth = exact.filter(b=>d(b).getFullYear()===yr && d(b).getMonth()===mo).length;
+  const thisYear  = read.filter(b=>d(b).getFullYear()===yr).length;
+  const rated = state.books.filter(b=>P(b).rating>0);
+  const avg = rated.length ? (rated.reduce((s,b)=>s+P(b).rating,0)/rated.length) : 0;
+  const pages = read.reduce((s,b)=>s+(b.pages||0),0);
+  document.getElementById('tiles').innerHTML = [
+    ['This month', thisMonth], ['In '+yr, thisYear], ['Books read', read.length],
+    ['Avg rating', avg? avg.toFixed(2) : '—', !!avg],
+    ['Rated', rated.length+'/'+read.length, true],
+    ['Pages read', pages? (pages>9999? (pages/1000).toFixed(1)+'k' : pages.toLocaleString()) : '—', true]
+  ].map(([l,n,sm])=>`<div class="tile"><div class="n${sm?' sm':''}">${n}</div><div class="l">${l}</div></div>`).join('');
+
+  /* Goal */
+  document.getElementById('goal-year').textContent = yr;
+  const g = goal(), pct = Math.min(1, thisYear/g), C = 2*Math.PI*38;
+  const dayOfYear = daysBetween(new Date(yr,0,1), now)+1;
+  const diff = thisYear - g*(dayOfYear/365);
+  document.getElementById('goal-card').innerHTML = `
+    <div class="ring">
+      <svg width="88" height="88" viewBox="0 0 88 88">
+        <circle cx="44" cy="44" r="38" fill="none" stroke="var(--border)" stroke-width="7"/>
+        <circle cx="44" cy="44" r="38" fill="none" stroke="var(--total)" stroke-width="7"
+          stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C*(1-pct)}"/>
+      </svg>
+      <div class="ring-mid"><div class="p">${Math.round(pct*100)}%</div><div class="s">${thisYear}/${g}</div></div>
+    </div>
+    <div class="goal-info">
+      <b>${Math.max(0,g-thisYear)}</b> to go this year<br>
+      ${diff>=0 ? `<b style="color:var(--andy)">${diff.toFixed(1)} ahead</b> of pace`
+                : `<b style="color:var(--total)">${Math.abs(diff).toFixed(1)} behind</b> pace`}
+      <button class="goal-edit" onclick="editGoal()">Change goal</button>
+    </div>`;
+
+  /* Categories */
+  document.getElementById('year-cat-label').textContent = `${yr} by category`;
+  drawCatBars('month-cats', exact.filter(b=>d(b).getFullYear()===yr && d(b).getMonth()===mo),
+    'Nothing finished yet this month.');
+  drawCatBars('year-cats', read.filter(b=>d(b).getFullYear()===yr), `Nothing finished yet in ${yr}.`);
+
+  /* Rhythm */
+  const rh = rhythmStats(exact);
+  document.getElementById('rhythm').innerHTML = [
+    ['Average pace', rh.pace ? rh.pace.toFixed(1)+' books / month' : '—'],
+    ['Current streak', rh.streak ? rh.streak+' month'+(rh.streak>1?'s':'') : 'none right now'],
+    ['Longest streak', rh.best ? rh.best+' months' : '—'],
+    ['Busiest month', rh.bestMonth || '—'],
+    ['Longest gap', rh.gap ? rh.gap+' days' : '—'],
+    ['Since last book', rh.since!=null ? rh.since+' days' : '—']
+  ].map(([k,v])=>`<div class="kv-row"><div class="kv-k">${k}</div><div class="kv-v">${v}</div></div>`).join('');
+
+  /* On this day */
+  const otd = read.filter(b=>!P(b).approxDate && d(b).getDate()===now.getDate()
+    && d(b).getMonth()===mo && d(b).getFullYear()!==yr);
+  document.getElementById('onthisday').innerHTML = otd.length
+    ? `<div class="panel">` + otd.map(b=>{
+        const y = yr - d(b).getFullYear();
+        return bookRow(b, `${y} year${y>1?'s':''} ago today`);
+      }).join('') + `</div>`
+    : `<div class="empty-box">Nothing finished on ${now.getDate()} ${MONTHS[mo]} in a previous year.</div>`;
+
+  /* Recent */
+  const rec = read.slice().sort((a,b)=>d(b)-d(a)).slice(0,5);
+  document.getElementById('recent').innerHTML = rec.length
+    ? rec.map(b=>bookRow(b, fmtDate(P(b).dateRead))).join('')
+    : `<div style="color:var(--text-muted);font-size:12px">Nothing logged yet for ${nameOf(state.active)}.</div>`;
+}
+
+function personPanel(k, yr){
+  const read = readBooks(k);
+  const reading = state.books.filter(b=>P(b,k).status==='reading');
+  const nexts   = state.books.filter(b=>P(b,k).status==='next');
+  const last    = read.slice().sort((a,b)=>d(b,k)-d(a,k))[0];
+  const thisYear = read.filter(b=>d(b,k).getFullYear()===yr).length;
+  const slot = (label, items, emptyMsg) => `<div class="panel-slot">
+      <div class="slot-label">${label}</div>
+      ${items.length ? items.join('') : `<div class="slot-empty">${emptyMsg}</div>`}
+    </div>`;
+  return `<div class="person-panel panel-${k}">
+    <div class="panel-header">
+      <span class="panel-badge ${k}">${esc(nameOf(k))}</span>
+      <span class="panel-count">${thisYear} in ${yr} · ${read.length} all time</span>
+    </div>
+    ${slot('Currently reading',
+      reading.map(b=>bookRow(b, P(b,k).dateStarted ? 'since '+fmtDate(P(b,k).dateStarted) : b.category, k)),
+      'Nothing on the go — use the Library tab to pick something up.')}
+    ${slot('Up next',
+      nexts.slice(0,3).map(b=>bookRow(b, b.category, k)),
+      'Nothing queued.')}
+    ${slot('Last finished',
+      last ? [bookRow(last, fmtDate(P(last,k).dateRead), k)] : [],
+      'No finished books yet.')}
+  </div>`;
+}
+function bookRow(b, meta, k){
+  return `<div class="brow" onclick="openBook('${b.id}')">
+    ${covHTML(b,'cov-46')}
+    <div class="brow-body">
+      <div class="brow-t">${esc(b.title)}</div>
+      <div class="brow-a">${esc(b.author)}${meta?' · '+esc(meta):''}</div>
+    </div>
+    <div class="brow-r" style="color:${k?PCOL(k):'var(--total)'}">${ratingText(P(b,k).rating)}</div></div>`;
+}
+function drawCatBars(id, books, emptyMsg){
+  const el = document.getElementById(id);
+  if(!books.length){ el.innerHTML = `<div style="color:var(--text-muted);font-size:12px">${emptyMsg}</div>`; return; }
+  const counts = {};
+  books.forEach(b=>counts[b.category||'Uncategorised'] = (counts[b.category||'Uncategorised']||0)+1);
+  const arr = Object.entries(counts).sort((a,b)=>b[1]-a[1]);
+  const max = arr[0][1];
+  el.innerHTML = arr.map(([c,n])=>`
+    <div class="bar-row">
+      <div class="bar-name" title="${esc(c)}">${esc(c)}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${n/max*100}%;background:${catColor(c)}"></div></div>
+      <div class="bar-val">${n}</div>
+    </div>`).join('');
+}
+function rhythmStats(exact){
+  const out = {pace:0,streak:0,best:0,gap:0,bestMonth:'',since:null};
+  if(!exact.length) return out;
+  const sorted = exact.slice().sort((a,b)=>d(a)-d(b));
+  const first = d(sorted[0]), lastD = d(sorted[sorted.length-1]);
+  const months = Math.max(1, (new Date().getFullYear()-first.getFullYear())*12 + (new Date().getMonth()-first.getMonth()) + 1);
+  out.pace = sorted.length/months;
+  out.since = daysBetween(lastD, new Date());
+  let maxGap = 0;
+  for(let i=1;i<sorted.length;i++) maxGap = Math.max(maxGap, daysBetween(d(sorted[i-1]), d(sorted[i])));
+  out.gap = maxGap;
+  const byM = {};
+  sorted.forEach(b=>{ const k = d(b).getFullYear()+'-'+d(b).getMonth(); byM[k]=(byM[k]||0)+1; });
+  const keys = Object.keys(byM);
+  const bestK = keys.slice().sort((a,b)=>byM[b]-byM[a])[0];
+  if(bestK){ const [y,m]=bestK.split('-'); out.bestMonth = `${MONTHS[+m]} ${y} · ${byM[bestK]} books`; }
+  const seq = keys.map(k=>{const [y,m]=k.split('-').map(Number); return y*12+m;}).sort((a,b)=>a-b);
+  let run=1, best=1;
+  for(let i=1;i<seq.length;i++){ if(seq[i]===seq[i-1]+1){run++; best=Math.max(best,run);} else run=1; }
+  out.best = best;
+  const nowIdx = new Date().getFullYear()*12 + new Date().getMonth();
+  const set = new Set(seq);
+  let cur = 0, probe = set.has(nowIdx) ? nowIdx : (set.has(nowIdx-1) ? nowIdx-1 : null);
+  while(probe!==null && set.has(probe)){ cur++; probe--; }
+  out.streak = cur;
+  return out;
+}
+function editGoal(){
+  const v = prompt(`Books for ${nameOf(state.active)} to read this year:`, goal());
+  const n = parseInt(v,10);
+  if(n>0){ state.goals[state.active] = n; saveState(); renderDash(); toast('Goal set to '+n,'good'); }
+}
+
+/* ─── LIBRARY ────────────────────────────────────────────────────────────── */
+const shelfPerson = () => filters.shelf==='theirs' ? other() : state.active;
+function renderFilters(){
+  document.getElementById('f-shelf').innerHTML = [
+    ['mine',   nameOf(state.active)+"'s shelf"],
+    ['theirs', nameOf(other())+"'s shelf"],
+    ['all',    'Everything']
+  ].map(([k,l])=>`<div class="fchip ${filters.shelf===k?'on':''}" onclick="setF('shelf','${k}')">${esc(l)}</div>`).join('');
+
+  const pk = shelfPerson();
+  const counts = {};
+  state.books.forEach(b=>{ const st=P(b,pk).status; counts[st]=(counts[st]||0)+1; });
+  document.getElementById('f-status').innerHTML = filters.shelf==='all'
+    ? `<div class="fchip on">All ${state.books.length} books</div>`
+    : `<div class="fchip ${filters.status==='all'?'on':''}" onclick="setF('status','all')">All ${state.books.length}</div>` +
+      Object.keys(STATUSES).filter(k=>counts[k]).map(k=>
+        `<div class="fchip ${filters.status===k?'on':''}" onclick="setF('status','${k}')">
+          <span class="dot" style="background:${STATUSES[k].color}"></span>${STATUSES[k].label} ${counts[k]}</div>`).join('');
+
+  const cc = {};
+  state.books.forEach(b=>cc[b.category||'Uncategorised']=(cc[b.category||'Uncategorised']||0)+1);
+  document.getElementById('f-cat').innerHTML =
+    `<div class="fchip ${filters.cat==='all'?'on':''}" onclick="setF('cat','all')">All genres</div>` +
+    Object.entries(cc).sort((a,b)=>b[1]-a[1]).map(([c,n])=>
+      `<div class="fchip ${filters.cat===c?'on':''}" onclick="setF('cat',${JSON.stringify(c).replace(/"/g,'&quot;')})">
+        <span class="dot" style="background:${catColor(c)}"></span>${esc(c)} ${n}</div>`).join('');
+
+  /* physical shelf, straight from Libib's collection column */
+  const colls = {};
+  state.books.forEach(b=>{ if(b.collection) colls[b.collection]=(colls[b.collection]||0)+1; });
+  const ce = Object.entries(colls).sort((a,b)=>b[1]-a[1]);
+  document.getElementById('f-coll').innerHTML = ce.length < 1 ? '' :
+    `<div class="fchip ${filters.coll==='all'?'on':''}" onclick="setF('coll','all')">Anywhere</div>` +
+    ce.map(([c,n])=>`<div class="fchip ${filters.coll===c?'on':''}" onclick="setF('coll',${JSON.stringify(c).replace(/"/g,'&quot;')})">${esc(c)} ${n}</div>`).join('');
+}
+function setF(k,v){ filters[k]=v; if(k==='shelf') filters.status='all'; renderFilters(); renderLibrary(); }
+function clearQ(){ document.getElementById('q').value=''; filters.q=''; renderLibrary(); }
+
+function cardClass(b){
+  const a = P(b,'andy').status, m = P(b,'ami').status;
+  const aOn = a==='reading'||a==='next', mOn = m==='reading'||m==='next';
+  return aOn && mOn ? ' sel-both' : aOn ? ' sel-andy' : mOn ? ' sel-ami' : '';
+}
+function renderLibrary(){
+  renderFilters();
+  const pk = shelfPerson();
+  const q = filters.q.toLowerCase().trim();
+  document.getElementById('q-clear').style.display = q ? 'block' : 'none';
+  let list = state.books.filter(b=>{
+    if(filters.shelf!=='all' && filters.status!=='all' && P(b,pk).status!==filters.status) return false;
+    if(filters.cat!=='all' && (b.category||'Uncategorised')!==filters.cat) return false;
+    if(filters.coll && filters.coll!=='all' && b.collection!==filters.coll) return false;
+    if(q){
+      const hay = (b.title+' '+b.author+' '+(b.category||'')+' '+(P(b,pk).notes||'')+' '+(b.isbn||'')).toLowerCase();
+      if(!hay.includes(q)) return false;
+    }
+    return true;
+  });
+  const srt = document.getElementById('sort').value;
+  const dv = b => P(b,pk).dateRead || '0000';
+  list.sort((a,b)=>{
+    if(srt==='date-desc') return dv(b).localeCompare(dv(a));
+    if(srt==='date-asc')  return dv(a).localeCompare(dv(b));
+    if(srt==='rating-desc') return (P(b,pk).rating||0)-(P(a,pk).rating||0) || a.title.localeCompare(b.title);
+    if(srt==='rating-asc')  return (P(a,pk).rating||0)-(P(b,pk).rating||0) || a.title.localeCompare(b.title);
+    if(srt==='title')  return a.title.localeCompare(b.title);
+    if(srt==='author') return String(a.author).localeCompare(String(b.author)) || a.title.localeCompare(b.title);
+    if(srt==='added')  return String(b.id).localeCompare(String(a.id));
+    return 0;
+  });
+
+  document.getElementById('count-line').textContent =
+    `${list.length} book${list.length===1?'':'s'}${list.length!==state.books.length?' of '+state.books.length:''}`
+    + (filters.shelf==='all' ? ' · whole library' : ` · filtered on ${nameOf(pk)}'s shelf`);
+
+  const out = document.getElementById('lib-out');
+  if(!list.length){ out.innerHTML = `<div class="empty-box">Nothing matches.<br>Try clearing the search or filters.</div>`; return; }
+
+  if(document.getElementById('viewmode').value === 'table'){
+    out.innerHTML = `<div class="tbl-wrap"><table class="book-table">
+      <thead><tr>
+        <th class="th-book">Book</th><th class="th-cat">Category</th>
+        <th class="th-andy">Andy</th><th class="th-ami">Ami</th>
+      </tr></thead><tbody>` + list.map(b=>`<tr>
+        <td class="td-book" onclick="openBook('${b.id}')">
+          <div class="tb-t">${esc(b.title)}</div>
+          <div class="tb-a">${esc(b.author)}${b.published?' · '+esc(b.published):''}${b.pages?' · '+b.pages+'p':''}</div>
+        </td>
+        <td><span class="stat-tag" style="border-color:${catColor(b.category)};color:${catColor(b.category)}">${esc(b.category||'—')}</span></td>
+        ${['andy','ami'].map(k=>{
+          const r = P(b,k);
+          return `<td class="td-${k}">
+            <div style="font-size:11px;color:${PCOL(k)};margin-bottom:5px">${STATUSES[r.status].short}${r.rating?' · '+ratingText(r.rating):''}${r.status==='read'&&r.dateRead?'<br><span style="color:var(--text-muted)">'+fmtDate(r.dateRead)+'</span>':''}</div>
+            <div class="mini-actions">
+              <button class="act-btn${r.status==='reading'?' on-'+k:''}" onclick="quickSet('${b.id}','${k}','reading',event)">Reading</button>
+              <button class="act-btn${r.status==='next'?' on-'+k:''}" onclick="quickSet('${b.id}','${k}','next',event)">Up next</button>
+            </div></td>`;
+        }).join('')}
+      </tr>`).join('') + `</tbody></table></div>`;
+  } else {
+    out.innerHTML = `<div class="book-grid">` + list.map(b=>{
+      const r = P(b,pk);
+      const badge = r.topRank ? `<div class="rank-badge r${r.topRank}">${r.topRank}</div>` : '';
+      const rate = ['andy','ami'].filter(k=>P(b,k).rating>0)
+        .map(k=>`<span class="bc-rate ${k}">${nameOf(k).slice(0,1)} ${ratingText(P(b,k).rating)}</span>`).join('');
+      return `<div class="book-card${cardClass(b)}">
+        <div onclick="openBook('${b.id}')">${covHTML(b,'cov-full',badge)}</div>
+        <div class="bc-title" onclick="openBook('${b.id}')">${esc(b.title)}</div>
+        <div class="bc-author">${esc(b.author)}</div>
+        <div class="bc-meta">${rate}${b.collection?`<span class="bc-coll">${esc(b.collection)}</span>`:''}</div>
+        <div class="bc-actions">${actionRow(b,'andy')}${actionRow(b,'ami')}</div>
+      </div>`;
+    }).join('') + `</div>`;
+  }
+}
+
+/* ─── STATS ──────────────────────────────────────────────────────────────── */
+function renderStats(){
+  const read = readBooks(), exact = exactRead();
+  const yrs = [...new Set(read.map(b=>d(b).getFullYear()))].sort((a,b)=>b-a);
+
+  drawCatBars('s-cats', read, `Nothing read yet by ${nameOf(state.active)}.`);
+
+  const ac = {}; read.forEach(b=>ac[b.author]=(ac[b.author]||0)+1);
+  const at = Object.entries(ac).sort((a,b)=>b[1]-a[1]).slice(0,8);
+  const amax = at.length?at[0][1]:1;
+  document.getElementById('s-authors').innerHTML = at.length ? at.map(([a,n])=>`
+    <div class="bar-row"><div class="bar-name" title="${esc(a)}">${esc(a)}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${n/amax*100}%;background:var(--total)"></div></div>
+      <div class="bar-val">${n}</div></div>`).join('')
+    : `<div style="color:var(--text-muted);font-size:12px">Nothing read yet.</div>`;
+
+  const rated = state.books.filter(b=>P(b).rating>0);
+  const buckets = {};
+  for(let v=5; v>=0.5; v-=0.5) buckets[v.toFixed(1)] = 0;
+  rated.forEach(b=>{ const k=P(b).rating.toFixed(1); if(k in buckets) buckets[k]++; });
+  const rmax = Math.max(1, ...Object.values(buckets));
+  document.getElementById('s-ratings').innerHTML = rated.length
+    ? Object.entries(buckets).filter(([,n])=>n>0).map(([v,n])=>`
+        <div class="bar-row"><div class="bar-name" style="width:52px">${v.replace('.0','')} ★</div>
+          <div class="bar-track"><div class="bar-fill" style="width:${n/rmax*100}%;background:var(--total)"></div></div>
+          <div class="bar-val">${n}</div></div>`).join('')
+      + `<div style="font-size:11px;color:var(--text-muted);margin-top:10px">
+          ${Math.max(0,read.length-rated.length)} read but unrated · average ${(rated.reduce((s,b)=>s+P(b).rating,0)/rated.length).toFixed(2)}</div>`
+    : `<div style="color:var(--text-muted);font-size:12px">No ratings yet. Open any book and tap the stars.</div>`;
+
+  const yc = {}; read.forEach(b=>{const y=d(b).getFullYear(); yc[y]=(yc[y]||0)+1;});
+  const ymax = Math.max(1, ...Object.values(yc));
+  const thisYr = new Date().getFullYear();
+  document.getElementById('s-years').innerHTML = Object.keys(yc).sort().reverse().map(y=>{
+    const prev = yc[+y-1];
+    const delta = prev!=null ? (yc[y]-prev) : null;
+    return `<div class="bar-row">
+      <div class="bar-name" style="width:44px;${+y===thisYr?'color:var(--total)':''}">${y}</div>
+      <div class="bar-track"><div class="bar-fill" style="width:${yc[y]/ymax*100}%;background:${+y===thisYr?'var(--total)':'var(--border)'}"></div></div>
+      <div class="bar-val">${yc[y]}</div>
+      <div class="bar-val sub">${delta===null?'':(delta>0?'+'+delta:delta===0?'—':delta)}</div></div>`;
+  }).join('') || `<div style="color:var(--text-muted);font-size:12px">Nothing read yet.</div>`;
+
+  const cal = {};
+  exact.forEach(b=>{ const y=d(b).getFullYear(); (cal[y]=cal[y]||Array(12).fill(0))[d(b).getMonth()]++; });
+  const cmax = Math.max(1, ...Object.values(cal).flat());
+  document.getElementById('s-calendar').innerHTML = Object.keys(cal).length ? Object.keys(cal).sort().reverse().map(y=>`
+    <div class="yr-row">
+      <div class="yr-lab ${+y===thisYr?'cur':''}">${y}</div>
+      <div class="mgrid" style="flex:1">${cal[y].map((n,i)=>
+        `<div class="mcell" title="${MONTHS[i]} ${y}: ${n}" style="background:${n?`rgba(240,180,41,${0.22+0.78*(n/cmax)})`:'var(--border)'}"></div>`).join('')}</div>
+    </div>`).join('')
+    + `<div style="display:flex;gap:10px"><div class="yr-lab"></div><div class="mlabels" style="flex:1">${MONTHS.map(m=>`<div>${m[0]}</div>`).join('')}</div></div>`
+    : `<div style="color:var(--text-muted);font-size:12px">Nothing to plot yet.</div>`;
+
+  const withPages = read.filter(b=>b.pages>0);
+  const longest  = withPages.slice().sort((a,b)=>b.pages-a.pages)[0];
+  const shortest = withPages.slice().sort((a,b)=>a.pages-b.pages)[0];
+  const totalPages = withPages.reduce((s,b)=>s+b.pages,0);
+  const topRated = rated.slice().sort((a,b)=>P(b).rating-P(a).rating)[0];
+  const firstBook = read.slice().sort((a,b)=>d(a)-d(b))[0];
+  const rh = rhythmStats(exact);
+  document.getElementById('s-records').innerHTML = [
+    ['Total pages', totalPages ? totalPages.toLocaleString() : 'waiting on cover data'],
+    ['Average length', withPages.length ? Math.round(totalPages/withPages.length)+' pages' : '—'],
+    ['Longest book', longest ? `${longest.title} · ${longest.pages}p` : '—'],
+    ['Shortest book', shortest ? `${shortest.title} · ${shortest.pages}p` : '—'],
+    ['Highest rated', topRated ? `${topRated.title} · ${ratingText(P(topRated).rating)}` : '—'],
+    ['First logged', firstBook ? `${firstBook.title} · ${fmtDate(P(firstBook).dateRead)}` : '—'],
+    ['Busiest month', rh.bestMonth || '—'],
+    ['Longest streak', rh.best ? rh.best+' months running' : '—']
+  ].map(([k,v])=>`<div class="kv-row"><div class="kv-k">${k}</div><div class="kv-v">${esc(v)}</div></div>`).join('');
+
+  const sel = document.getElementById('yir-year');
+  const want = yrs.join(',');
+  if(sel.dataset.years !== want){
+    sel.innerHTML = yrs.map(y=>`<option value="${y}">${y}</option>`).join('');
+    sel.dataset.years = want;
+  }
+  const Y = +sel.value || yrs[0];
+  const yb = read.filter(b=>d(b).getFullYear()===Y);
+  const yrated = yb.filter(b=>P(b).rating>0);
+  const ycats = {}; yb.forEach(b=>ycats[b.category]=(ycats[b.category]||0)+1);
+  const yauth = {}; yb.forEach(b=>yauth[b.author]=(yauth[b.author]||0)+1);
+  const topCat  = Object.entries(ycats).sort((a,b)=>b[1]-a[1])[0];
+  const topAuth = Object.entries(yauth).sort((a,b)=>b[1]-a[1])[0];
+  const ypages = yb.reduce((s,b)=>s+(b.pages||0),0);
+  const prevN = read.filter(b=>d(b).getFullYear()===Y-1).length;
+  const best = yrated.slice().sort((a,b)=>P(b).rating-P(a).rating).slice(0,5);
+  document.getElementById('s-yir').innerHTML = yb.length ? `
+    <div class="tiles" style="margin-bottom:14px">
+      <div class="tile"><div class="n">${yb.length}</div><div class="l">Books</div></div>
+      <div class="tile"><div class="n sm">${topCat?esc(topCat[0]):'—'}</div><div class="l">Top genre</div></div>
+      <div class="tile"><div class="n sm">${topAuth?esc(topAuth[0].split(' ').slice(-1)[0]):'—'}</div><div class="l">Top author</div></div>
+      <div class="tile"><div class="n sm">${ypages?ypages.toLocaleString():'—'}</div><div class="l">Pages</div></div>
+      <div class="tile"><div class="n sm">${yrated.length?(yrated.reduce((s,b)=>s+P(b).rating,0)/yrated.length).toFixed(2):'—'}</div><div class="l">Avg rating</div></div>
+      <div class="tile"><div class="n sm">${prevN?(yb.length-prevN>0?'+':'')+(yb.length-prevN):'—'}</div><div class="l">vs ${Y-1}</div></div>
+    </div>
+    ${best.length ? `<div class="sec-label" style="margin-top:4px">Best of ${Y}</div>` +
+      best.map(b=>bookRow(b, ratingText(P(b).rating))).join('') : ''}`
+    : `<div style="color:var(--text-muted);font-size:12px">Nothing recorded for ${Y}.</div>`;
+}
+
+/* ─── BOOK MODAL ─────────────────────────────────────────────────────────── */
+let editing = null;
+function openBook(id){
+  const b = state.books.find(x=>x.id===id);
+  if(!b) return;
+  editing = id;
+  const r = P(b), o = other(), ro = P(b,o);
+  const cats = [...new Set([...Object.keys(CATS), ...state.books.map(x=>x.category).filter(Boolean)])];
+  document.getElementById('modal-content').innerHTML = `
+    <div class="mhead">
+      ${covHTML(b,'cov-big')}
+      <div class="mhead-body">
+        <div class="mtitle">${esc(b.title)}</div>
+        <div class="mauthor">${esc(b.author)}</div>
+        <div class="mmeta">
+          ${b.pages?b.pages+' pages':''}${b.pages&&b.published?' · ':''}${b.published||''}
+          ${b.collection?'<br>Shelf: '+esc(b.collection):''}
+          ${b.isbn?'<br>ISBN '+esc(b.isbn):''}
+          ${r.approxDate?'<br><span style="color:var(--total)">Date is approximate</span>':''}
+          ${ro.status!=='owned' ? `<br><span style="color:${PCOL(o)}">${esc(nameOf(o))}: ${STATUSES[ro.status].label}${ro.rating?' · '+ratingText(ro.rating):''}</span>` : ''}
+        </div>
+      </div>
+    </div>
+
+    <div class="quick-grid">
+      ${Object.keys(PEOPLE).map(k=>{
+        const rr = P(b,k);
+        return `<div class="quick-box ${k}">
+          <div class="qb-h">${esc(nameOf(k))} · ${STATUSES[rr.status].short}</div>
+          <div class="qb-btns">
+            <button class="act-btn${rr.status==='reading'?' on-'+k:''}" onclick="quickSet('${b.id}','${k}','reading',event)">Reading</button>
+            <button class="act-btn${rr.status==='next'?' on-'+k:''}" onclick="quickSet('${b.id}','${k}','next',event)">Up next</button>
+          </div></div>`;
+      }).join('')}
+    </div>
+
+    <div class="notice">
+      Editing as <b style="color:${PCOL(state.active)}">${esc(nameOf(state.active))}</b>. Title, author, category and cover are shared — rating, status, date and notes are not.
+    </div>
+
+    <div class="mrow">
+      <label>${esc(nameOf(state.active))}'s rating</label>
+      <div class="rate-line">
+        <div id="star-host">${starsHTML(r.rating,{live:true})}</div>
+        <div class="rate-num" id="rate-num">${r.rating?r.rating.toFixed(1).replace('.0',''):'—'}</div>
+        <button class="rate-clear" onclick="setRating(0)">clear</button>
+      </div>
+    </div>
+
+    <div class="mrow">
+      <div class="toggle ${r.top10?'on':''}" id="t10" onclick="toggleTop10()">
+        <div class="box">${r.top10?'✓':''}</div><span>In ${esc(nameOf(state.active))}'s Top 10 of all time</span></div>
+    </div>
+    <div class="mrow" id="rank-row" style="${r.top10?'':'display:none'}">
+      <label>Top three placing</label>
+      <select id="f-rank">
+        <option value="0">Not in the top three</option>
+        <option value="1"${r.topRank===1?' selected':''}>1st</option>
+        <option value="2"${r.topRank===2?' selected':''}>2nd</option>
+        <option value="3"${r.topRank===3?' selected':''}>3rd</option>
+      </select>
+    </div>
+
+    <div class="mrow"><label>Status</label>
+      <select id="f-status-sel">${Object.entries(STATUSES).map(([k,v])=>
+        `<option value="${k}"${r.status===k?' selected':''}>${v.label}</option>`).join('')}</select></div>
+
+    <div class="mrow"><label>Category <span style="color:var(--text-muted);text-transform:none;letter-spacing:0">— shared</span></label>
+      <select id="f-cat-sel">${cats.map(c=>
+        `<option value="${esc(c)}"${b.category===c?' selected':''}>${esc(c)}</option>`).join('')}</select></div>
+
+    <div class="mrow"><label>Date finished</label>
+      <input type="date" id="f-date" value="${r.dateRead||''}"></div>
+
+    <div class="mrow"><label>Notes</label>
+      <textarea id="f-notes" rows="3">${esc(r.notes||'')}</textarea></div>
+
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveBook()">Save</button>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="refetchCover()">Refresh cover</button>
+      <button class="btn btn-ghost danger" onclick="deleteBook()">Delete</button>
+    </div>`;
+
+  document.getElementById('star-host').onclick = e => {
+    const v = e.target.dataset.set;
+    if(v) setRating(parseFloat(v));
+  };
+  document.getElementById('modal').classList.add('open');
+}
+function setRating(v){
+  const r = P(state.books.find(x=>x.id===editing));
+  r.rating = v;
+  document.getElementById('star-host').innerHTML = starsHTML(v,{live:true});
+  document.getElementById('rate-num').textContent = v ? v.toFixed(1).replace('.0','') : '—';
+  saveState();
+}
+function toggleTop10(){
+  const b = state.books.find(x=>x.id===editing), r = P(b);
+  if(!r.top10 && state.books.filter(x=>P(x).top10).length>=10){
+    toast('Top 10 is full — remove one first','bad'); return;
+  }
+  r.top10 = !r.top10;
+  if(!r.top10) r.topRank = 0;
+  const el = document.getElementById('t10');
+  el.classList.toggle('on', r.top10);
+  el.querySelector('.box').textContent = r.top10 ? '✓' : '';
+  document.getElementById('rank-row').style.display = r.top10 ? '' : 'none';
+  saveState();
+}
+function saveBook(){
+  const b = state.books.find(x=>x.id===editing), r = P(b);
+  const rank = parseInt(document.getElementById('f-rank') ? document.getElementById('f-rank').value : 0, 10);
+  if(rank) state.books.forEach(x=>{ if(x.id!==b.id && P(x).topRank===rank) P(x).topRank=0; });
+  r.topRank = r.top10 ? rank : 0;
+  r.status = document.getElementById('f-status-sel').value;
+  b.category = document.getElementById('f-cat-sel').value;
+  const nd = document.getElementById('f-date').value;
+  if(nd !== r.dateRead){ r.dateRead = nd; r.approxDate = false; }
+  r.notes = document.getElementById('f-notes').value;
+  saveState(); closeModal(); renderWho(); renderAll(); toast('Saved','good');
+}
+async function refetchCover(){
+  const b = state.books.find(x=>x.id===editing);
+  b.cover=''; b.coverTried=false;
+  toast('Looking…');
+  const ok = await fetchMetaFor(b);
+  saveState(); openBook(b.id); renderAll();
+  if(!ok) toast('No artwork found'+(lastCoverError?': '+esc(lastCoverError):''),'bad');
+}
+function deleteBook(){
+  const b = state.books.find(x=>x.id===editing);
+  if(!confirm('Remove "'+b.title+'" from the shared library? It goes for both of you.')) return;
+  state.books = state.books.filter(x=>x.id!==editing);
+  saveState(); closeModal(); renderWho(); renderAll(); toast('Removed');
+}
+function closeModal(){ document.getElementById('modal').classList.remove('open'); editing=null; }
+document.getElementById('modal').addEventListener('click', e=>{ if(e.target.id==='modal') closeModal(); });
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeModal(); });
+
+/* ─── ADD ────────────────────────────────────────────────────────────────── */
+function newBook(o){
+  const b = Object.assign({ id:uid(), title:'', author:'', category:'Uncategorised',
+    isbn:'', pages:0, published:'', cover:'', collection:'' }, o);
+  b.p = { andy: blankP(), ami: blankP() };
+  return b;
+}
+function fillSelects(){
+  const cats = [...new Set([...Object.keys(CATS), ...state.books.map(x=>x.category).filter(Boolean)])];
+  document.getElementById('m-cat').innerHTML = cats.map(c=>`<option>${esc(c)}</option>`).join('');
+  document.getElementById('m-status').innerHTML = Object.entries(STATUSES)
+    .map(([k,v])=>`<option value="${k}"${k==='read'?' selected':''}>${v.label}</option>`).join('');
+}
+function manualAdd(){
+  const t = document.getElementById('m-title').value.trim();
+  if(!t){ toast('A title is needed','bad'); return; }
+  const b = newBook({ title:t, author:document.getElementById('m-author').value.trim(),
+    category:document.getElementById('m-cat').value });
+  const r = P(b);
+  r.status   = document.getElementById('m-status').value;
+  r.dateRead = document.getElementById('m-date').value;
+  state.books.unshift(b); saveState();
+  ['m-title','m-author','m-date'].forEach(i=>document.getElementById(i).value='');
+  renderWho(); renderAll(); toast('Added — fetching cover');
+  fetchMetaFor(b).then(()=>{ saveState(); renderAll(); });
+}
+
+let gqTimer;
+document.getElementById('gq').addEventListener('input', e=>{
+  clearTimeout(gqTimer);
+  const v = e.target.value.trim();
+  if(v.length<3){ document.getElementById('gq-out').innerHTML=''; return; }
+  gqTimer = setTimeout(()=>googleSearch(v), 420);
+});
+async function googleSearch(q){
+  const out = document.getElementById('gq-out');
+  out.innerHTML = `<div style="color:var(--text-muted);font-size:12px;padding:8px 0"><span class="spin"></span> Searching…</div>`;
+  try{
+    const r = await fetch('https://www.googleapis.com/books/v1/volumes?maxResults=8&q='+encodeURIComponent(q));
+    if(!r.ok) throw new Error('Google Books returned '+r.status);
+    const j = await r.json();
+    const items = (j.items||[]).slice(0,8);
+    if(!items.length){ out.innerHTML = `<div class="empty-box">No matches. Try adding the author, or use the manual form below.</div>`; return; }
+    out.innerHTML = items.map((it,i)=>{
+      const v = it.volumeInfo||{};
+      const img = ((v.imageLinks&&v.imageLinks.thumbnail)||'').replace(/^http:/,'https:');
+      const au = (v.authors||[]).join(', ');
+      return `<div class="res-row" onclick="addFromSearch(${i})">
+        <div class="cov cov-46">${img?`<img src="${esc(img)}" alt="">`:`<div class="cov-fb" style="font-size:7px">${esc(v.title||'')}</div>`}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;line-height:1.3">${esc(v.title||'Untitled')}</div>
+          <div style="font-size:11px;color:var(--text-muted);margin-top:3px">${esc(au||'Unknown author')}${v.publishedDate?' · '+String(v.publishedDate).slice(0,4):''}${v.pageCount?' · '+v.pageCount+'p':''}</div>
+        </div>
+        <div style="color:var(--total);font-size:20px;flex-shrink:0">+</div></div>`;
+    }).join('');
+    window._gqResults = items;
+  }catch(e){
+    out.innerHTML = `<div class="empty-box">Search unavailable — ${esc(e.message)}.<br>Add the book by hand below.</div>`;
+  }
+}
+function addFromSearch(i){
+  const item = (window._gqResults||[])[i];
+  const v = item && item.volumeInfo; if(!v) return;
+  const isbn = (v.industryIdentifiers||[]).find(x=>x.type==='ISBN_13')
+            || (v.industryIdentifiers||[]).find(x=>x.type==='ISBN_10');
+  const b = newBook({
+    title: v.title || 'Untitled', author: (v.authors||[]).join(', '),
+    pages: v.pageCount || 0,
+    published: v.publishedDate ? String(v.publishedDate).slice(0,4) : '',
+    isbn: isbn ? isbn.identifier : '',
+    cover: ((v.imageLinks&&(v.imageLinks.thumbnail||v.imageLinks.smallThumbnail))||'')
+             .replace(/^http:/,'https:').replace('&edge=curl','')
+  });
+  state.books.unshift(b); saveState();
+  document.getElementById('gq').value=''; document.getElementById('gq-out').innerHTML='';
+  renderWho(); renderAll(); openBook(b.id); toast('Added to the shared library','good');
+}
+
+/* ─── CSV ────────────────────────────────────────────────────────────────── */
+function parseCSV(text){
+  const rows=[]; let row=[], cur='', q=false;
+  text = text.replace(/^\uFEFF/,'');
+  for(let i=0;i<text.length;i++){
+    const c = text[i];
+    if(q){
+      if(c==='"'){ if(text[i+1]==='"'){cur+='"';i++;} else q=false; }
+      else cur+=c;
+    } else {
+      if(c==='"') q=true;
+      else if(c===','){ row.push(cur); cur=''; }
+      else if(c==='\n'){ row.push(cur); cur=''; rows.push(row); row=[]; }
+      else if(c!=='\r') cur+=c;
+    }
+  }
+  if(cur!=='' || row.length){ row.push(cur); rows.push(row); }
+  return rows.filter(r=>r.some(x=>String(x).trim()!==''));
+}
+/* Alternatives are listed strongest-first and matched in that order, so a
+   late "group" column still beats an early "collection" column. */
+const FIELD_MAP = {
+  title:['title','book title','name'],
+  author:['creators','author','authors','creator','by'],
+  firstName:['first name'], lastName:['last name'],
+  isbn13:['ean isbn13','isbn13','isbn 13','ean'],
+  isbn10:['upc isbn10','isbn10','isbn 10','upc'],
+  isbn:['isbn'],
+  pages:['length','pages','page count','pagecount','number of pages'],
+  published:['publish date','published date','publication date','first published','copyright','year'],
+  status:['status','shelf','reading status','exclusive shelf'],
+  category:['group','genre','category','categories','tags','bookshelves','subject'],
+  collection:['collection','shelf location','location'],
+  rating:['rating','my rating','stars','score'],
+  dateRead:['completed','completed reading','date read','finished','date finished'],
+  dateStarted:['began','began reading','date started','started','start date'],
+  notes:['notes','review','my review','comments'],
+  cover:['cover','cover url','image','image url','thumbnail'],
+  itemType:['item type','type','media type']
+};
+function mapHeaders(head){
+  const norms = head.map(h=>String(h).toLowerCase().trim().replace(/[_\s]+/g,' '));
+  const idx = {}, taken = new Set();
+  for(const field of Object.keys(FIELD_MAP)){
+    for(const alt of FIELD_MAP[field]){
+      const a = alt.replace(/[_\s]+/g,' ');
+      let found = -1;
+      for(let i=0;i<norms.length;i++){ if(norms[i]===a && !taken.has(i)){ found=i; break; } }
+      if(found > -1){ idx[field] = found; taken.add(found); break; }
+    }
+  }
+  return idx;
+}
+/* Excel turns long ISBNs into 9.78198E+12 — detect and discard those */
+const isMangled = s => /e\+/i.test(String(s));
+function yearOf(s){ const m = String(s||'').match(/(19|20)\d{2}/); return m ? m[0] : ''; }
+
+function importCSV(text){
+  const rows = parseCSV(text);
+  if(rows.length<2){ toast('That file looks empty','bad'); return; }
+  const idx = mapHeaders(rows[0]);
+  if(idx.title===undefined){ toast('No title column found — check the header row','bad'); return; }
+
+  const pk = state.active;
+  let added=0, updated=0, skipped=0, nonBook=0;
+  /* Libib writes authors inconsistently ("HESSION" vs "Ronan Hession"), so
+     match on the surname of the first author rather than the whole string. */
+  const surname = a => {
+    const first = String(a||'').split(/[,;]|\band\b/)[0].replace(/\(.*?\)/g,'').trim();
+    const bits = first.split(/\s+/).filter(Boolean);
+    return norm(bits.length ? bits[bits.length-1] : '');
+  };
+  const shortTitle = t => norm(String(t).replace(/\(.*?\)/g,'').replace(/\s*[:–—-].*$/,''));
+  const tkey = (t,a) => 't:'+norm(t)+'|'+surname(a);
+  const skey = (t,a) => 's:'+shortTitle(t)+'|'+surname(a);
+  const index = {};
+  state.books.forEach(b=>{
+    index[tkey(b.title,b.author)] = b;
+    if(!index[skey(b.title,b.author)]) index[skey(b.title,b.author)] = b;
+    if(b.isbn) index['i:'+b.isbn] = b;
+  });
+
+  for(let r=1;r<rows.length;r++){
+    const row = rows[r];
+    const get = f => idx[f]!==undefined ? String(row[idx[f]]==null?'':row[idx[f]]).trim() : '';
+
+    if(get('itemType') && norm(get('itemType'))!=='book'){ nonBook++; continue; }
+    const title = get('title');
+    if(!title){ skipped++; continue; }
+
+    let author = get('author');
+    if(!author && (idx.firstName!==undefined || idx.lastName!==undefined))
+      author = (get('firstName')+' '+get('lastName')).trim();
+
+    /* ISBN: prefer a clean 13, fall back to the 10 when Excel has wrecked it */
+    let isbn = '';
+    const raw13 = get('isbn13') || get('isbn');
+    if(raw13 && !isMangled(raw13)) isbn = cleanISBN(raw13);
+    if(!isbn) isbn = cleanISBN(get('isbn10'));
+
+    let category = get('category').split(/[,;|]/)[0].trim();
+    if(category) category = category.replace(/\b\w/g, c=>c.toUpperCase());
+
+    const pages  = parseInt(get('pages'),10) || 0;
+    const rating = Math.min(5, parseFloat(get('rating')) || 0);
+    const dr = tidyDate(get('dateRead'));
+    const ds = tidyDate(get('dateStarted'));
+    const published = yearOf(get('published'));
+    const status = STATUS_ALIASES[get('status').toLowerCase().trim()]
+                || STATUS_ALIASES[norm(get('status'))]
+                || (dr ? 'read' : ds ? 'reading' : 'owned');
+
+    const hit = (isbn && index['i:'+isbn]) || index[tkey(title, author)] || index[skey(title, author)];
+
+    if(hit){
+      /* shared fields — fill gaps only, never overwrite an edit */
+      if(category && (!hit.category || hit.category==='Uncategorised')) hit.category = category;
+      if(isbn && !hit.isbn) hit.isbn = isbn;
+      if(pages && !hit.pages) hit.pages = pages;
+      if(published && !hit.published) hit.published = published;
+      if(!hit.cover) hit.cover = get('cover') || olCover(isbn);
+      if(get('collection')) hit.collection = get('collection');
+      /* personal fields — only for whoever is importing */
+      const r2 = P(hit, pk);
+      if(rating && !r2.rating) r2.rating = rating;
+      if(dr && !r2.dateRead){ r2.dateRead = dr; r2.approxDate = false; }
+      if(ds && !r2.dateStarted) r2.dateStarted = ds;
+      if(r2.status === 'owned' && status !== 'owned') r2.status = status;
+      if(get('notes') && !r2.notes) r2.notes = get('notes').slice(0,600);
+      updated++;
+    } else {
+      const b = newBook({ title, author, isbn, pages, published,
+        collection: get('collection'),
+        category: category || 'Uncategorised', cover: get('cover') || olCover(isbn) });
+      const r2 = P(b, pk);
+      r2.rating = rating; r2.dateRead = dr; r2.dateStarted = ds;
+      r2.status = status; r2.notes = get('notes').slice(0,600);
+      state.books.push(b);
+      index[tkey(title, author)] = b;
+      if(!index[skey(title, author)]) index[skey(title, author)] = b;
+      if(isbn) index['i:'+isbn] = b;
+      added++;
+    }
+  }
+  saveState(); renderWho(); renderAll();
+  toast(`${added} added · ${updated} updated as ${nameOf(pk)}`
+    + (nonBook?` · ${nonBook} non-book skipped`:'') + (skipped?` · ${skipped} skipped`:''), 'good');
+  if(added) setTimeout(()=>fetchAllMeta(true), 400);
+}
+function tidyDate(s){
+  if(!s) return '';
+  s = s.trim();
+  let m = s.match(/^(\d{4})-(\d{2})-(\d{2})/);              if(m) return `${m[1]}-${m[2]}-${m[3]}`;
+  m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})/);            /* dd/mm/yyyy — Libib's format */
+  if(m) return `${m[3]}-${String(m[2]).padStart(2,'0')}-${String(m[1]).padStart(2,'0')}`;
+  m = s.match(/^(\d{4})$/);                                 if(m) return `${m[1]}-01-01`;
+  const dt = new Date(s);
+  return isNaN(dt) ? '' : dt.toISOString().slice(0,10);
+}
+document.getElementById('csv-in').addEventListener('change', e=>{
+  const f = e.target.files[0]; if(!f) return;
+  const rd = new FileReader();
+  rd.onload = () => { importCSV(rd.result); e.target.value=''; };
+  rd.readAsText(f);
+});
+
+/* ─── BACKUP ─────────────────────────────────────────────────────────────── */
+function download(name, content, type){
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([content],{type}));
+  a.download = name; a.click(); URL.revokeObjectURL(a.href);
+}
+function exportJSON(){
+  download(`bookshelf-${new Date().toISOString().slice(0,10)}.json`,
+    JSON.stringify({books:state.books, goals:state.goals, active:state.active,
+      exported:new Date().toISOString()},null,1), 'application/json');
+  toast('Backup downloaded','good');
+}
+function exportCSV(){
+  const cols  = ['title','author','category','collection','pages','published','isbn'];
+  const pcols = ['status','dateRead','rating','top10','topRank','notes'];
+  const keys  = Object.keys(PEOPLE);
+  const head  = cols.concat(keys.reduce((a,k)=>a.concat(pcols.map(c=>PEOPLE[k].toLowerCase()+'_'+c)),[]));
+  const q = v => `"${String(v==null?'':v).replace(/"/g,'""')}"`;
+  const csv = [head.join(',')].concat(state.books.map(b=>
+    cols.map(c=>q(b[c])).concat(
+      keys.reduce((a,k)=>a.concat(pcols.map(c=>q(P(b,k)[c]))),[])
+    ).join(','))).join('\n');
+  download(`bookshelf-${new Date().toISOString().slice(0,10)}.csv`, csv, 'text/csv');
+  toast('CSV downloaded','good');
+}
+document.getElementById('json-in').addEventListener('change', e=>{
+  const f = e.target.files[0]; if(!f) return;
+  const rd = new FileReader();
+  rd.onload = () => {
+    try{
+      const p = JSON.parse(rd.result);
+      if(!Array.isArray(p.books)) throw new Error('bad');
+      if(!confirm(`Replace the current ${state.books.length} books with ${p.books.length} from this backup?`)) return;
+      state.books = p.books.map(migrate);
+      state.goals = p.goals || {andy:p.goal||36, ami:36};
+      saveState(); renderWho(); renderAll(); toast('Backup restored','good');
+    }catch(err){ toast('That file could not be read','bad'); }
+    e.target.value='';
+  };
+  rd.readAsText(f);
+});
+function resetAll(){
+  if(!confirm('This wipes everything — both dashboards, ratings, Top 10s and imports — and restores the original 78 books. Continue?')) return;
+  state.books = JSON.parse(JSON.stringify(SEED)).map(migrate);
+  state.goals = {andy:36, ami:36}; state.active='andy';
+  saveState(); renderWho(); renderAll(); toast('Reset to the original 78');
+}
+
+/* ─── INIT ───────────────────────────────────────────────────────────────── */
+function renderAll(){
+  renderDash();
+  if(activeTab===1) renderLibrary();
+  if(activeTab===2) renderStats();
+  renderCovStatus();
+}
+document.getElementById('q').addEventListener('input', e=>{ filters.q = e.target.value; renderLibrary(); });
+
+loadState();
+fillSelects();
+renderWho();
+renderAll();
+renderFilters();
+
+/* Artwork fetches itself in the background — no button press needed */
+if(state.books.some(b=>!b.metaTried && (!b.cover || !b.pages))){
+  setTimeout(()=>fetchAllMeta(true), 900);
+}
+
+</script>
+</body>
+</html>
