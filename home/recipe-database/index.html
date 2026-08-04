@@ -60,16 +60,49 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-hei
 .cooked-toggle button{padding:5px 12px;border:none;background:transparent;cursor:pointer;font-size:12px;font-weight:500;font-family:var(--font-body);color:var(--muted);transition:all .15s}
 .cooked-toggle button.active{background:var(--accent);color:#fff}
 
+
+/* ── CONTROL BAR ── */
+.control-bar{background:var(--surface);border-bottom:1px solid var(--border);padding:10px 24px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.pill-row{display:flex;gap:6px;flex-shrink:0}
+.pill-wrap{display:flex;gap:6px;flex-wrap:wrap}
+.control-select{background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:5px 10px;font-family:var(--font-body);font-size:12px;color:var(--text);outline:none;cursor:pointer}
+.control-select:focus{border-color:var(--accent)}
+.results-count{margin-left:auto;font-size:12px;color:var(--muted);white-space:nowrap}
+.count-badge{display:none;min-width:16px;height:16px;padding:0 4px;border-radius:8px;background:var(--accent);color:#12140f;font-size:10px;font-weight:700;align-items:center;justify-content:center}
+.count-badge.show{display:inline-flex}
+.mobile-only{display:none}
+
+/* ── GROUP SECTIONS ── */
+.group{margin-bottom:26px}
+.group:last-child{margin-bottom:0}
+.group-head{display:flex;align-items:center;gap:9px;margin-bottom:12px}
+.group-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.group-name{font-family:var(--font-display);font-size:15px;font-weight:700;color:var(--text);letter-spacing:.01em}
+.group-count{font-size:11px;color:var(--muted)}
+.group-rule{flex:1;height:1px;background:var(--border)}
+.group-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:18px}
+
+/* ── SHEET ── */
+.sheet-overlay{align-items:flex-end;padding:0}
+.sheet{background:var(--surface);border-radius:16px 16px 0 0;width:100%;max-width:640px;margin:0 auto;box-shadow:var(--shadow-lg);max-height:88vh;display:flex;flex-direction:column}
+.sheet-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border)}
+.sheet-header h3{font-family:var(--font-display);font-size:17px;font-weight:700}
+.sheet-body{padding:16px 20px;overflow-y:auto;flex:1}
+.sheet-section{margin-bottom:20px}
+.sheet-section:last-child{margin-bottom:0}
+.sheet-footer{padding:14px 20px;border-top:1px solid var(--border);display:flex;gap:10px}
+.sheet-footer .btn{flex:1;justify-content:center}
+
 /* ── RESULTS BAR ── */
-.results-bar{padding:12px 24px 0;display:flex;align-items:center;justify-content:space-between;color:var(--muted);font-size:12px}
+.results-bar{padding:10px 24px 0;display:flex;align-items:center;justify-content:flex-end;color:var(--muted);font-size:12px}
 
 .storage-status{font-size:11px;color:var(--muted)}
 .storage-status a{color:var(--muted);text-decoration:underline;text-underline-offset:2px}
 .storage-status a:hover{color:var(--accent)}
 
 /* ── GRID ── */
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:18px;padding:16px 24px 40px}
-.empty-state{grid-column:1/-1;text-align:center;padding:80px 20px;color:var(--muted)}
+.grid{padding:16px 24px 40px}
+.empty-state{text-align:center;padding:80px 20px;color:var(--muted)}
 .empty-state .big{font-family:var(--font-display);font-size:48px;margin-bottom:8px;opacity:.3}
 .empty-state p{font-size:15px}
 
@@ -84,6 +117,7 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-hei
 .card-tags{display:flex;gap:4px;flex-wrap:wrap}
 .tag{font-size:11px;color:var(--accent2);background:rgba(61,220,132,0.12);padding:2px 7px;border-radius:10px;font-weight:500}
 .card-stats{display:flex;gap:12px;align-items:center;padding-top:4px;border-top:1px solid var(--border)}
+.stat-status{display:none;margin-left:auto;white-space:nowrap}
 .stat{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--muted)}
 .stat svg{flex-shrink:0}
 .card-footer{padding:10px 14px;display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;border-top:1px solid var(--border);background:var(--surface2)}
@@ -111,7 +145,41 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-hei
 .close-btn:hover{background:rgba(255,255,255,0.25)}
 
 .recipe-modal-body{display:grid;grid-template-columns:1fr 1.3fr;min-height:300px}
-@media(max-width:640px){.recipe-modal-body{grid-template-columns:1fr}}
+@media(max-width:700px){.recipe-modal-body{grid-template-columns:1fr}}
+
+/* ── MOBILE ── */
+@media(max-width:700px){
+  .header{padding:0 14px;gap:10px;flex-wrap:nowrap}
+  .search-wrap{min-width:0;max-width:none}
+  .header-actions{gap:6px;flex-shrink:0}
+  .header-actions .btn{padding:7px 9px}
+  .header-actions .btn span{display:none}
+  .desktop-only{display:none !important}
+  .mobile-only{display:inline-flex}
+  .control-bar{padding:9px 16px;gap:8px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+  .control-bar::-webkit-scrollbar{display:none}
+  .results-bar{padding:8px 16px 0}
+  .grid{padding:6px 0 40px}
+  .group{margin-bottom:18px}
+  .group-head{margin:0;padding:10px 16px 8px;background:var(--bg);position:sticky;top:60px;z-index:5}
+  .group-name{font-size:13px}
+  .group-rule{display:none}
+  .group-cards{display:block;padding:0 16px}
+  .card{border-radius:0;border-top:none;border-left:3px solid var(--cb,var(--border));border-bottom:1px solid var(--border);background:transparent;box-shadow:none;margin:0}
+  .card:hover{transform:none;box-shadow:none}
+  .card:active{background:var(--surface)}
+  .card-badges,.card-desc,.card-tags,.card-footer{display:none}
+  .card-body{padding:11px 12px;gap:5px}
+  .card-name{font-size:14px}
+  .card-stats{border-top:none;padding-top:0;gap:10px}
+  .stat{font-size:11px}
+  .stat svg{display:none}
+  .stat-status{display:block;font-size:11px}
+}
+@media(max-width:430px){
+  .logo{display:none}
+}
+
 .recipe-modal-ing{padding:20px 24px;border-right:1px solid var(--border)}
 .recipe-modal-method{padding:20px 24px}
 
@@ -199,15 +267,20 @@ body{font-family:var(--font-body);background:var(--bg);color:var(--text);min-hei
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--border);border-radius:3px}
 
-@media(max-width:640px){
-  .header{padding:0 14px;height:auto;padding-top:10px;padding-bottom:10px;gap:10px}
-  .grid{grid-template-columns:1fr;padding:12px 14px 40px}
+@media(max-width:700px){
   .filter-bar{padding:10px 14px}
-  .results-bar{padding:10px 14px 0}
-  .header-actions .btn span{display:none}
-  .recipe-modal-ing{border-right:none;border-bottom:1px solid var(--border)}
   .form-row{grid-template-columns:1fr}
   .form-row.macros-row{grid-template-columns:1fr 1fr}
+  .modal-overlay{padding:0}
+  .modal{border-radius:0;min-height:100vh;max-width:none}
+  .sheet{border-radius:16px 16px 0 0;min-height:0}
+  .recipe-modal-header{padding:20px 18px 16px}
+  .recipe-modal-header h2{font-size:21px}
+  .recipe-modal-ing{border-right:none;border-bottom:1px solid var(--border);padding:18px}
+  .recipe-modal-method{padding:18px}
+  .modal-macros{flex-wrap:wrap;gap:10px;padding:12px 18px}
+  .modal-macro{flex:1 0 28%}
+  .modal-footer{flex-wrap:wrap}
   .cb-check-grid{grid-template-columns:repeat(2,1fr)}
 }
 
@@ -304,20 +377,57 @@ input::placeholder, textarea::placeholder { color: var(--muted) !important; }
   <input type="file" id="import-input" accept=".csv" style="display:none" onchange="importCSV(event)">
 </header>
 
-<!-- FILTER BAR -->
-<div class="filter-bar">
+<!-- FILTER BAR (desktop) -->
+<div class="filter-bar desktop-only">
   <span class="filter-label">Cookbook</span>
-  <div id="cb-filters" style="display:flex;gap:6px;flex-shrink:0"></div>
-  <div class="filter-sep"></div>
-  <div class="cooked-toggle">
-    <button class="active" onclick="setCookedFilter('all',this)">All</button>
-    <button onclick="setCookedFilter('cooked',this)">✓ Cooked</button>
-    <button onclick="setCookedFilter('uncooked',this)">★ To Try</button>
+  <div id="cb-filters" class="pill-row"></div>
+</div>
+
+<!-- CONTROL BAR -->
+<div class="control-bar">
+  <button class="btn btn-ghost btn-sm mobile-only" onclick="openFilterSheet()">
+    <span>Filters</span><span id="filter-count-badge" class="count-badge"></span>
+  </button>
+  <span class="filter-label desktop-only">Group</span>
+  <div id="group-pills" class="pill-row desktop-only"></div>
+  <div class="filter-sep desktop-only"></div>
+  <span class="filter-label desktop-only">Sort</span>
+  <select id="sort-select" class="control-select" onchange="setSort(this.value)" aria-label="Sort recipes"></select>
+  <div class="filter-sep desktop-only"></div>
+  <div class="cooked-toggle desktop-only" id="cooked-toggle-desktop"></div>
+  <span id="results-count" class="results-count"></span>
+</div>
+
+<!-- FILTER SHEET (mobile) -->
+<div class="modal-overlay sheet-overlay hidden" id="filter-overlay" onclick="closeOnOverlay(event,'filter-overlay')">
+  <div class="sheet">
+    <div class="sheet-header">
+      <h3>Filters</h3>
+      <button class="close-btn" style="position:static;background:var(--surface2);color:var(--text)" onclick="closeModal('filter-overlay')">✕</button>
+    </div>
+    <div class="sheet-body">
+      <div class="sheet-section">
+        <div class="section-title">Cookbook</div>
+        <div id="cb-filters-sheet" class="pill-wrap"></div>
+      </div>
+      <div class="sheet-section">
+        <div class="section-title">Status</div>
+        <div class="cooked-toggle" id="cooked-toggle-sheet"></div>
+      </div>
+      <div class="sheet-section">
+        <div class="section-title">Group by</div>
+        <div id="group-pills-sheet" class="pill-wrap"></div>
+      </div>
+    </div>
+    <div class="sheet-footer">
+      <button class="btn btn-secondary" onclick="clearFilters()">Clear all</button>
+      <button class="btn btn-primary" onclick="closeModal('filter-overlay')">Show recipes</button>
+    </div>
   </div>
 </div>
 
 <!-- RESULTS -->
-<div class="results-bar"><span id="results-count"></span><span id="storage-status" class="storage-status"></span></div>
+<div class="results-bar"><span id="storage-status" class="storage-status"></span></div>
 
 <!-- GRID -->
 <div class="grid" id="recipe-grid"></div>
@@ -533,9 +643,44 @@ function resetStore(){
 // ════════════════════════════════════════════════════════════
 // STATE
 // ════════════════════════════════════════════════════════════
+const VIEW_KEY = 'atoalh.recipeView';
+
+const SORTS = [
+  {id:'name',     label:'A–Z',                fn:(a,b)=>byName(a,b)},
+  {id:'added',    label:'Recently added',     fn:(a,b)=>idNum(b)-idNum(a)},
+  {id:'quickest', label:'Quickest first',     fn:(a,b)=>(totalTime(a)||9999)-(totalTime(b)||9999)||byName(a,b)},
+  {id:'rating',   label:'Highest rated',      fn:(a,b)=>(b.rating||0)-(a.rating||0)||byName(a,b)},
+  {id:'fewest',   label:'Fewest ingredients', fn:(a,b)=>ingCount(a)-ingCount(b)||byName(a,b)},
+];
+const GROUPS = [{id:'cookbook',label:'Cookbook'},{id:'none',label:'None'}];
+
+function byName(a,b){ return a.name.replace(/^["']/,'').localeCompare(b.name.replace(/^["']/,''),'en-GB'); }
+function idNum(r){ return parseInt(String(r.id).replace(/\D/g,''))||0; }
+
+function loadView(){
+  try{
+    const v = JSON.parse(localStorage.getItem(VIEW_KEY)||'{}');
+    if(SORTS.some(s=>s.id===v.sortBy)) state.sortBy=v.sortBy;
+    if(GROUPS.some(g=>g.id===v.groupBy)) state.groupBy=v.groupBy;
+    if(['all','cooked','uncooked'].includes(v.filterCooked)) state.filterCooked=v.filterCooked;
+    if(Array.isArray(v.filterCookbooks)) state.filterCookbooks=v.filterCookbooks.filter(id=>COOKBOOKS.some(c=>c.id===id));
+  }catch(err){}
+}
+
+function saveView(){
+  try{
+    localStorage.setItem(VIEW_KEY, JSON.stringify({
+      sortBy:state.sortBy, groupBy:state.groupBy,
+      filterCooked:state.filterCooked, filterCookbooks:state.filterCookbooks,
+    }));
+  }catch(err){}
+}
+
 let state = {
   filterCookbooks: [],
   filterCooked: 'all',
+  sortBy: 'name',
+  groupBy: 'cookbook',
   currentRecipeId: null,
   currentServings: 2,
   editingId: null,
@@ -623,7 +768,7 @@ function getFilteredRecipes(){
     if(state.filterCooked==='cooked' && !r.cooked) return false;
     if(state.filterCooked==='uncooked' && r.cooked) return false;
     if(search){
-      const hay = (r.name+' '+r.description+' '+r.tags.join(' ')+' '+r.notes).toLowerCase();
+      const hay = (r.name+' '+r.description+' '+r.tags.join(' ')+' '+r.notes+' '+r.ingredients).toLowerCase();
       if(!hay.includes(search)) return false;
     }
     return true;
@@ -632,47 +777,146 @@ function getFilteredRecipes(){
 
 function applyFilters(){ renderGrid(); }
 
-function setCookedFilter(val, btn){
+function setCookedFilter(val){
   state.filterCooked=val;
-  document.querySelectorAll('.cooked-toggle button').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
+  saveView();
+  renderCookbookFilters();
   renderGrid();
 }
 
 // ════════════════════════════════════════════════════════════
 // RENDER
 // ════════════════════════════════════════════════════════════
-function renderCookbookFilters(){
-  const el=document.getElementById('cb-filters');
-  el.innerHTML=COOKBOOKS.map(cb=>`
-    <button class="filter-pill ${state.filterCookbooks.includes(cb.id)?'active':''}"
-      style="${state.filterCookbooks.includes(cb.id)?`background:${cb.colour};border-color:${cb.colour}`:'color:var(--muted)'}"
-      onclick="toggleCbFilter('${cb.id}',this,'${cb.colour}')">${cb.name}</button>
-  `).join('');
+function cookbookPillsHtml(){
+  return COOKBOOKS.map(cb=>{
+    const on=state.filterCookbooks.includes(cb.id);
+    return `<button class="filter-pill ${on?'active':''}"
+      style="${on?`background:${cb.colour};border-color:${cb.colour};color:#12140f`:'color:var(--muted)'}"
+      onclick="toggleCbFilter('${cb.id}')">${cb.name}</button>`;
+  }).join('');
 }
 
-function toggleCbFilter(id, btn, colour){
-  const i=state.filterCookbooks.indexOf(id);
-  if(i===-1){ state.filterCookbooks.push(id); btn.classList.add('active'); btn.style.background=colour; btn.style.borderColor=colour; btn.style.color='#fff'; }
-  else { state.filterCookbooks.splice(i,1); btn.classList.remove('active'); btn.style.background=''; btn.style.borderColor=''; btn.style.color='var(--muted)'; }
+function groupPillsHtml(){
+  return GROUPS.map(g=>{
+    const on=state.groupBy===g.id;
+    return `<button class="filter-pill ${on?'active':''}"
+      style="${on?'background:var(--accent);border-color:var(--accent);color:#12140f':'color:var(--muted)'}"
+      onclick="setGroupBy('${g.id}')">${g.label}</button>`;
+  }).join('');
+}
+
+function cookedToggleHtml(){
+  const opts=[['all','All'],['cooked','✓ Cooked'],['uncooked','★ To Try']];
+  return opts.map(([v,l])=>
+    `<button class="${state.filterCooked===v?'active':''}" onclick="setCookedFilter('${v}')">${l}</button>`
+  ).join('');
+}
+
+function renderCookbookFilters(){
+  const set=(id,html)=>{ const el=document.getElementById(id); if(el) el.innerHTML=html; };
+  set('cb-filters', cookbookPillsHtml());
+  set('cb-filters-sheet', cookbookPillsHtml());
+  set('group-pills', groupPillsHtml());
+  set('group-pills-sheet', groupPillsHtml());
+  set('cooked-toggle-desktop', cookedToggleHtml());
+  set('cooked-toggle-sheet', cookedToggleHtml());
+  const sel=document.getElementById('sort-select');
+  if(sel) sel.innerHTML=SORTS.map(s=>`<option value="${s.id}" ${state.sortBy===s.id?'selected':''}>${s.label}</option>`).join('');
+  const badge=document.getElementById('filter-count-badge');
+  if(badge){
+    const n=state.filterCookbooks.length+(state.filterCooked!=='all'?1:0);
+    badge.textContent=n||'';
+    badge.classList.toggle('show', n>0);
+  }
+}
+
+function openFilterSheet(){
+  renderCookbookFilters();
+  document.getElementById('filter-overlay').classList.remove('hidden');
+  document.body.style.overflow='hidden';
+}
+
+function clearFilters(){
+  state.filterCookbooks=[];
+  state.filterCooked='all';
+  saveView();
+  renderCookbookFilters();
   renderGrid();
+}
+
+function setGroupBy(id){
+  state.groupBy=id;
+  saveView();
+  renderCookbookFilters();
+  renderGrid();
+}
+
+function setSort(id){
+  if(!SORTS.some(s=>s.id===id)) return;
+  state.sortBy=id;
+  saveView();
+  renderCookbookFilters();
+  renderGrid();
+}
+
+function toggleCbFilter(id){
+  const i=state.filterCookbooks.indexOf(id);
+  if(i===-1) state.filterCookbooks.push(id); else state.filterCookbooks.splice(i,1);
+  saveView();
+  renderCookbookFilters();
+  renderGrid();
+}
+
+function sortRecipes(list){
+  const s=SORTS.find(x=>x.id===state.sortBy)||SORTS[0];
+  return [...list].sort(s.fn);
+}
+
+function buildGroups(recipes){
+  if(state.groupBy!=='cookbook') return [{id:null, items:sortRecipes(recipes)}];
+  const groups=[];
+  for(const cb of COOKBOOKS){
+    if(state.filterCookbooks.length && !state.filterCookbooks.includes(cb.id)) continue;
+    const items=recipes.filter(r=>r.cookbooks.includes(cb.id));
+    if(items.length) groups.push({id:cb.id, name:cb.name, colour:cb.colour, items:sortRecipes(items)});
+  }
+  const known=new Set(COOKBOOKS.map(c=>c.id));
+  const orphans=recipes.filter(r=>!r.cookbooks.some(id=>known.has(id)));
+  if(orphans.length && !state.filterCookbooks.length){
+    groups.push({id:'__none', name:'Uncategorised', colour:'#586860', items:sortRecipes(orphans)});
+  }
+  return groups;
 }
 
 function renderGrid(){
   const recipes=getFilteredRecipes();
   const grid=document.getElementById('recipe-grid');
-  document.getElementById('results-count').textContent=`${recipes.length} recipe${recipes.length!==1?'s':''}`;
+  const count=document.getElementById('results-count');
+  if(count) count.textContent=`${recipes.length} recipe${recipes.length!==1?'s':''}`;
   if(!recipes.length){
     grid.innerHTML=`<div class="empty-state"><div class="big">🍽</div><p>No recipes match your filters.</p></div>`;
     return;
   }
-  grid.innerHTML=recipes.map(r=>renderCard(r)).join('');
+  grid.innerHTML=buildGroups(recipes).map(g=>{
+    const cards=g.items.map(r=>renderCard(r,g)).join('');
+    if(!g.name) return `<div class="group-cards">${cards}</div>`;
+    return `<section class="group">
+      <div class="group-head">
+        <span class="group-dot" style="background:${g.colour}"></span>
+        <span class="group-name">${g.name}</span>
+        <span class="group-count">${g.items.length}</span>
+        <span class="group-rule"></span>
+      </div>
+      <div class="group-cards">${cards}</div>
+    </section>`;
+  }).join('');
 }
 
-function renderCard(r){
+function renderCard(r, group){
   const topCb = r.cookbooks[0] ? getCookbook(r.cookbooks[0]) : null;
-  const borderColor = topCb ? topCb.colour : 'var(--border)';
-  const badges = r.cookbooks.slice(0,3).map(id=>{
+  const borderColor = (group && group.colour) || (topCb ? topCb.colour : 'var(--border)');
+  const otherCbs = r.cookbooks.filter(id=>!group || id!==group.id);
+  const badges = otherCbs.slice(0,3).map(id=>{
     const cb=getCookbook(id);
     return `<span class="cb-badge" style="background:${cb.colour}">${cb.name}</span>`;
   }).join('');
@@ -688,8 +932,11 @@ function renderCard(r){
   const statusHtml = r.cooked
     ? `<div style="display:flex;align-items:center;gap:4px">${renderStars(r.rating)||'<span class="cooked-badge">Cooked ✓</span>'}</div>`
     : `<span class="want-badge">Want to Try</span>`;
+  const inlineStatus = r.cooked
+    ? `<span style="color:var(--accent2)">${renderStars(r.rating)||'Cooked ✓'}</span>`
+    : `<span style="color:#a8b4e8">To try</span>`;
 
-  return `<div class="card" style="border-top-color:${borderColor}" onclick="openRecipe('${r.id}')">
+  return `<div class="card" style="border-top-color:${borderColor};--cb:${borderColor}" onclick="openRecipe('${r.id}')">
     <div class="card-badges">${badges}</div>
     <div class="card-body">
       <div class="card-name">${r.name}</div>
@@ -697,8 +944,9 @@ function renderCard(r){
       <div class="card-tags">${tags}</div>
       <div class="card-stats">
         <div class="stat"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>${tt?tt+' min':'—'}</div>
-        <div class="stat"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>${r.servings} serving${r.servings!==1?'s':''}</div>
         <div class="stat"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/></svg>${ic} ingr.</div>
+        <div class="stat"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>${r.servings} serving${r.servings!==1?'s':''}</div>
+        <div class="stat stat-status">${inlineStatus}</div>
       </div>
     </div>
     <div class="card-footer">${macroHtml}${statusHtml}</div>
@@ -1105,6 +1353,7 @@ function showToast(msg){
 // INIT
 // ════════════════════════════════════════════════════════════
 const loadResult = loadStore();
+loadView();
 renderCookbookFilters();
 renderGrid();
 renderStorageStatus();
