@@ -42,6 +42,10 @@ html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:var
 .opt-icon{width:44px;height:44px;border-radius:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .opt-icon-run{background:var(--gold-bg);border:1px solid var(--gold-border)}
 .opt-icon-rest{background:var(--amber-bg);border:1px solid var(--amber-border)}
+.opt-icon-sp{background:var(--blue-bg);border:1px solid var(--blue-border)}
+.opt-icon-combo{background:var(--teal-bg);border:1px solid var(--teal-border)}
+.t-note{font-size:12px;color:var(--muted)}
+.tbtn.sel .t-note{color:var(--gold)}
 .opt-body{flex:1}
 .opt-title{font-size:16px;font-weight:500;color:var(--text);margin-bottom:3px}
 .opt-sub{font-size:12px;color:var(--muted);line-height:1.4}
@@ -184,7 +188,7 @@ html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:var
 
   <div class="surgery-banner">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
-    <span>Pre-surgery phase &mdash; easy runs only. Targets set for maintenance.</span>
+    <span>Targets use distance &times; bodyweight, not Garmin. While on bisoprolol, Garmin under-reads burn &mdash; ignore its calorie figure.</span>
   </div>
 
   <div class="sync-bar">
@@ -198,17 +202,23 @@ html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:var
   <div class="n-lbl">Day type</div>
   <select class="day-select" id="day-select" onchange="setDay(this.value)">
     <option value="0">Rest</option>
-    <option value="1">Easy Run 5&ndash;8km</option>
+    <option value="1">S&amp;P session only</option>
+    <option value="2">Run &mdash; 5km or less</option>
+    <option value="3">Run &mdash; 5 to 8km</option>
+    <option value="4">Run &mdash; 8 to 12km</option>
+    <option value="5">Run &mdash; 12 to 16km</option>
+    <option value="6">Run &mdash; 16 to 21km</option>
+    <option value="7">Run + S&amp;P session</option>
   </select>
 
   <div class="n-lbl">Calories</div>
   <div class="cal-block">
     <div class="cal-main-row">
-      <span class="cal-number" id="cal-number">2,320</span>
+      <span class="cal-number" id="cal-number">2,300</span>
       <span class="cal-unit" id="cal-unit">kcal remaining</span>
     </div>
     <div class="cal-meta-row">
-      <span class="cal-meta" id="cal-meta">0 consumed · of 2,320 target</span>
+      <span class="cal-meta" id="cal-meta">0 consumed · of 2,300 target</span>
       <span class="cal-pct" id="cal-pct">0%</span>
     </div>
     <div class="cal-track"><div class="cal-fill" id="cal-fill" style="width:0%"></div></div>
@@ -261,10 +271,10 @@ html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:var
 
   <div class="n-lbl">Daily targets</div>
   <div class="t-row" style="margin-bottom:16px">
-    <div class="t-card"><div class="t-val" style="color:var(--amber)" id="t-cal">2,320</div><div class="t-lbl">kcal</div></div>
-    <div class="t-card"><div class="t-val" style="color:var(--blue)" id="t-pro">125g</div><div class="t-lbl">protein</div></div>
-    <div class="t-card"><div class="t-val" style="color:var(--green)" id="t-carb">293g</div><div class="t-lbl">carbs</div></div>
-    <div class="t-card"><div class="t-val" style="color:var(--amber)" id="t-fat">72g</div><div class="t-lbl">fat</div></div>
+    <div class="t-card"><div class="t-val" style="color:var(--amber)" id="t-cal">2,300</div><div class="t-lbl">kcal</div></div>
+    <div class="t-card"><div class="t-val" style="color:var(--blue)" id="t-pro">150g</div><div class="t-lbl">protein</div></div>
+    <div class="t-card"><div class="t-val" style="color:var(--green)" id="t-carb">268g</div><div class="t-lbl">carbs</div></div>
+    <div class="t-card"><div class="t-val" style="color:var(--amber)" id="t-fat">70g</div><div class="t-lbl">fat</div></div>
   </div>
 
   <div class="n-lbl">Consumed</div>
@@ -278,13 +288,15 @@ html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:var
   <div class="n-div"></div>
 
   <div class="n-chips">
-    <div class="n-chip">VO&#8322; Max <b>54</b></div>
-    <div class="n-chip">RHR <b>56 bpm</b></div>
-    <div class="n-chip">Body fat <b>14.7%</b></div>
-    <div class="n-chip">Lean mass <b>61.1kg</b></div>
+    <div class="n-chip">Weight <b>71.9kg</b></div>
+    <div class="n-chip">Fat-free mass <b>60.5kg</b></div>
+    <div class="n-chip">BMR <b>1,675</b></div>
+    <div class="n-chip">Protein <b>2.1 g/kg</b></div>
   </div>
 
-  <div class="n-note" id="note-box">Office job + 7k steps daily covers your base activity. No training today — focus on hitting protein and keeping carbs moderate.</div>
+  <div class="n-note" id="note-box">No session today. Protein is the priority — 150g is what drives recomposition, not a calorie deficit. Spread it across four meals rather than back-loading it into dinner.</div>
+
+  <div class="iblock i-blue" style="margin:0 0 24px"><strong>Elvanse timing</strong><br>Keep vitamin C and high-fat food outside a 2-hour window either side of the 8am dose. High fat delays onset; vitamin C reduces absorption.</div>
 
   <div class="n-div"></div>
 
@@ -310,10 +322,10 @@ html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:var
   <button class="clear-btn" onclick="clearInputs()">Clear entries</button>
 
   <div class="n-footer">
-    Katch-McArdle BMR 1,690 kcal &middot; Lean mass 61.1kg &middot; Body fat 14.7%<br>
-    TDEE ~2,320 kcal &middot; Office active + 7k steps &middot; VO&#8322; Max 54 &middot; RHR 56<br>
-    Easy run burn ~380 kcal avg &middot; Maintenance targets &middot; Pre-surgery phase<br>
-    Male &middot; 30y &middot; 172cm &middot; 71kg &middot; BUPA assessment 23 Mar 2026
+    Katch-McArdle BMR 1,675 kcal &middot; Fat-free mass 60.5kg (working figure)<br>
+    Rest TDEE 2,300 kcal &middot; BMR &times; 1.375 &middot; Running 68 kcal/km net<br>
+    S&amp;P session +280 kcal &middot; Protein 2.1 g/kg &middot; Maintenance, recomp at weight<br>
+    Male &middot; 30y &middot; 172cm &middot; 71.9kg &middot; VeSync 06 Aug 2026 / BUPA 23 Mar 2026
   </div>
 </div>
 
@@ -352,23 +364,67 @@ var SLOTS = [
   {id:'pm',  label:'Evening',   sub:'5:30 pm',  h:17, m:30}
 ];
 
-/* ── EXERCISE STATE ── */
-var S = {screen:'home', t:null, busy:false, err:null, step:1};
+/* ── DISTANCE BANDS ──
+   Net running cost 0.95 kcal/kg/km at 71.9kg = 68 kcal/km.
+   kcal shown is the band midpoint. mins assumes ~5:35/km easy. */
+var DISTS = [
+  {label:'5 km or less',  add:'+310 kcal', fuel:'Water only',                    mins:30,  day:2},
+  {label:'5 \u2013 8 km',   add:'+440 kcal', fuel:'Electrolytes, no gels',          mins:40,  day:3},
+  {label:'8 \u2013 12 km',  add:'+680 kcal', fuel:'Practise gels from 40 min',      mins:60,  day:4},
+  {label:'12 \u2013 16 km', add:'+950 kcal', fuel:'45\u201360g carbs/hr from 40 min', mins:80,  day:5},
+  {label:'16 \u2013 21 km', add:'+1,260 kcal', fuel:'Full race fuelling',           mins:105, day:6}
+];
 
-/* ── NUTRITION DATA ── */
-/* Rest:       BMR 1690 × 1.375 (office + 7k steps) = 2,323 ≈ 2,320
-   Easy Run:   +~380 kcal net burn (71kg, 5–8km easy, midpoint ~6.5km)
-   Protein:    ~2.0g/kg lean mass (61.1kg)
-   Fat:        moderate healthy baseline
-   Carbs:      fill remaining calories */
+/* ── S&P SESSIONS ── */
+var SESSIONS = [
+  {id:'A', label:'Session A', sub:'Strength focus \u00b7 3 rounds + finisher'},
+  {id:'B', label:'Session B', sub:'Posterior chain & core \u00b7 3 rounds'}
+];
+var SP_MINS = 50;
+
+/* ── STATE ── */
+var S = {screen:'home', mode:null, d:null, sess:null, t:null, busy:false, err:null, step:1, steps:2};
+
+/* ── NUTRITION DATA ──
+   BMR 1,675 (Katch-McArdle, fat-free mass 60.5kg)
+   Rest  = BMR x 1.375 = 2,303 -> 2,300
+   Run   = +68 kcal/km net, band midpoint
+   S&P   = +280 kcal
+   Prot  = 2.1 g/kg bodyweight (155g when S&P is involved)
+   Fat   = ~1.0 g/kg, trimmed to 65g on the longest day
+   Carbs = remainder                                          */
 var days = [
-  {
-    cal:2320, pro:125, carb:293, fat:72,
-    note:"Office job + 7k steps covers your base. No training today — hit your protein target and keep carbs moderate. Good day to focus on sleep quality ahead of surgery."
+  { /* 0 Rest */
+    cal:2300, pro:150, carb:268, fat:70,
+    note:"No session today. Protein is the priority \u2014 150g is what drives recomposition, not a calorie deficit. Spread it across four meals rather than back-loading it into dinner."
   },
-  {
-    cal:2700, pro:128, carb:383, fat:70,
-    note:"Easy conversational pace only — if you can't hold a sentence, slow down. No fuelling needed for sub-60 min runs. Electrolytes optional. Pre-run meal 2–3 hrs before. No HBCD required."
+  { /* 1 S&P only */
+    cal:2580, pro:155, carb:332, fat:70,
+    note:"Protein up to 155g on lifting days. Eat a carb-containing meal 2\u20133 hrs before \u2014 resistance work on an empty stomach is where form breaks down first. Protein within 2 hrs after."
+  },
+  { /* 2 Run <=5k */
+    cal:2610, pro:150, carb:345, fat:70,
+    note:"Water only, no fuelling needed. Pre-run meal 2\u20133 hrs before, or a light carb top-up 45 min out if you're running from a gap."
+  },
+  { /* 3 Run 5-8k */
+    cal:2740, pro:150, carb:377, fat:70,
+    note:"Electrolyte drink, no gels \u2014 under 60 min needs no on-run carbs. Conversational pace: if you can't hold a sentence, slow down."
+  },
+  { /* 4 Run 8-12k */
+    cal:2980, pro:150, carb:437, fat:70,
+    note:"Electrolytes throughout. Start practising gels from 40 min in, 30\u201345g carbs/hr. Better to find out now what sits well than to discover it at 18k."
+  },
+  { /* 5 Run 12-16k */
+    cal:3250, pro:150, carb:505, fat:70,
+    note:"45\u201360g carbs/hr from 40 min in, 300\u2013500mg sodium/hr. 505g of carbs is a big number on Elvanse \u2014 front-load breakfast and use liquid carbs if appetite drops off."
+  },
+  { /* 6 Run 16-21k */
+    cal:3560, pro:150, carb:594, fat:65,
+    note:"Full race fuelling: 45\u201360g carbs/hr from 40 min, 400\u2013600mg sodium/hr. On-run carbs count toward the 594g \u2014 roughly 100g of it. Replacement legitimately carries into tomorrow morning; don't try to chase the whole number by 9pm."
+  },
+  { /* 7 Run + S&P */
+    cal:3020, pro:155, carb:442, fat:70,
+    note:"Assumes an easy run of 8km or less plus a full S&P session. Run first, S&P at least 2 hrs later. Largest protein portion after the S&P block. If one has to give, drop the S&P and keep the run."
   }
 ];
 var current = 0;
@@ -384,37 +440,74 @@ function calProxy(title,start,end,desc){
     .then(function(r){return r.json();})
     .then(function(d){if(d.error) throw new Error(d.error); return d;});
 }
-
-function addRun(t){
+function slotStart(t,offsetMins){
   var now=new Date();
   var st=new Date(now.getFullYear(),now.getMonth(),now.getDate(),t.h,t.m,0);
-  var en=new Date(st.getTime()+60*60*1000);
-  var desc='Easy run 5\u20138km \u00b7 Conversational pace \u00b7 Pre-surgery phase\nNo fuelling needed. Electrolytes optional.';
-  return calProxy('Easy Run | Pre-surgery',st,en,desc);
+  if(offsetMins) st=new Date(st.getTime()+offsetMins*60000);
+  return st;
+}
+function addRunEvent(t,dist,offsetMins){
+  var st=slotStart(t,offsetMins||0);
+  var en=new Date(st.getTime()+dist.mins*60*1000);
+  var desc='Run '+dist.label+'\n'+dist.fuel+'\nTarget: '+days[dist.day].cal.toLocaleString()+' kcal today';
+  return calProxy('Run | '+dist.label,st,en,desc);
+}
+function addSPEvent(t,sess,offsetMins){
+  var st=slotStart(t,offsetMins||0);
+  var en=new Date(st.getTime()+SP_MINS*60*1000);
+  var desc='S&P '+sess.label+'\n'+sess.sub+'\nProtein within 2 hrs after.';
+  return calProxy('S&P | '+sess.label,st,en,desc);
 }
 
 /* ── SVGs ── */
 function svgCheck(c){return '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="'+c+'" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>';}
 function svgMoon(){return '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#f0b429" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';}
-function svgRun(){return '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#C59100" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1.5"/><path d="M8 17l2-6 2 2 2-4"/><path d="M6 21l2-4"/><path d="M18 21l-2-4"/></svg>';}
-function svgHeart(){return '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f0b429" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>';}
+function svgRun(c){return '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="'+(c||'#C59100')+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="1.5"/><path d="M8 17l2-6 2 2 2-4"/><path d="M6 21l2-4"/><path d="M18 21l-2-4"/></svg>';}
+function svgLift(c){return '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="'+(c||'#4a9eff')+'" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 7v10M18 7v10M3 9v6M21 9v6M6 12h12"/></svg>';}
+function svgCombo(){return '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2dd4b0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M13 2L4.5 13H12l-1 9 8.5-11H13l0-9z"/></svg>';}
 
-/* ── CARD/BUTTON BUILDERS ── */
+/* ── BUILDERS ── */
 function hdr(eyebrow,l1,l2){
   return '<div class="hdr"><div class="hdr-eyebrow">'+eyebrow+'</div>'
     +'<div class="hdr-title">'+l1+'<br><span>'+l2+'</span></div></div>';
 }
 function pips(){
   var o='<div class="steps">';
-  for(var i=1;i<=2;i++) o+='<div class="pip'+(S.step>=i?' on':'')+'"></div>';
+  for(var i=1;i<=S.steps;i++) o+='<div class="pip'+(S.step>=i?' on':'')+'"></div>';
   return o+'</div>';
 }
 function spinner(msg){return '<div class="loading-wrap"><div class="spinner"></div><div>'+(msg||'Working&hellip;')+'</div></div>';}
+function optCard(mode,iconCls,icon,title,sub){
+  return '<div class="opt-card" onclick="go(\''+mode+'\')"><div class="opt-icon '+iconCls+'">'+icon+'</div>'
+    +'<div class="opt-body"><div class="opt-title">'+title+'</div><div class="opt-sub">'+sub+'</div></div>'
+    +'<div class="opt-arrow">&rsaquo;</div></div>';
+}
+function pickBtn(fn,idx,label,right,note,sel){
+  return '<button class="tbtn'+(sel?' sel':'')+'" onclick="'+fn+'('+idx+')">'
+    +'<div><div class="t-label">'+label+'</div>'+(note?'<div class="t-note">'+note+'</div>':'')+'</div>'
+    +'<div class="t-time">'+right+'</div></button>';
+}
 function timeBtn(t){
   var sel=S.t&&S.t.id===t.id;
   return '<button class="tbtn'+(sel?' sel':'')+'" onclick="setTime(\''+t.id+'\')">'
     +'<div class="t-label">'+t.label+'</div>'
     +'<div class="t-time">'+t.sub+'</div></button>';
+}
+function footerBtns(primaryLabel,primaryFn,enabled){
+  return '<div class="btn-wrap"><div class="btn-wrap-inner">'
+    +(S.err?'<div class="err-msg">'+S.err+'</div>':'')
+    +'<button class="btn-pri"'+(enabled?'':' disabled')+' onclick="'+primaryFn+'">'+primaryLabel+'</button>'
+    +'<button class="btn-sec" onclick="reset()">&larr; Home</button>'
+    +'</div></div>';
+}
+
+/* ── DAY TYPE RESOLUTION ── */
+function dayIndex(){
+  if(S.mode==='rest')  return 0;
+  if(S.mode==='sp')    return 1;
+  if(S.mode==='combo') return 7;
+  if(S.mode==='run' && S.d!==null) return DISTS[S.d].day;
+  return 0;
 }
 
 /* ── EXERCISE RENDER ── */
@@ -428,54 +521,85 @@ function render(){
       +'<div class="hdr-sub">What\'s happening today?</div></div>'
       +'<div class="scroll" style="padding-top:8px">'
       +'<div class="sec-lbl">Select activity</div>'
-      +'<div class="opt-card" onclick="go(\'run\')"><div class="opt-icon opt-icon-run">'+svgRun()+'</div><div class="opt-body"><div class="opt-title">Easy Run</div><div class="opt-sub">5&ndash;8km &middot; conversational pace &middot; cardiac-safe</div></div><div class="opt-arrow">&rsaquo;</div></div>'
-      +'<div class="opt-card" onclick="go(\'rest\')"><div class="opt-icon opt-icon-rest">'+svgMoon()+'</div><div class="opt-body"><div class="opt-title">Rest</div><div class="opt-sub">Recovery day &mdash; no session</div></div><div class="opt-arrow">&rsaquo;</div></div>'
-      +'<div class="iblock i-teal" style="margin-top:20px"><strong>&#10084; Pre-surgery phase</strong><br>Training paused to easy runs only. Surgery date TBC &mdash; listen to your body and stay at conversational pace.</div>'
+      +optCard('run','opt-icon-run',svgRun(),'Run','Pick a distance band \u00b7 5 to 21km')
+      +optCard('sp','opt-icon-sp',svgLift(),'S&amp;P Session','Session A or B \u00b7 ~50 min')
+      +optCard('combo','opt-icon-combo',svgCombo(),'Run + S&amp;P','Easy run under 8km, then a session')
+      +optCard('rest','opt-icon-rest',svgMoon(),'Rest','Recovery day \u2014 no session')
+      +'<div class="iblock i-blue" style="margin-top:20px"><strong>Calorie targets</strong><br>Built from distance and bodyweight, not heart rate. While you\'re on bisoprolol, Garmin will under-read your burn \u2014 use these numbers instead of its estimate.</div>'
       +'</div>';
 
-  }else if(S.screen==='run_time'){
+  }else if(S.screen==='dist'){
+    var db='';
+    for(var i=0;i<DISTS.length;i++){
+      db+=pickBtn('setDist',i,DISTS[i].label,DISTS[i].add,DISTS[i].fuel,S.d===i);
+    }
+    h=hdr(S.mode==='combo'?'Run + S&amp;P':'Run today','HOW','FAR?')+pips()
+      +'<div class="scroll"><div class="tgrid" style="margin-top:16px">'+db+'</div>'
+      +(S.mode==='combo'?'<div class="iblock i-teal"><strong>Keep it easy</strong><br>The combined target assumes 8km or less. Longer than that, use the run band on its own and add ~300 kcal.</div>':'')
+      +'<div style="height:20px"></div></div>'
+      +footerBtns('Continue','nextFromDist()',S.d!==null);
+
+  }else if(S.screen==='sess'){
+    var sb='';
+    for(var j=0;j<SESSIONS.length;j++){
+      sb+=pickBtn('setSess',j,SESSIONS[j].label,'~50 min',SESSIONS[j].sub,S.sess===j);
+    }
+    h=hdr('S&amp;P today','WHICH','SESSION?')+pips()
+      +'<div class="scroll"><div class="tgrid" style="margin-top:16px">'+sb+'</div>'
+      +'<div class="iblock i-blue"><strong>Protein 155g today</strong><br>Largest portion within 2 hrs of finishing. Carbs in the meal 2\u20133 hrs beforehand.</div>'
+      +'<div style="height:20px"></div></div>'
+      +footerBtns('Continue','nextFromSess()',S.sess!==null);
+
+  }else if(S.screen==='time'){
     var tbs='';
     for(var si=0;si<SLOTS.length;si++) tbs+=timeBtn(SLOTS[si]);
-    h=hdr('Easy Run &middot; 5&ndash;8km','WHEN','ARE YOU?')+pips()
+    var eyebrow = S.mode==='run'   ? 'Run &middot; '+DISTS[S.d].label
+                : S.mode==='sp'    ? 'S&amp;P &middot; '+SESSIONS[S.sess].label
+                :                    'Run '+DISTS[S.d].label+' + '+SESSIONS[S.sess].label;
+    h=hdr(eyebrow,'WHEN','ARE YOU?')+pips()
       +'<div class="scroll"><div class="tgrid" style="margin-top:16px">'+tbs+'</div>'
-      +'<div class="iblock i-teal"><strong>Easy pace only</strong> &mdash; conversational effort. No HBCD needed. Electrolytes optional. Pre-run meal 2&ndash;3 hrs before.</div>'
+      +(S.mode==='combo'
+        ?'<div class="iblock i-teal"><strong>Two entries</strong><br>The run goes in at your chosen time. The S&amp;P session is added 2 hrs later.</div>'
+        :'<div class="iblock i-teal"><strong>'+(S.mode==='run'?DISTS[S.d].fuel:'Fuel beforehand')+'</strong><br>'
+          +(S.mode==='run'?'Pre-run meal 2\u20133 hrs before.':'Carb-containing meal 2\u20133 hrs before.')+'</div>')
       +'<div style="height:20px"></div></div>'
-      +'<div class="btn-wrap"><div class="btn-wrap-inner">'
-      +(S.err?'<div class="err-msg">'+S.err+'</div>':'')
-      +'<button class="btn-pri"'+(!S.t||S.busy?' disabled':'')+' onclick="confirmRun()">'
-      +(S.busy?'Adding to calendar&hellip;':'Add to Calendar')
-      +'</button>'
-      +'<button class="btn-sec" onclick="reset()">&larr; Home</button>'
-      +'</div></div>';
+      +footerBtns(S.busy?'Adding to calendar&hellip;':'Add to Calendar','confirmSession()',(S.t&&!S.busy));
 
-  }else if(S.screen==='run_done'){
+  }else if(S.screen==='adding'){
+    h=hdr(todayStr(),'ADDING','TO CAL')+spinner('Adding to calendar&hellip;');
+
+  }else if(S.screen==='done'){
+    var d=days[dayIndex()];
+    var title = S.mode==='run'   ? DISTS[S.d].label
+              : S.mode==='sp'    ? SESSIONS[S.sess].label
+              :                    DISTS[S.d].label+' + '+SESSIONS[S.sess].label;
+    var detail= S.mode==='run'   ? 'Run &middot; '+DISTS[S.d].label+'<br>'+S.t.sub+' &mdash; ~'+DISTS[S.d].mins+' min'
+              : S.mode==='sp'    ? 'S&amp;P '+SESSIONS[S.sess].label+'<br>'+S.t.sub+' &mdash; ~'+SP_MINS+' min'
+              :                    'Run at '+S.t.sub+', S&amp;P 2 hrs later<br>~'+(DISTS[S.d].mins+SP_MINS)+' min total';
     h=hdr(todayStr(),'ADDED','TO CAL')
       +'<div class="done-wrap"><div class="done-ring done-ring-g">'+svgCheck('#3ddc84')+'</div>'
-      +'<div class="done-title" style="color:var(--gold)">'+S.t.label+'</div>'
-      +'<div class="done-detail">Easy Run &middot; 5&ndash;8km<br>'+S.t.sub+' &mdash; ~60 min</div>'
-      +'<div class="done-notice iblock i-teal"><strong>Pace reminder</strong><br>Conversational effort throughout. If breathless, ease off.</div>'
-      +'<div class="done-notice iblock i-green"><strong>Nutrition updated</strong> &mdash; targets set for Easy Run</div>'
+      +'<div class="done-title" style="color:var(--gold)">'+title+'</div>'
+      +'<div class="done-detail">'+detail+'</div>'
+      +'<div class="done-notice iblock i-teal"><strong>Today\'s target</strong><br>'+d.cal.toLocaleString()+' kcal &middot; '+d.pro+'g protein &middot; '+d.carb+'g carbs &middot; '+d.fat+'g fat</div>'
+      +'<div class="done-notice iblock i-green"><strong>Nutrition updated</strong> &mdash; targets set for this day type</div>'
       +'</div>'
       +'<div class="btn-wrap"><div class="btn-wrap-inner">'
       +'<button class="btn-pri" onclick="goNutrition()">View Nutrition &rarr;</button>'
       +'<button class="btn-sec" onclick="reset()">&larr; Change</button>'
       +'</div></div>';
 
-  }else if(S.screen==='run_add'){
-    h=hdr(todayStr(),'ADDING','TO CAL')+spinner('Adding to calendar&hellip;');
-
   }else if(S.screen==='rest'){
     var msgs=[
-      'Recovery is part of training. Rest is where the adaptation happens.',
-      'Pre-surgery is not the time to push. Conserve energy. Let your body prepare.',
-      'Sleep, nutrition, hydration. The best things you can do today.',
-      'Easy days make you stronger. This is one of them.'
+      'Recovery is where the adaptation happens. This is training too.',
+      'Protein and sleep do more for you today than any session would.',
+      'Easy days make the hard days possible. This is one of them.',
+      'Nothing to chase today. Eat well, sleep well, come back sharper.'
     ];
     h=hdr(todayStr(),'REST','DAY.')
       +'<div class="rest-wrap"><div class="done-ring done-ring-a">'+svgMoon()+'</div>'
       +'<div class="rest-title">Relax.</div>'
       +'<div class="rest-msg">'+msgs[new Date().getDay()%msgs.length]+'</div>'
-      +'<div class="done-notice iblock i-amber"><strong>Today\'s focus</strong><br>Sleep quality, protein target, hydration. No Garmin. No targets.</div>'
+      +'<div class="done-notice iblock i-amber"><strong>Today\'s focus</strong><br>2,300 kcal &middot; 150g protein. Sleep quality and hydration. No Garmin, no pace.</div>'
       +'<div class="done-notice iblock i-green"><strong>Nutrition updated</strong> &mdash; targets set for Rest</div>'
       +'</div>'
       +'<div class="btn-wrap"><div class="btn-wrap-inner">'
@@ -506,27 +630,52 @@ function goNutrition(){switchTab('nutrition');}
 
 /* ── EXERCISE ACTIONS ── */
 function go(mode){
-  if(mode==='run'){S.screen='run_time';S.step=1;render();return;}
+  S.mode=mode;S.d=null;S.sess=null;S.t=null;S.err=null;S.step=1;
   if(mode==='rest'){S.screen='rest';setDay(0);render();return;}
+  if(mode==='run'){S.steps=2;S.screen='dist';render();return;}
+  if(mode==='sp'){S.steps=2;S.screen='sess';render();return;}
+  if(mode==='combo'){S.steps=3;S.screen='dist';render();return;}
+}
+function setDist(i){S.d=i;S.err=null;render();}
+function setSess(i){S.sess=i;S.err=null;render();}
+function nextFromDist(){
+  if(S.d===null) return;
+  if(S.mode==='combo'){S.step=2;S.screen='sess';}
+  else{S.step=2;S.screen='time';}
+  render();
+}
+function nextFromSess(){
+  if(S.sess===null) return;
+  S.step=S.mode==='combo'?3:2;S.screen='time';render();
 }
 function setTime(id){
   for(var i=0;i<SLOTS.length;i++){
     if(SLOTS[i].id===id){S.t=SLOTS[i];S.err=null;render();return;}
   }
 }
-function reset(){S={screen:'home',t:null,busy:false,err:null,step:1};render();}
-function confirmRun(){
+function reset(){S={screen:'home',mode:null,d:null,sess:null,t:null,busy:false,err:null,step:1,steps:2};render();}
+
+function confirmSession(){
   if(!S.t||S.busy) return;
-  S.busy=true;S.err=null;S.screen='run_add';render();
-  addRun(S.t)
-    .then(function(){
-      S.screen='run_done';S.busy=false;
-      setDay(1);
+  S.busy=true;S.err=null;
+  var prev=S.screen;
+  S.screen='adding';render();
+
+  var job;
+  if(S.mode==='run')      job=addRunEvent(S.t,DISTS[S.d],0);
+  else if(S.mode==='sp')  job=addSPEvent(S.t,SESSIONS[S.sess],0);
+  else                    job=addRunEvent(S.t,DISTS[S.d],0).then(function(){
+                                return addSPEvent(S.t,SESSIONS[S.sess],120);
+                              });
+
+  job.then(function(){
+      S.busy=false;S.screen='done';
+      setDay(dayIndex());
       render();
     })
     .catch(function(e){
       S.err='Could not add: '+(e.message||'Unknown error');
-      S.busy=false;S.screen='run_time';render();
+      S.busy=false;S.screen='time';render();
     });
 }
 
@@ -582,8 +731,8 @@ var LS={
     localStorage.setItem('ato_fat',document.getElementById('i-fat').value);
   },
   load:function(){
-    var day=localStorage.getItem('ato_day');
-    if(day!==null) current=parseInt(day);
+    var day=parseInt(localStorage.getItem('ato_day'));
+    if(!isNaN(day)&&day>=0&&day<days.length) current=day;
     ['cal','pro','carb','fat'].forEach(function(k){
       var v=localStorage.getItem('ato_'+k);
       if(v) document.getElementById('i-'+k).value=v;
