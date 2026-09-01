@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ATO — Spending Tracker</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
@@ -12,242 +12,106 @@
   --border: #222822; --border2: #2e362e;
   --text: #dde6df; --muted: #586860; --muted2: #3a4440;
   --amber: #f0b429; --amber-light: rgba(240,180,41,0.09); --amber-dark: #e6a800;
-  --yellow: #e6b800;
   --green: #3ddc84; --green-light: rgba(61,220,132,0.08); --green-dark: #2ecc70;
   --red: #ff5757; --red-light: rgba(255,87,87,0.08);
-  --blue: #4a9eff; --blue-light: rgba(74,158,255,0.08);
+  --accent: #e6b800;
 }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; padding: 24px 16px 48px; }
+  body { font-family: 'DM Mono', monospace; background: var(--bg); color: var(--text); min-height: 100vh; padding: 24px 16px 48px; }
   .container { max-width: 400px; margin: 0 auto; }
-  header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 28px; }
-  .name { font-size: 22px; font-weight: 700; letter-spacing: -0.5px; }
-  .name span { color: var(--yellow); }
+  header { display: flex; align-items: baseline; gap: 10px; margin-bottom: 28px; }
+  header .cycle { margin-left: auto; }
+  .name { font-family: 'Syne', sans-serif; font-size: 24px; font-weight: 700; letter-spacing: -0.5px; }
+  .name span { color: var(--accent); }
   .cycle { font-size: 12px; color: var(--muted); }
-  .result-card { border-radius: 14px; padding: 22px 20px; margin-bottom: 12px; }
-  .result-card.positive { background: var(--green-light); border: 1px solid #639922; }
-  .result-card.warning  { background: var(--amber-light); border: 1px solid #EF9F27; }
-  .result-card.negative { background: var(--red-light);   border: 1px solid #E24B4A; }
-  .result-card.empty    { background: var(--card);         border: 1px solid var(--border); }
-  .result-label { font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; margin-bottom: 4px; }
-  .positive .result-label { color: var(--green); }
-  .warning  .result-label { color: var(--amber); }
-  .negative .result-label { color: var(--red); }
-  .empty    .result-label { color: var(--muted); }
-  .result-amount { font-size: 44px; font-weight: 800; letter-spacing: -1.5px; line-height: 1; }
-  .positive .result-amount { color: var(--green-dark); }
-  .warning  .result-amount { color: var(--amber-dark); }
-  .negative .result-amount { color: #501313; }
-  .empty    .result-amount { color: #ccc; }
-  .result-context { font-size: 12px; margin-top: 8px; }
-  .positive .result-context { color: var(--green); }
-  .warning  .result-context { color: var(--amber); }
-  .negative .result-context { color: var(--red); }
-  .empty    .result-context { color: var(--muted); }
+
   .card { background: var(--card); border: 1px solid var(--border); border-radius: 14px; padding: 20px; margin-bottom: 12px; }
   .card-label { font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 14px; }
   .field { margin-bottom: 14px; }
   .field:last-child { margin-bottom: 0; }
   .field label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 5px; }
-  .hint { font-size: 11px; color: #bbb; margin-top: 5px; }
   .input-wrap { position: relative; display: flex; align-items: center; }
-  .pound { position: absolute; left: 13px; font-size: 16px; font-weight: 600; color: var(--text); pointer-events: none; }
+  .pound { position: absolute; left: 13px; font-size: 16px; font-weight: 600; color: var(--muted); pointer-events: none; }
   .input-wrap input { width: 100%; padding: 11px 44px 11px 28px; font-size: 18px; font-weight: 600; font-family: inherit; border: 1.5px solid var(--border); border-radius: 10px; background: var(--card2); color: var(--text); -webkit-appearance: none; appearance: none; transition: border-color 0.15s; }
-  .input-wrap input:focus { outline: none; border-color: var(--yellow); background: #fff; }
+  .input-wrap input:focus { outline: none; border-color: var(--accent); }
   .input-wrap input.spends-input:focus { border-color: var(--amber); }
-  .saved-tag { position: absolute; right: 10px; font-size: 10px; color: var(--muted); background: #f0ede8; border-radius: 4px; padding: 2px 6px; pointer-events: none; }
+  .input-wrap input.note-input { padding: 11px 13px; font-size: 14px; font-weight: 400; }
+  .saved-tag { position: absolute; right: 10px; font-size: 10px; color: var(--muted); background: var(--card2); border: none; border-radius: 4px; padding: 2px 6px; pointer-events: none; }
   .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-  .reset-btn { width: 100%; padding: 12px; background: none; border: 1px solid var(--border); border-radius: 10px; font-family: inherit; font-size: 13px; color: var(--muted); cursor: pointer; margin-top: 4px; transition: background 0.15s; }
-  .reset-btn:hover { background: #f0ede8; color: var(--text); }
+
+  .result-card { border-radius: 14px; padding: 22px 20px; margin-bottom: 12px; }
+  .result-card.empty    { background: var(--card); border: 1px solid var(--border); }
+  .result-card.positive { background: rgba(61,220,132,0.07); border: 1px solid rgba(61,220,132,0.25); }
+  .result-card.warning  { background: rgba(240,180,41,0.07); border: 1px solid rgba(240,180,41,0.25); }
+  .result-card.negative { background: rgba(255,87,87,0.07);  border: 1px solid rgba(255,87,87,0.25); }
+  .result-label { font-size: 11px; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; margin-bottom: 4px; }
+  .result-amount { font-size: 44px; font-weight: 800; letter-spacing: -1.5px; line-height: 1; }
+  .result-context { font-size: 12px; margin-top: 8px; }
+  .empty .result-label { color: var(--muted); }
+  .empty .result-amount { color: var(--muted2); }
+  .empty .result-context { color: var(--muted); }
+  .positive .result-label, .positive .result-amount, .positive .result-context { color: var(--green); }
+  .warning  .result-label, .warning  .result-amount, .warning  .result-context { color: var(--amber); }
+  .negative .result-label, .negative .result-amount, .negative .result-context { color: var(--red); }
+
+  .reset-btn { width: 100%; padding: 12px; background: transparent; border: 1px solid var(--border); border-radius: 10px; font-family: inherit; font-size: 13px; color: var(--muted); cursor: pointer; margin-top: 4px; transition: background 0.15s; }
+  .reset-btn:hover { background: var(--card2); color: var(--text); }
   .footer { text-align: center; font-size: 11px; color: var(--muted); margin-top: 24px; }
 
-  /* ── Virgin Account section ── */
-  .section-divider { display: flex; align-items: center; gap: 10px; margin: 28px 0 14px; }
+  .section-divider { display: flex; align-items: center; gap: 10px; margin: 30px 0 14px; }
   .section-divider-line { flex: 1; height: 1px; background: var(--border); }
   .section-divider-label { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
 
-  /* Toggle switch */
-  .toggle-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0 2px; }
-  .toggle-text { font-size: 13px; font-weight: 600; }
-  .toggle-text.not-taken { color: var(--muted); }
-  .toggle-text.taken { color: var(--green); }
-  .toggle-switch { position: relative; display: inline-block; width: 44px; height: 26px; flex-shrink: 0; }
-  .toggle-switch input { opacity: 0; width: 0; height: 0; }
-  .toggle-slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #ddd; border-radius: 26px; transition: 0.2s; }
-  .toggle-slider:before { position: absolute; content: ''; height: 20px; width: 20px; left: 3px; bottom: 3px; background: #fff; border-radius: 50%; transition: 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
-  .toggle-switch input:checked + .toggle-slider { background: var(--green); }
-  .toggle-switch input:checked + .toggle-slider:before { transform: translateX(18px); }
-  .fee-note { font-size: 11px; color: var(--muted); margin-top: 6px; }
+  .alloc-grid { display: grid; gap: 10px; }
+  .alloc-item label { display: flex; align-items: center; gap: 7px; font-size: 12px; color: var(--text); margin-bottom: 6px; }
+  .pot-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .alloc-item .input-wrap input { padding: 9px 10px 9px 26px; font-size: 15px; }
+  .alloc-item .pound { left: 11px; font-size: 14px; }
 
-  /* Pot selector */
-  .pot-selector { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .pot-btn { padding: 11px 8px; border: 1.5px solid var(--border); border-radius: 10px; background: var(--card2); font-family: inherit; font-size: 14px; font-weight: 600; color: var(--muted); cursor: pointer; transition: all 0.15s; text-align: center; }
-  .pot-btn.active.petrol { background: #FFF8E1; border-color: #E5A000; color: #7A5500; }
-  .pot-btn.active.trains { background: #E8F4FD; border-color: #2980B9; color: #1a4f7a; }
+  .pot-selector { display: grid; gap: 8px; }
+  .pot-btn { padding: 10px 6px; border: 1.5px solid var(--border); border-radius: 10px; background: var(--card2); font-family: inherit; font-size: 13px; font-weight: 600; color: var(--muted); cursor: pointer; transition: all 0.15s; text-align: center; }
+  .add-btn { width: 100%; padding: 13px; background: var(--text); border: none; border-radius: 10px; font-family: inherit; font-size: 14px; font-weight: 700; color: var(--bg); cursor: pointer; margin-top: 10px; letter-spacing: 0.05em; }
+  .add-btn:active { opacity: 0.8; }
+  .form-error { font-size: 12px; color: var(--red); margin-top: 8px; display: none; }
+  .form-error.show { display: block; }
 
-  /* Add button */
-  .add-btn { width: 100%; padding: 13px; background: var(--text); border: none; border-radius: 10px; font-family: inherit; font-size: 14px; font-weight: 700; color: #fff; cursor: pointer; margin-top: 8px; transition: opacity 0.15s; letter-spacing: 0.02em; }
-  .add-btn:active { opacity: 0.75; }
-
-  /* Summary rows */
-  .summary-row { display: flex; align-items: center; justify-content: space-between; padding: 11px 0; border-bottom: 1px solid var(--border); }
+  .summary-row { display: flex; align-items: center; justify-content: space-between; padding: 11px 0 11px 10px; border-bottom: 1px solid var(--border); border-left: 3px solid var(--border); }
   .summary-row:last-child { border-bottom: none; padding-bottom: 0; }
-  .summary-left { display: flex; flex-direction: column; gap: 2px; }
-  .summary-pot-label { font-size: 11px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted); }
-  .summary-pot-sub { font-size: 11px; color: var(--muted); }
-  .summary-amount { font-size: 16px; font-weight: 700; letter-spacing: -0.2px; }
-  .summary-amount.ok { color: var(--green-dark); }
-  .summary-amount.warn { color: var(--amber-dark); }
-  .summary-amount.over { color: #501313; }
+  .summary-pot-label { font-size: 12px; font-weight: 600; color: var(--text); }
+  .summary-pot-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .summary-amount { font-size: 20px; font-weight: 700; letter-spacing: -0.3px; }
+  .summary-amount.ok { color: var(--green); }
+  .summary-amount.warn { color: var(--amber); }
+  .summary-amount.over { color: var(--red); }
   .summary-amount.neutral { color: var(--text); }
 
-  .overall-row { display: flex; align-items: center; justify-content: space-between; padding-top: 14px; margin-top: 4px; border-top: 2px solid var(--border); }
-  .overall-label { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
-  .overall-amount { font-size: 20px; font-weight: 800; letter-spacing: -0.5px; }
-  .overall-amount.ok { color: var(--green-dark); }
-  .overall-amount.warn { color: var(--amber-dark); }
-  .overall-amount.over { color: #501313; }
-  .fee-pending-badge { display: inline-block; font-size: 10px; font-weight: 700; background: var(--amber-light); color: var(--amber-dark); border: 1px solid #EF9F27; border-radius: 5px; padding: 2px 7px; margin-top: 5px; letter-spacing: 0.04em; }
-
-  /* Allocation check */
-  .alloc-check { display: flex; align-items: center; justify-content: space-between; margin-top: 14px; padding: 10px 13px; border-radius: 9px; font-size: 12px; font-weight: 600; }
-  .alloc-check.ok  { background: var(--green-light); border: 1px solid #639922; color: var(--green-dark); }
-  .alloc-check.over { background: var(--red-light); border: 1px solid #E24B4A; color: #501313; }
-  .alloc-check.neutral { background: #f0ede8; border: 1px solid var(--border); color: var(--muted); }
-  .alloc-check-label { font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
-  .alloc-check-amount { font-size: 15px; font-weight: 800; }
-  .history-empty { font-size: 13px; color: var(--muted); text-align: center; padding: 8px 0 2px; }
-  .history-item { display: flex; align-items: center; justify-content: space-between; padding: 9px 0; border-bottom: 1px solid var(--border); }
-  .history-item:last-child { border-bottom: none; }
-  .history-left { display: flex; align-items: center; gap: 9px; }
+  .history-empty { font-size: 13px; color: var(--muted); text-align: center; padding: 6px 0 2px; }
+  .history-item { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .history-item:last-child { border-bottom: none; padding-bottom: 0; }
   .history-tag { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; padding: 3px 8px; border-radius: 5px; }
-  .history-tag.petrol { background: #FFF8E1; color: #7A5500; border: 1px solid #E5A000; }
-  .history-tag.trains { background: #E8F4FD; color: #1a4f7a; border: 1px solid #2980B9; }
-  .history-amount { font-size: 15px; font-weight: 700; color: var(--text); }
-  .history-right { display: flex; align-items: center; gap: 8px; }
-  .history-time { font-size: 11px; color: var(--muted); }
-  .history-remove { background: none; border: 1px solid var(--border); border-radius: 6px; padding: 3px 9px; font-size: 11px; color: var(--muted); cursor: pointer; font-family: inherit; transition: all 0.15s; }
-  .history-remove:hover { background: var(--red-light); border-color: #E24B4A; color: var(--red); }
+  .history-amount { font-size: 15px; font-weight: 700; color: var(--text); margin-left: 7px; }
+  .history-note { font-size: 11px; color: var(--muted); margin-top: 4px; }
+  .history-right { text-align: right; flex-shrink: 0; }
+  .history-time { font-size: 10px; color: var(--muted); white-space: nowrap; }
+  .history-remove { background: transparent; border: 1px solid var(--border); border-radius: 6px; padding: 2px 8px; font-size: 10px; color: var(--muted); cursor: pointer; font-family: inherit; margin-top: 5px; transition: all 0.15s; }
+  .history-remove:hover { background: rgba(255,87,87,0.08); border-color: var(--red); color: var(--red); }
 
+  .jnt-btn { text-decoration: none; border: 1px solid #7D756D; border-radius: 6px; padding: 3px 9px; font-size: 11px; font-weight: 500; letter-spacing: 0.06em; color: #7D756D; line-height: 1.4; transition: all 0.15s; }
+  .jnt-btn:hover { background: rgba(125,117,109,0.12); color: #a89e94; border-color: #a89e94; }
+  .jnt-btn.ato { border-color: rgba(240,180,41,0.45); color: var(--amber); }
+  .jnt-btn.ato:hover { background: rgba(240,180,41,0.12); border-color: var(--amber); color: var(--amber); }
+  .jnt-btn.alh { border-color: rgba(61,220,132,0.45); color: var(--green); }
+  .jnt-btn.alh:hover { background: rgba(61,220,132,0.12); border-color: var(--green); color: var(--green); }
+  .back-links { display: flex; gap: 6px; }
 
-/* ─── DARK THEME OVERRIDE ─── */
-body { background: var(--bg); color: var(--text); font-family: 'DM Mono', monospace; }
-.name { font-family: 'Syne', sans-serif; font-size: 24px; }
-.name span { color: var(--yellow); }
-
-/* Cards */
-.card { background: var(--card); border: 1px solid var(--border); }
-.card-label { color: var(--muted); }
-
-/* Result card */
-.result-card.empty { background: var(--card); border: 1px solid var(--border); }
-.empty .result-label { color: var(--muted); }
-.empty .result-amount { color: var(--muted2); }
-.empty .result-context { color: var(--muted); }
-.result-card.positive { background: rgba(61,220,132,0.07); border: 1px solid rgba(61,220,132,0.25); }
-.result-card.warning  { background: rgba(240,180,41,0.07); border: 1px solid rgba(240,180,41,0.25); }
-.result-card.negative { background: rgba(255,87,87,0.07);  border: 1px solid rgba(255,87,87,0.25); }
-.positive .result-label { color: var(--green); }
-.positive .result-amount { color: var(--green); }
-.positive .result-context { color: var(--green); }
-.warning .result-label { color: var(--amber); }
-.warning .result-amount { color: var(--amber); }
-.warning .result-context { color: var(--amber); }
-.negative .result-label { color: var(--red); }
-.negative .result-amount { color: var(--red); }
-.negative .result-context { color: var(--red); }
-
-/* Inputs */
-.input-wrap input {
-  background: var(--card2); border: 1.5px solid var(--border);
-  color: var(--text);
-}
-.input-wrap input:focus {
-  background: var(--card2); border-color: var(--yellow);
-}
-.input-wrap input.spends-input:focus { border-color: var(--amber); }
-.pound { color: var(--muted); }
-.saved-tag { background: var(--card2); color: var(--muted); border: none; }
-
-/* Labels */
-.field label { color: var(--muted); }
-.hint { color: var(--muted2); }
-
-/* Buttons */
-.reset-btn {
-  background: transparent; border: 1px solid var(--border);
-  color: var(--muted);
-}
-.reset-btn:hover { background: var(--card2); color: var(--text); }
-.add-btn {
-  background: var(--text); color: var(--bg);
-  font-family: 'DM Mono', monospace; font-weight: 700;
-  border-radius: 10px; letter-spacing: 0.05em;
-}
-.add-btn:active { opacity: 0.8; }
-
-/* Pot buttons */
-.pot-btn {
-  background: var(--card2); border: 1.5px solid var(--border);
-  color: var(--muted); font-family: 'DM Mono', monospace;
-}
-.pot-btn.active.petrol {
-  background: rgba(240,180,41,0.10); border-color: var(--amber); color: var(--amber);
-}
-.pot-btn.active.trains {
-  background: rgba(74,158,255,0.10); border-color: var(--blue); color: var(--blue);
-}
-
-/* Dividers */
-.section-divider-line { background: var(--border); }
-.section-divider-label { color: var(--muted); }
-
-/* Summary */
-.summary-row { border-bottom: 1px solid var(--border); }
-.summary-pot-label { color: var(--text); }
-.summary-pot-sub { color: var(--muted); }
-.summary-amount.ok   { color: var(--green); }
-.summary-amount.warn { color: var(--amber); }
-.summary-amount.over { color: var(--red); }
-.summary-amount.neutral { color: var(--text); }
-.overall-row { border-top: 2px solid var(--border); }
-.overall-label { color: var(--muted); }
-.overall-amount.ok   { color: var(--green); }
-.overall-amount.warn { color: var(--amber); }
-.overall-amount.over { color: var(--red); }
-.fee-pending-badge {
-  background: rgba(240,180,41,0.10); color: var(--amber);
-  border: 1px solid rgba(240,180,41,0.25);
-}
-
-/* Allocation check */
-.alloc-check.ok      { background: rgba(61,220,132,0.08); border: 1px solid rgba(61,220,132,0.25); color: var(--green); }
-.alloc-check.over    { background: rgba(255,87,87,0.08);  border: 1px solid rgba(255,87,87,0.25);  color: var(--red); }
-.alloc-check.neutral { background: var(--card2); border: 1px solid var(--border); color: var(--muted); }
-
-/* History */
-.history-empty { color: var(--muted); }
-.history-item  { border-bottom: 1px solid var(--border); }
-.history-tag.petrol { background: rgba(240,180,41,0.10); color: var(--amber); border: 1px solid rgba(240,180,41,0.2); }
-.history-tag.trains { background: rgba(74,158,255,0.10); color: var(--blue);  border: 1px solid rgba(74,158,255,0.2); }
-.history-amount { color: var(--text); }
-.history-time   { color: var(--muted); }
-.history-remove {
-  background: transparent; border: 1px solid var(--border); color: var(--muted);
-  font-family: 'DM Mono', monospace;
-}
-.history-remove:hover { background: rgba(255,87,87,0.08); border-color: var(--red); color: var(--red); }
-
-/* Toggle */
-.toggle-text.not-taken { color: var(--muted); }
-.toggle-text.taken { color: var(--green); }
-.toggle-slider { background: var(--border2); }
-.toggle-switch input:checked + .toggle-slider { background: var(--green); }
-.fee-note { color: var(--muted); }
-
-/* Footer / cycle */
-.cycle { color: var(--muted); }
-.footer { color: var(--muted); }
-
+  .who-row { display: flex; align-items: center; gap: 8px; margin: -18px 0 22px; }
+  .who-label { font-size: 11px; color: var(--muted2); }
+  .who-btn { padding: 3px 10px; border: 1px solid var(--border); border-radius: 5px; background: transparent; font-family: inherit; font-size: 11px; color: var(--muted); cursor: pointer; }
+  .who-btn.active.ato { background: rgba(240,180,41,0.15); border-color: rgba(240,180,41,0.4); color: var(--amber); }
+  .who-btn.active.alh { background: rgba(61,220,132,0.15); border-color: rgba(61,220,132,0.4); color: var(--green); }
+  .sync-state { margin-left: auto; font-size: 10px; color: var(--muted); }
+  .sync-state.ok { color: var(--green); }
+  .sync-state.busy { color: var(--amber); }
+  .sync-state.err { color: var(--red); }
 </style>
 </head>
 <body>
@@ -255,12 +119,13 @@ body { background: var(--bg); color: var(--text); font-family: 'DM Mono', monosp
 
   <header>
     <div class="name">ATO <span>Tracker</span></div>
+    <a class="jnt-btn" href="https://andyami.github.io/atoalh/home/finance-jnt/index.html" aria-label="Open joint pot tracker">JNT</a>
     <div class="cycle" id="cycle-label"></div>
   </header>
 
   <div class="result-card empty" id="result-card">
     <div class="result-label">Available to spend</div>
-    <div class="result-amount" id="result-amount">—</div>
+    <div class="result-amount" id="result-amount">&#8212;</div>
     <div class="result-context" id="result-context">Enter your spends budget to begin</div>
   </div>
 
@@ -270,24 +135,24 @@ body { background: var(--bg); color: var(--text); font-family: 'DM Mono', monosp
       <div class="field">
         <label>BARCLAYS</label>
         <div class="input-wrap">
-          <span class="pound">£</span>
-          <input type="number" inputmode="number" id="barclays" placeholder="0">
+          <span class="pound">&pound;</span>
+          <input type="number" inputmode="numeric" id="barclays" placeholder="0">
           <span class="saved-tag">saved</span>
         </div>
       </div>
       <div class="field">
         <label>AMEX</label>
         <div class="input-wrap">
-          <span class="pound">£</span>
-          <input type="number" inputmode="number" id="amex" placeholder="0">
+          <span class="pound">&pound;</span>
+          <input type="number" inputmode="numeric" id="amex" placeholder="0">
           <span class="saved-tag">saved</span>
         </div>
       </div>
       <div class="field">
         <label>EVERYDAY ACCOUNT</label>
         <div class="input-wrap">
-          <span class="pound">£</span>
-          <input type="number" inputmode="number" id="sta" placeholder="0">
+          <span class="pound">&pound;</span>
+          <input type="number" inputmode="numeric" id="sta" placeholder="0">
           <span class="saved-tag">saved</span>
         </div>
       </div>
@@ -298,8 +163,8 @@ body { background: var(--bg); color: var(--text); font-family: 'DM Mono', monosp
     <div class="card-label">PAYDAY SPENDS</div>
     <div class="field">
       <div class="input-wrap">
-        <span class="pound">£</span>
-        <input type="number" inputmode="number" id="spends" placeholder="0" class="spends-input">
+        <span class="pound">&pound;</span>
+        <input type="number" inputmode="numeric" id="spends" placeholder="0" class="spends-input">
         <span class="saved-tag">saved</span>
       </div>
     </div>
@@ -307,98 +172,62 @@ body { background: var(--bg); color: var(--text); font-family: 'DM Mono', monosp
 
   <button class="reset-btn" onclick="resetAll()">Clear all fields</button>
 
-  <!-- ── TRAVEL ACCOUNT ── -->
   <div class="section-divider">
     <div class="section-divider-line"></div>
-    <div class="section-divider-label">Virgin Account</div>
+    <div class="section-divider-label">Pot Tracking</div>
     <div class="section-divider-line"></div>
   </div>
 
   <div class="card">
-    <div class="card-label">PAYDAY DEPOSIT</div>
-    <div class="field">
-      <div class="input-wrap">
-        <span class="pound">£</span>
-        <input type="number" inputmode="number" id="vir_total" placeholder="0">
-        <span class="saved-tag">saved</span>
-      </div>
-    </div>
-    <div id="vir-alloc-check"></div>
-    <div class="field" style="margin-bottom:0">
-      <label>Account management fee (£14, taken 26th)</label>
-      <div class="toggle-row">
-        <span class="toggle-text not-taken" id="fee-toggle-text">Not yet taken</span>
-        <label class="toggle-switch">
-          <input type="checkbox" id="vir_fee_taken" onchange="onFeeToggle()">
-          <span class="toggle-slider"></span>
-        </label>
-      </div>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-label">PAYDAY POT ALLOCATION</div>
-    <div class="two-col">
-      <div class="field">
-        <label>⛽ Petrol</label>
-        <div class="input-wrap">
-          <span class="pound">£</span>
-          <input type="number" inputmode="number" id="vir_petrol" placeholder="0">
-          <span class="saved-tag">saved</span>
-        </div>
-      </div>
-      <div class="field">
-        <label>🚆 Trains</label>
-        <div class="input-wrap">
-          <span class="pound">£</span>
-          <input type="number" inputmode="number" id="vir_trains" placeholder="0">
-          <span class="saved-tag">saved</span>
-        </div>
-      </div>
-    </div>
+    <div class="card-label">ALLOCATION</div>
+    <div class="alloc-grid" id="alloc-grid"></div>
   </div>
 
   <div class="card">
     <div class="card-label">SPEND LOG</div>
     <div class="field">
       <div class="input-wrap">
-        <span class="pound">£</span>
-        <input type="number" inputmode="number" id="vir_spend_input" placeholder="0">
+        <span class="pound">&pound;</span>
+        <input type="number" inputmode="numeric" id="spend-amount" placeholder="0">
+      </div>
+    </div>
+    <div class="field">
+      <div class="input-wrap">
+        <input type="text" id="spend-note" class="note-input" placeholder="Note (optional)" maxlength="40">
       </div>
     </div>
     <div class="field" style="margin-bottom:0">
-      <label>Pot</label>
-      <div class="pot-selector">
-        <button class="pot-btn active petrol" id="pot-petrol" onclick="selectPot('petrol')">⛽ Petrol</button>
-        <button class="pot-btn trains" id="pot-trains" onclick="selectPot('trains')">🚆 Trains</button>
-      </div>
+      <div class="pot-selector" id="pot-selector"></div>
     </div>
-    <button class="add-btn" onclick="addVirSpend()">Add</button>
+    <button class="add-btn" onclick="addSpend()">Add</button>
+    <div class="form-error" id="spend-error"></div>
   </div>
 
-  <div class="card" id="vir-summary-card">
+  <div class="card">
     <div class="card-label">POT SUMMARY</div>
-    <div id="vir-summary-rows"></div>
+    <div id="summary-rows"></div>
   </div>
 
   <div class="card">
     <div class="card-label">SPEND HISTORY</div>
-    <div id="vir-history-list"></div>
+    <div id="history-list"></div>
   </div>
 
-  <div class="footer">Spends, Barclays, AMEX &amp; Virgin pots are remembered between visits</div>
+  <div class="footer">Budget fields &amp; pots are remembered on this device</div>
 
 </div>
 <script>
-  /* ─── MAIN TRACKER ─── */
-  var PERSIST = ['spends', 'amex', 'barclays', 'sta'];
+  var PFX = 'ato';
 
   function fmt(n) {
-    return '£' + Math.abs(n).toLocaleString('en-GB', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+    return '\u00a3' + Math.round(Math.abs(n)).toLocaleString('en-GB');
   }
   function fmtSigned(n) {
-    return (n < 0 ? '−\u2009' : '') + fmt(n);
+    return (n < 0 ? '\u2212\u2009' : '') + fmt(n);
   }
+
+  /* ------- BUDGET TRACKER ------- */
+  var PERSIST = ["spends", "barclays", "sta", "amex"];
 
   function val(id) {
     var el = document.getElementById(id);
@@ -407,15 +236,15 @@ body { background: var(--bg); color: var(--text); font-family: 'DM Mono', monosp
 
   function saveAll() {
     PERSIST.forEach(function(id) {
-      try { localStorage.setItem('ato_' + id, document.getElementById(id).value); } catch(e) {}
+      try { localStorage.setItem(PFX + '_' + id, document.getElementById(id).value); } catch(e) {}
     });
   }
 
   function loadAll() {
     PERSIST.forEach(function(id) {
       try {
-        var stored = localStorage.getItem('ato_' + id);
-        if (stored !== null && stored !== '') document.getElementById(id).value = stored;
+        var s = localStorage.getItem(PFX + '_' + id);
+        if (s !== null && s !== '') document.getElementById(id).value = s;
       } catch(e) {}
     });
   }
@@ -434,7 +263,7 @@ body { background: var(--bg); color: var(--text); font-family: 'DM Mono', monosp
 
     if (spends === 0) {
       card.className = 'result-card empty';
-      amount.textContent = '—';
+      amount.textContent = '\u2014';
       context.textContent = 'Enter your spends budget to begin';
       return;
     }
@@ -446,10 +275,10 @@ body { background: var(--bg); color: var(--text); font-family: 'DM Mono', monosp
       context.textContent = 'Over budget by ' + fmt(available);
     } else if (available < spends * 0.25) {
       card.className = 'result-card warning';
-      context.textContent = 'Nearly gone — ' + fmt(available) + ' left of ' + fmt(spends);
+      context.textContent = 'Nearly gone \u2014 ' + fmt(available) + ' left of ' + fmt(spends);
     } else if (available < spends * 0.5) {
       card.className = 'result-card warning';
-      context.textContent = 'Past halfway — ' + fmt(available) + ' left of ' + fmt(spends);
+      context.textContent = 'Past halfway \u2014 ' + fmt(available) + ' left of ' + fmt(spends);
     } else {
       card.className = 'result-card positive';
       context.textContent = fmt(available) + ' left of ' + fmt(spends) + ' budget';
@@ -457,220 +286,263 @@ body { background: var(--bg); color: var(--text); font-family: 'DM Mono', monosp
   }
 
   function resetAll() {
-    ['spends', 'sta', 'amex', 'barclays'].forEach(function(id) {
-      document.getElementById(id).value = '';
-    });
     PERSIST.forEach(function(id) {
-      try { localStorage.removeItem('ato_' + id); } catch(e) {}
+      document.getElementById(id).value = '';
+      try { localStorage.removeItem(PFX + '_' + id); } catch(e) {}
     });
     calc();
   }
 
-  function setCycle() {
-    var now   = new Date();
-    var day   = now.getDate();
-    var start = day >= 25
-      ? new Date(now.getFullYear(), now.getMonth(), 25)
-      : new Date(now.getFullYear(), now.getMonth() - 1, 25);
-    var end   = new Date(start.getFullYear(), start.getMonth() + 1, 24);
-    var opts  = { day: 'numeric', month: 'short' };
-    document.getElementById('cycle-label').textContent =
-      start.toLocaleDateString('en-GB', opts) + ' – ' + end.toLocaleDateString('en-GB', opts);
-  }
-
-  document.querySelectorAll('input:not([type=checkbox])').forEach(function(el) {
+  document.querySelectorAll('#result-card ~ .card input').forEach(function(el) {
     el.addEventListener('input', calc);
   });
 
-  /* ─── VIRGIN ACCOUNT ─── */
-  var virHistory = [];
-  var virSelectedPot = 'petrol';
-  var VIR_SIMPLE = ['vir_total', 'vir_petrol', 'vir_trains'];
-
-  function saveVir() {
-    VIR_SIMPLE.forEach(function(id) {
-      try { localStorage.setItem('ato_' + id, document.getElementById(id).value); } catch(e) {}
-    });
-    try { localStorage.setItem('ato_vir_fee_taken', document.getElementById('vir_fee_taken').checked ? '1' : '0'); } catch(e) {}
-    try { localStorage.setItem('ato_vir_history', JSON.stringify(virHistory)); } catch(e) {}
-  }
-
-  function loadVir() {
-    VIR_SIMPLE.forEach(function(id) {
-      try {
-        var s = localStorage.getItem('ato_' + id);
-        if (s !== null && s !== '') document.getElementById(id).value = s;
-      } catch(e) {}
-    });
-    try {
-      var feeSaved = localStorage.getItem('ato_vir_fee_taken');
-      if (feeSaved !== null) {
-        document.getElementById('vir_fee_taken').checked = feeSaved === '1';
-        updateFeeLabel();
-      }
-    } catch(e) {}
-    try {
-      var hist = localStorage.getItem('ato_vir_history');
-      virHistory = hist ? JSON.parse(hist) : [];
-    } catch(e) { virHistory = []; }
-  }
-
-  function onFeeToggle() {
-    updateFeeLabel();
-    saveVir();
-    renderVirSummary();
-  }
-
-  function updateFeeLabel() {
-    var taken = document.getElementById('vir_fee_taken').checked;
-    var el = document.getElementById('fee-toggle-text');
-    el.textContent = taken ? '£14 taken ✓' : 'Not yet taken';
-    el.className = 'toggle-text ' + (taken ? 'taken' : 'not-taken');
-  }
-
-  function selectPot(pot) {
-    virSelectedPot = pot;
-    document.getElementById('pot-petrol').className = 'pot-btn petrol' + (pot === 'petrol' ? ' active' : '');
-    document.getElementById('pot-trains').className = 'pot-btn trains' + (pot === 'trains' ? ' active' : '');
-  }
-
-  function addVirSpend() {
-    var amountEl = document.getElementById('vir_spend_input');
-    var amount = parseFloat(amountEl.value) || 0;
-    if (amount <= 0) {
-      amountEl.focus();
-      return;
+  /* ------- POT TRACKING -------
+     Add a pot by adding one entry to POTS below. Nothing else needs to change. */
+  var POTS = [
+    {
+      "id": "office",
+      "name": "Office",
+      "colour": "#3F9A5F",
+      "def": 80
     }
-    var now = new Date();
-    virHistory.push({
-      id: Date.now(),
-      pot: virSelectedPot,
-      amount: amount,
-      time: now.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) + ' ' +
-            now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
-    });
-    amountEl.value = '';
-    saveVir();
-    renderVirSummary();
-    renderVirHistory();
+  ];
+
+  var potAlloc = {};
+  var potLog   = [];
+  var selectedPot = POTS[0].id;
+
+  function potById(id) {
+    for (var i = 0; i < POTS.length; i++) if (POTS[i].id === id) return POTS[i];
+    return POTS[0];
   }
 
-  function removeVirSpend(id) {
-    virHistory = virHistory.filter(function(e) { return e.id !== id; });
-    saveVir();
-    renderVirSummary();
-    renderVirHistory();
+  function hexA(hex, a) {
+    var r = parseInt(hex.slice(1, 3), 16),
+        g = parseInt(hex.slice(3, 5), 16),
+        b = parseInt(hex.slice(5, 7), 16);
+    return 'rgba(' + r + ',' + g + ',' + b + ',' + a + ')';
+  }
+
+  function cycleKey() {
+    var n = new Date(), d = n.getDate();
+    var s = d >= 25 ? new Date(n.getFullYear(), n.getMonth(), 25)
+                    : new Date(n.getFullYear(), n.getMonth() - 1, 25);
+    return s.getFullYear() + '-' + ('0' + (s.getMonth() + 1)).slice(-2) + '-25';
+  }
+
+  function setCycle() {
+    var n = new Date(), d = n.getDate();
+    var s = d >= 25 ? new Date(n.getFullYear(), n.getMonth(), 25)
+                    : new Date(n.getFullYear(), n.getMonth() - 1, 25);
+    var e = new Date(s.getFullYear(), s.getMonth() + 1, 24);
+    var o = { day: 'numeric', month: 'short' };
+    document.getElementById('cycle-label').textContent =
+      s.toLocaleDateString('en-GB', o) + ' \u2013 ' + e.toLocaleDateString('en-GB', o);
+  }
+
+  function buildAllocInputs() {
+    var grid = document.getElementById('alloc-grid');
+    grid.style.gridTemplateColumns = POTS.length > 1 ? 'repeat(' + POTS.length + ', 1fr)' : '1fr';
+    var html = '';
+    POTS.forEach(function(p) {
+      html += '<div class="alloc-item">' +
+                '<label for="alloc-' + p.id + '"><span class="pot-dot" style="background:' + p.colour + '"></span>' + p.name + '</label>' +
+                '<div class="input-wrap"><span class="pound">\u00a3</span>' +
+                '<input type="number" inputmode="numeric" id="alloc-' + p.id + '" placeholder="0"></div>' +
+              '</div>';
+    });
+    grid.innerHTML = html;
+    POTS.forEach(function(p) {
+      document.getElementById('alloc-' + p.id).addEventListener('input', function() {
+        potAlloc[p.id] = Math.round(parseFloat(this.value) || 0);
+        onAllocChange(p.id);
+        renderSummary();
+      });
+    });
+  }
+
+  function paintAllocInputs() {
+    POTS.forEach(function(p) {
+      var el = document.getElementById('alloc-' + p.id);
+      if (el && document.activeElement !== el) el.value = potAlloc[p.id];
+    });
+  }
+
+  function buildSelector() {
+    var sel = document.getElementById('pot-selector');
+    sel.style.gridTemplateColumns = 'repeat(' + POTS.length + ', 1fr)';
+    var html = '';
+    POTS.forEach(function(p) {
+      html += '<button class="pot-btn" id="potbtn-' + p.id + '" onclick="selectPot(\'' + p.id + '\')">' + p.name + '</button>';
+    });
+    sel.innerHTML = html;
+    selectPot(POTS[0].id);
+  }
+
+  function selectPot(id) {
+    selectedPot = id;
+    POTS.forEach(function(p) {
+      var b = document.getElementById('potbtn-' + p.id);
+      if (p.id === id) {
+        b.style.background   = hexA(p.colour, 0.15);
+        b.style.borderColor  = p.colour;
+        b.style.color        = p.colour;
+      } else {
+        b.style.background   = '';
+        b.style.borderColor  = '';
+        b.style.color        = '';
+      }
+    });
+  }
+
+  function showErr(msg) {
+    var e = document.getElementById('spend-error');
+    e.textContent = msg;
+    e.className = 'form-error show';
+  }
+  function clearErr() {
+    document.getElementById('spend-error').className = 'form-error';
   }
 
   function amountClass(left, alloc) {
-    if (alloc === 0) return 'neutral';
     if (left < 0) return 'over';
+    if (alloc === 0) return 'neutral';
     if (left < alloc * 0.25) return 'warn';
     return 'ok';
   }
 
-  function renderVirSummary() {
-    var total       = val('vir_total');
-    var feeTaken    = document.getElementById('vir_fee_taken').checked;
-    var petrolAlloc = val('vir_petrol');
-    var trainsAlloc = val('vir_trains');
-
-    var petrolSpent = virHistory.filter(function(e){ return e.pot === 'petrol'; })
-                                .reduce(function(s, e){ return s + e.amount; }, 0);
-    var trainsSpent = virHistory.filter(function(e){ return e.pot === 'trains'; })
-                                .reduce(function(s, e){ return s + e.amount; }, 0);
-
-    var feeAmount   = feeTaken ? 14 : 0;
-    var petrolLeft  = petrolAlloc - petrolSpent;
-    var trainsLeft  = trainsAlloc - trainsSpent;
-    var overallLeft = total - feeAmount - petrolSpent - trainsSpent;
-
+  function renderSummary() {
     var html = '';
-
-    // Petrol row
-    html += '<div class="summary-row">';
-    html += '<div class="summary-left"><div class="summary-pot-label">⛽ Petrol</div>';
-    if (petrolAlloc > 0) html += '<div class="summary-pot-sub">' + fmt(petrolSpent) + ' spent of ' + fmt(petrolAlloc) + '</div>';
-    html += '</div>';
-    html += '<div class="summary-amount ' + amountClass(petrolLeft, petrolAlloc) + '">' + fmtSigned(petrolLeft) + '</div>';
-    html += '</div>';
-
-    // Trains row
-    html += '<div class="summary-row">';
-    html += '<div class="summary-left"><div class="summary-pot-label">🚆 Trains</div>';
-    if (trainsAlloc > 0) html += '<div class="summary-pot-sub">' + fmt(trainsSpent) + ' spent of ' + fmt(trainsAlloc) + '</div>';
-    html += '</div>';
-    html += '<div class="summary-amount ' + amountClass(trainsLeft, trainsAlloc) + '">' + fmtSigned(trainsLeft) + '</div>';
-    html += '</div>';
-
-    // Overall
-    var overallCls = overallLeft < 0 ? 'over' : overallLeft < total * 0.2 ? 'warn' : 'ok';
-    html += '<div class="overall-row">';
-    html += '<div><div class="overall-label">Overall in account</div>';
-    if (!feeTaken && total > 0) html += '<div class="fee-pending-badge">£14 fee not yet deducted</div>';
-    html += '</div>';
-    html += '<div class="overall-amount ' + overallCls + '">' + fmtSigned(overallLeft) + '</div>';
-    html += '</div>';
-
-    document.getElementById('vir-summary-rows').innerHTML = html;
-
-    // Allocation check in deposit card
-    var allocTotal = petrolAlloc + trainsAlloc + 14;
-    var checkEl = document.getElementById('vir-alloc-check');
-    if (total === 0 && allocTotal === 14) {
-      checkEl.innerHTML = '';
-    } else {
-      var diff = total - allocTotal;
-      var cls = total === 0 ? 'neutral' : diff < 0 ? 'over' : 'ok';
-      var msg = diff < 0
-        ? 'Short by ' + fmt(Math.abs(diff))
-        : diff === 0 ? 'Fully allocated ✓' : fmt(diff) + ' unallocated';
-      checkEl.innerHTML =
-        '<div class="alloc-check ' + cls + '">' +
-        '<span class="alloc-check-label">Pots + fee (' + fmt(allocTotal) + ')</span>' +
-        '<span class="alloc-check-amount">' + msg + '</span>' +
-        '</div>';
-    }
+    POTS.forEach(function(p) {
+      var alloc = potAlloc[p.id] || 0;
+      var spent = potLog.filter(function(e) { return e.pot === p.id; })
+                        .reduce(function(s, e) { return s + e.amount; }, 0);
+      var left  = alloc - spent;
+      html += '<div class="summary-row" style="border-left-color:' + p.colour + '">' +
+                '<div><div class="summary-pot-label">' + p.name + '</div>' +
+                '<div class="summary-pot-sub">' + fmt(spent) + ' spent of ' + fmt(alloc) + '</div></div>' +
+                '<div class="summary-amount ' + amountClass(left, alloc) + '">' + fmtSigned(left) + '</div>' +
+              '</div>';
+    });
+    document.getElementById('summary-rows').innerHTML = html;
   }
 
-  function renderVirHistory() {
-    var list = document.getElementById('vir-history-list');
-    if (virHistory.length === 0) {
-      list.innerHTML = '<div class="history-empty">No spends logged yet</div>';
+  function esc(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  function renderHistory() {
+    var list = document.getElementById('history-list');
+    if (potLog.length === 0) {
+      list.innerHTML = '<div class="history-empty">No spends logged this cycle</div>';
       return;
     }
+    var sorted = potLog.slice().sort(function(a, b) { return b.ts - a.ts; });
     var html = '';
-    // Newest first
-    var sorted = virHistory.slice().reverse();
     sorted.forEach(function(e) {
-      html += '<div class="history-item">';
-      html += '<div class="history-left">';
-      html += '<span class="history-tag ' + e.pot + '">' + (e.pot === 'petrol' ? '⛽ Petrol' : '🚆 Trains') + '</span>';
-      html += '<span class="history-amount">' + fmt(e.amount) + '</span>';
-      html += '</div>';
-      html += '<div class="history-right">';
-      html += '<span class="history-time">' + e.time + '</span>';
-      html += '<button class="history-remove" onclick="removeVirSpend(' + e.id + ')">Remove</button>';
-      html += '</div>';
-      html += '</div>';
+      var p = potById(e.pot);
+      var sub = [];
+      if (e.note) sub.push(esc(e.note));
+      if (e.who)  sub.push(e.who);
+      html += '<div class="history-item"><div>' +
+                '<span class="history-tag" style="background:' + hexA(p.colour, 0.15) + ';color:' + p.colour + ';border:1px solid ' + hexA(p.colour, 0.3) + '">' + p.name + '</span>' +
+                '<span class="history-amount">' + fmt(e.amount) + '</span>' +
+                (sub.length ? '<div class="history-note">' + sub.join(' \u00b7 ') + '</div>' : '') +
+              '</div><div class="history-right">' +
+                '<div class="history-time">' + e.time + '</div>' +
+                '<button class="history-remove" onclick="removeSpend(\'' + e.id + '\')">Remove</button>' +
+              '</div></div>';
     });
     list.innerHTML = html;
   }
 
-  // Wire up Virgin inputs to save + re-render
-  ['vir_total', 'vir_petrol', 'vir_trains'].forEach(function(id) {
-    document.getElementById(id).addEventListener('input', function() {
-      saveVir();
-      renderVirSummary();
-    });
-  });
+  function readSpendForm() {
+    var amtEl = document.getElementById('spend-amount');
+    var amount = Math.round(parseFloat(amtEl.value) || 0);
+    if (amount <= 0) {
+      showErr('Enter an amount first');
+      amtEl.focus();
+      return null;
+    }
+    clearErr();
+    var now = new Date();
+    return {
+      id: String(Date.now()) + String(Math.floor(Math.random() * 1000)),
+      pot: selectedPot,
+      amount: amount,
+      note: document.getElementById('spend-note').value.trim(),
+      cycle: cycleKey(),
+      ts: now.getTime(),
+      time: now.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) + ' ' +
+            now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })
+    };
+  }
+
+  function clearSpendForm() {
+    document.getElementById('spend-amount').value = '';
+    document.getElementById('spend-note').value = '';
+  }
+
+  document.getElementById('spend-amount').addEventListener('input', clearErr);
+
+  /* ------- LOCAL PERSISTENCE ------- */
+  function onAllocChange() { savePots(); }
+
+  function savePots() {
+    try {
+      localStorage.setItem(PFX + '_pot_alloc', JSON.stringify(potAlloc));
+      localStorage.setItem(PFX + '_pot_log',   JSON.stringify(potLog));
+      localStorage.setItem(PFX + '_pot_cycle', cycleKey());
+    } catch(e) {}
+  }
+
+  function loadPots() {
+    POTS.forEach(function(p) { potAlloc[p.id] = p.def; });
+    try {
+      var a = localStorage.getItem(PFX + '_pot_alloc');
+      if (a) {
+        var parsed = JSON.parse(a);
+        POTS.forEach(function(p) {
+          if (typeof parsed[p.id] === 'number') potAlloc[p.id] = parsed[p.id];
+        });
+      }
+    } catch(e) {}
+    try {
+      var storedCycle = localStorage.getItem(PFX + '_pot_cycle');
+      var log = localStorage.getItem(PFX + '_pot_log');
+      potLog = (log && storedCycle === cycleKey()) ? JSON.parse(log) : [];
+    } catch(e) { potLog = []; }
+    savePots();
+  }
+
+  function addSpend() {
+    var s = readSpendForm();
+    if (!s) return;
+    potLog.push(s);
+    clearSpendForm();
+    savePots();
+    renderSummary();
+    renderHistory();
+  }
+
+  function removeSpend(id) {
+    potLog = potLog.filter(function(e) { return e.id !== id; });
+    savePots();
+    renderSummary();
+    renderHistory();
+  }
 
   setCycle();
+  buildAllocInputs();
+  buildSelector();
   loadAll();
   calc();
-  loadVir();
-  renderVirSummary();
-  renderVirHistory();
+  loadPots();
+  paintAllocInputs();
+  renderSummary();
+  renderHistory();
+
 </script>
 </body>
 </html>

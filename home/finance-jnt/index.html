@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ALH — Spending Tracker</title>
+<title>Joint — Pot Tracker</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -14,7 +14,7 @@
   --amber: #f0b429; --amber-light: rgba(240,180,41,0.09); --amber-dark: #e6a800;
   --green: #3ddc84; --green-light: rgba(61,220,132,0.08); --green-dark: #2ecc70;
   --red: #ff5757; --red-light: rgba(255,87,87,0.08);
-  --accent: #3ddc84;
+  --accent: #7D756D;
 }
   body { font-family: 'DM Mono', monospace; background: var(--bg); color: var(--text); min-height: 100vh; padding: 24px 16px 48px; }
   .container { max-width: 400px; margin: 0 auto; }
@@ -118,51 +118,18 @@
 <div class="container">
 
   <header>
-    <div class="name">ALH <span>Tracker</span></div>
-    <a class="jnt-btn" href="https://andyami.github.io/atoalh/home/finance-jnt/index.html" aria-label="Open joint pot tracker">JNT</a>
+    <div class="name">Joint <span>Tracker</span></div>
+    <span class="back-links" id="back-links"></span>
     <div class="cycle" id="cycle-label"></div>
   </header>
 
-  <div class="result-card empty" id="result-card">
-    <div class="result-label">Available to spend</div>
-    <div class="result-amount" id="result-amount">&#8212;</div>
-    <div class="result-context" id="result-context">Enter your spends budget to begin</div>
+  <div class="who-row">
+    <span class="who-label">This device:</span>
+    <button class="who-btn ato" id="who-ATO" onclick="setWho('ATO')">ATO</button>
+    <button class="who-btn alh" id="who-ALH" onclick="setWho('ALH')">ALH</button>
+    <span class="sync-state" id="sync-state">Connecting&#8230;</span>
   </div>
 
-  <div class="card">
-    <div class="card-label">RIGHT NOW</div>
-    <div class="two-col">
-      <div class="field">
-        <label>BARCLAYS</label>
-        <div class="input-wrap">
-          <span class="pound">&pound;</span>
-          <input type="number" inputmode="numeric" id="barclays" placeholder="0">
-          <span class="saved-tag">saved</span>
-        </div>
-      </div>
-      <div class="field">
-        <label>EVERYDAY ACCOUNT</label>
-        <div class="input-wrap">
-          <span class="pound">&pound;</span>
-          <input type="number" inputmode="numeric" id="sta" placeholder="0">
-          <span class="saved-tag">saved</span>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-label">PAYDAY SPENDS</div>
-    <div class="field">
-      <div class="input-wrap">
-        <span class="pound">&pound;</span>
-        <input type="number" inputmode="numeric" id="spends" placeholder="0" class="spends-input">
-        <span class="saved-tag">saved</span>
-      </div>
-    </div>
-  </div>
-
-  <button class="reset-btn" onclick="resetAll()">Clear all fields</button>
 
   <div class="section-divider">
     <div class="section-divider-line"></div>
@@ -205,11 +172,11 @@
     <div id="history-list"></div>
   </div>
 
-  <div class="footer">Budget fields &amp; pots are remembered on this device</div>
+  <div class="footer">Shared between both devices &middot; pots clear on the 25th</div>
 
 </div>
 <script>
-  var PFX = 'alh';
+  var PFX = 'jnt';
 
   function fmt(n) {
     return '\u00a3' + Math.round(Math.abs(n)).toLocaleString('en-GB');
@@ -218,84 +185,25 @@
     return (n < 0 ? '\u2212\u2009' : '') + fmt(n);
   }
 
-  /* ------- BUDGET TRACKER ------- */
-  var PERSIST = ["spends", "barclays", "sta"];
-
-  function val(id) {
-    var el = document.getElementById(id);
-    return el ? (parseFloat(el.value) || 0) : 0;
-  }
-
-  function saveAll() {
-    PERSIST.forEach(function(id) {
-      try { localStorage.setItem(PFX + '_' + id, document.getElementById(id).value); } catch(e) {}
-    });
-  }
-
-  function loadAll() {
-    PERSIST.forEach(function(id) {
-      try {
-        var s = localStorage.getItem(PFX + '_' + id);
-        if (s !== null && s !== '') document.getElementById(id).value = s;
-      } catch(e) {}
-    });
-  }
-
-  function calc() {
-    saveAll();
-    var spends    = val('spends');
-    var amex      = val('amex');
-    var barcl     = val('barclays');
-    var sta       = val('sta');
-    var available = (spends + sta) - amex - barcl;
-
-    var card    = document.getElementById('result-card');
-    var amount  = document.getElementById('result-amount');
-    var context = document.getElementById('result-context');
-
-    if (spends === 0) {
-      card.className = 'result-card empty';
-      amount.textContent = '\u2014';
-      context.textContent = 'Enter your spends budget to begin';
-      return;
-    }
-
-    amount.textContent = fmtSigned(available);
-
-    if (available < 0) {
-      card.className = 'result-card negative';
-      context.textContent = 'STOP SPENDING AMI, OVER BUDGET BY ' + fmt(available);
-    } else if (available < spends * 0.25) {
-      card.className = 'result-card warning';
-      context.textContent = 'Nearly gone \u2014 ' + fmt(available) + ' left of ' + fmt(spends);
-    } else if (available < spends * 0.5) {
-      card.className = 'result-card warning';
-      context.textContent = 'Past halfway \u2014 ' + fmt(available) + ' left of ' + fmt(spends);
-    } else {
-      card.className = 'result-card positive';
-      context.textContent = fmt(available) + ' left of ' + fmt(spends) + ' budget';
-    }
-  }
-
-  function resetAll() {
-    PERSIST.forEach(function(id) {
-      document.getElementById(id).value = '';
-      try { localStorage.removeItem(PFX + '_' + id); } catch(e) {}
-    });
-    calc();
-  }
-
-  document.querySelectorAll('#result-card ~ .card input').forEach(function(el) {
-    el.addEventListener('input', calc);
-  });
-
   /* ------- POT TRACKING -------
      Add a pot by adding one entry to POTS below. Nothing else needs to change. */
   var POTS = [
     {
-      "id": "beauty",
-      "name": "Beauty",
+      "id": "shopping",
+      "name": "Shopping",
+      "colour": "#6582fc",
+      "def": 200
+    },
+    {
+      "id": "petrol",
+      "name": "Petrol",
       "colour": "#a36bf9",
+      "def": 150
+    },
+    {
+      "id": "bobby",
+      "name": "Bobby",
+      "colour": "#E68346",
       "def": 0
     }
   ];
@@ -478,62 +386,172 @@
 
   document.getElementById('spend-amount').addEventListener('input', clearErr);
 
-  /* ------- LOCAL PERSISTENCE ------- */
-  function onAllocChange() { savePots(); }
+  /* ------- SHARED STORAGE (Firebase Firestore REST) -------
+     Fill these two in after creating your Firebase project. */
+  var FB_PROJECT = 'YOUR_PROJECT_ID';
+  var FB_KEY     = 'YOUR_WEB_API_KEY';
 
-  function savePots() {
-    try {
-      localStorage.setItem(PFX + '_pot_alloc', JSON.stringify(potAlloc));
-      localStorage.setItem(PFX + '_pot_log',   JSON.stringify(potLog));
-      localStorage.setItem(PFX + '_pot_cycle', cycleKey());
-    } catch(e) {}
+  var FB_ROOT = 'https://firestore.googleapis.com/v1/projects/' + FB_PROJECT +
+                '/databases/(default)/documents';
+  var allocTimer = null;
+  var who = null;
+
+  function fbUrl(path, extra) {
+    return FB_ROOT + path + '?key=' + FB_KEY + (extra || '');
   }
 
-  function loadPots() {
-    POTS.forEach(function(p) { potAlloc[p.id] = p.def; });
-    try {
-      var a = localStorage.getItem(PFX + '_pot_alloc');
-      if (a) {
-        var parsed = JSON.parse(a);
-        POTS.forEach(function(p) {
-          if (typeof parsed[p.id] === 'number') potAlloc[p.id] = parsed[p.id];
-        });
-      }
-    } catch(e) {}
-    try {
-      var storedCycle = localStorage.getItem(PFX + '_pot_cycle');
-      var log = localStorage.getItem(PFX + '_pot_log');
-      potLog = (log && storedCycle === cycleKey()) ? JSON.parse(log) : [];
-    } catch(e) { potLog = []; }
-    savePots();
+  function setSync(state, text) {
+    var el = document.getElementById('sync-state');
+    el.className = 'sync-state ' + state;
+    el.textContent = text;
+  }
+
+  var BASE = 'https://andyami.github.io/atoalh/home/finance-';
+
+  function renderBackLinks() {
+    var show = who ? [who] : ['ATO', 'ALH'];
+    document.getElementById('back-links').innerHTML = show.map(function(x) {
+      return '<a class="jnt-btn ' + x.toLowerCase() + '" href="' + BASE + x.toLowerCase() +
+             '/index.html" aria-label="Open ' + x + ' tracker">' + x + '</a>';
+    }).join('');
+  }
+
+  function setWho(w) {
+    who = w;
+    ['ATO', 'ALH'].forEach(function(x) {
+      var b = document.getElementById('who-' + x);
+      b.className = 'who-btn ' + x.toLowerCase() + (x === w ? ' active ' + x.toLowerCase() : '');
+    });
+    try { localStorage.setItem(PFX + '_who', w); } catch(e) {}
+    renderBackLinks();
+    clearErr();
+  }
+
+  function toDoc(s) {
+    return { fields: {
+      pot:    { stringValue:  s.pot },
+      amount: { integerValue: String(s.amount) },
+      note:   { stringValue:  s.note || '' },
+      who:    { stringValue:  s.who  || '' },
+      cycle:  { stringValue:  s.cycle },
+      ts:     { integerValue: String(s.ts) },
+      time:   { stringValue:  s.time }
+    }};
+  }
+
+  function fromDoc(d) {
+    var f = d.fields || {};
+    return {
+      id:     d.name.split('/').pop(),
+      pot:    f.pot    ? f.pot.stringValue : '',
+      amount: f.amount ? parseInt(f.amount.integerValue, 10) : 0,
+      note:   f.note   ? f.note.stringValue : '',
+      who:    f.who    ? f.who.stringValue  : '',
+      cycle:  f.cycle  ? f.cycle.stringValue : '',
+      ts:     f.ts     ? parseInt(f.ts.integerValue, 10) : 0,
+      time:   f.time   ? f.time.stringValue : ''
+    };
+  }
+
+  function onAllocChange(potId) {
+    clearTimeout(allocTimer);
+    allocTimer = setTimeout(function() { pushAlloc(potId); }, 700);
+  }
+
+  function pushAlloc(potId) {
+    setSync('busy', 'Saving\u2026');
+    var fields = {};
+    fields['alloc_' + potId] = { integerValue: String(potAlloc[potId] || 0) };
+    fetch(fbUrl('/config/current', '&updateMask.fieldPaths=alloc_' + potId), {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ fields: fields })
+    }).then(function(r) {
+      if (!r.ok) throw new Error(r.status);
+      setSync('ok', 'Synced');
+    }).catch(function() { setSync('err', 'Not saved'); });
+  }
+
+  function pullAll(silent) {
+    if (!silent) setSync('busy', 'Syncing\u2026');
+    var ck = cycleKey();
+
+    fetch(fbUrl('/config/current')).then(function(r) {
+      return r.ok ? r.json() : null;
+    }).then(function(cfg) {
+      POTS.forEach(function(p) {
+        var f = cfg && cfg.fields && cfg.fields['alloc_' + p.id];
+        potAlloc[p.id] = f ? parseInt(f.integerValue, 10) : p.def;
+      });
+      paintAllocInputs();
+      renderSummary();
+    }).catch(function() {});
+
+    fetch(fbUrl('/spends', '&pageSize=300')).then(function(r) {
+      if (!r.ok) throw new Error(r.status);
+      return r.json();
+    }).then(function(data) {
+      var docs = (data.documents || []).map(fromDoc);
+      potLog = docs.filter(function(d) { return d.cycle === ck; });
+      docs.filter(function(d) { return d.cycle !== ck; })
+          .forEach(function(d) { fetch(fbUrl('/spends/' + d.id), { method: 'DELETE' }); });
+      renderSummary();
+      renderHistory();
+      setSync('ok', 'Synced');
+    }).catch(function() { setSync('err', 'Offline'); });
   }
 
   function addSpend() {
+    if (!who) { showErr('Choose ATO or ALH at the top first'); return; }
     var s = readSpendForm();
     if (!s) return;
-    potLog.push(s);
+    s.who = who;
     clearSpendForm();
-    savePots();
-    renderSummary();
-    renderHistory();
+    setSync('busy', 'Saving\u2026');
+    fetch(fbUrl('/spends'), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(toDoc(s))
+    }).then(function(r) {
+      if (!r.ok) throw new Error(r.status);
+      return r.json();
+    }).then(function(d) {
+      s.id = d.name.split('/').pop();
+      potLog.push(s);
+      renderSummary();
+      renderHistory();
+      setSync('ok', 'Synced');
+    }).catch(function() { setSync('err', 'Not saved \u2014 retry'); });
   }
 
   function removeSpend(id) {
     potLog = potLog.filter(function(e) { return e.id !== id; });
-    savePots();
     renderSummary();
     renderHistory();
+    setSync('busy', 'Saving\u2026');
+    fetch(fbUrl('/spends/' + id), { method: 'DELETE' }).then(function(r) {
+      if (!r.ok) throw new Error(r.status);
+      setSync('ok', 'Synced');
+    }).catch(function() { setSync('err', 'Not saved'); });
   }
 
   setCycle();
   buildAllocInputs();
   buildSelector();
-  loadAll();
-  calc();
-  loadPots();
+  POTS.forEach(function(p) { potAlloc[p.id] = p.def; });
   paintAllocInputs();
   renderSummary();
   renderHistory();
+
+  renderBackLinks();
+  try {
+    var savedWho = localStorage.getItem(PFX + '_who');
+    if (savedWho) setWho(savedWho);
+  } catch(e) {}
+
+  pullAll(false);
+  setInterval(function() { if (!document.hidden) pullAll(true); }, 30000);
+  document.addEventListener('visibilitychange', function() { if (!document.hidden) pullAll(true); });
 
 </script>
 </body>
