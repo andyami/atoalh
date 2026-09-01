@@ -102,6 +102,12 @@
   .jnt-btn.alh { border-color: rgba(61,220,132,0.45); color: var(--green); }
   .jnt-btn.alh:hover { background: rgba(61,220,132,0.12); border-color: var(--green); color: var(--green); }
   .back-links { display: flex; gap: 6px; }
+  .reset-pill { border: 1px solid rgba(255,87,87,0.35); background: transparent; border-radius: 6px; padding: 3px 9px; font-family: inherit; font-size: 11px; font-weight: 500; letter-spacing: 0.06em; color: rgba(255,87,87,0.75); cursor: pointer; line-height: 1.4; transition: all 0.15s; }
+  .reset-pill:hover { background: rgba(255,87,87,0.12); border-color: var(--red); color: var(--red); }
+  .diag { display: none; background: rgba(255,87,87,0.06); border: 1px solid rgba(255,87,87,0.25); border-radius: 10px; padding: 12px 14px; margin-bottom: 12px; font-size: 11px; line-height: 1.6; color: var(--red); word-break: break-word; }
+  .diag.show { display: block; }
+  .diag b { display: block; margin-bottom: 4px; font-weight: 700; }
+  .diag span { color: var(--muted); }
 
   .who-row { display: flex; align-items: center; gap: 8px; margin: -18px 0 22px; }
   .who-label { font-size: 11px; color: var(--muted2); }
@@ -120,6 +126,7 @@
   <header>
     <div class="name">ATO <span>Tracker</span></div>
     <a class="jnt-btn" href="https://andyami.github.io/atoalh/home/finance-jnt/index.html" aria-label="Open joint pot tracker">JNT</a>
+    <button class="reset-pill" onclick="resetCycle()">RESET</button>
     <div class="cycle" id="cycle-label"></div>
   </header>
 
@@ -529,6 +536,17 @@
   function removeSpend(id) {
     potLog = potLog.filter(function(e) { return e.id !== id; });
     savePots();
+    renderSummary();
+    renderHistory();
+  }
+
+  function resetCycle() {
+    if (!confirm('Clear the spend log and reset pots to their defaults?\n\nThis cannot be undone.')) return;
+    potLog = [];
+    POTS.forEach(function(p) { potAlloc[p.id] = p.def; });
+    savePots();
+    paintAllocInputs();
+    clearErr();
     renderSummary();
     renderHistory();
   }

@@ -102,6 +102,12 @@
   .jnt-btn.alh { border-color: rgba(61,220,132,0.45); color: var(--green); }
   .jnt-btn.alh:hover { background: rgba(61,220,132,0.12); border-color: var(--green); color: var(--green); }
   .back-links { display: flex; gap: 6px; }
+  .reset-pill { border: 1px solid rgba(255,87,87,0.35); background: transparent; border-radius: 6px; padding: 3px 9px; font-family: inherit; font-size: 11px; font-weight: 500; letter-spacing: 0.06em; color: rgba(255,87,87,0.75); cursor: pointer; line-height: 1.4; transition: all 0.15s; }
+  .reset-pill:hover { background: rgba(255,87,87,0.12); border-color: var(--red); color: var(--red); }
+  .diag { display: none; background: rgba(255,87,87,0.06); border: 1px solid rgba(255,87,87,0.25); border-radius: 10px; padding: 12px 14px; margin-bottom: 12px; font-size: 11px; line-height: 1.6; color: var(--red); word-break: break-word; }
+  .diag.show { display: block; }
+  .diag b { display: block; margin-bottom: 4px; font-weight: 700; }
+  .diag span { color: var(--muted); }
 
   .who-row { display: flex; align-items: center; gap: 8px; margin: -18px 0 22px; }
   .who-label { font-size: 11px; color: var(--muted2); }
@@ -120,6 +126,7 @@
   <header>
     <div class="name">Joint <span>Tracker</span></div>
     <span class="back-links" id="back-links"></span>
+    <button class="reset-pill" onclick="resetCycle()">RESET</button>
     <div class="cycle" id="cycle-label"></div>
   </header>
 
@@ -129,6 +136,8 @@
     <button class="who-btn alh" id="who-ALH" onclick="setWho('ALH')">ALH</button>
     <span class="sync-state" id="sync-state">Connecting&#8230;</span>
   </div>
+
+  <div class="diag" id="diag"></div>
 
 
   <div class="section-divider">
@@ -400,6 +409,56 @@
     return FB_ROOT + path + '?key=' + FB_KEY + (extra || '');
   }
 
+  var CONFIGURED = FB_PROJECT !== 'atoalh-pots' && FB_KEY !== 'AIzaSyDIB_ztBaofZYfhfV5OdvFFT81JxSpVTdI';
+
+  function showDiag(title, detail, hint) {
+    var el = document.getElementById('diag');
+    el.innerHTML = '<b>' + title + '</b>' + esc(detail) +
+                   (hint ? '<br><br><span>' + hint + '</span>' : '');
+    el.className = 'diag show';
+  }
+  function hideDiag() {
+    document.getElementById('diag').className = 'diag';
+  }
+
+  function hintFor(status, msg) {
+    if (status === 403 && /API key/i.test(msg))
+      return 'The API key is being rejected. If you restricted it to a website, check the entry is exactly andyami.github.io/* — or remove the restriction and try again.';
+    if (status === 403)
+      return 'Firestore refused the write. Check the security rules from step 3 have been published.';
+    if (status === 404)
+      return 'Project or database not found. Check FB_PROJECT matches your projectId exactly, and that Firestore is created in Native mode.';
+    if (status === 400)
+      return 'The request was rejected. This usually means the API key belongs to a different project than FB_PROJECT.';
+    if (status === 401)
+      return 'Not authorised. Check FB_KEY is the Web API key from Project settings, not a server key.';
+    return 'Check the phone has signal, then confirm FB_PROJECT and FB_KEY in the file.';
+  }
+
+  function fbFetch(url, opts) {
+    return fetch(url, opts).then(function(r) {
+      return r.text().then(function(t) {
+        var j = null;
+        try { j = JSON.parse(t); } catch(e) {}
+        if (!r.ok) {
+          var msg = (j && j.error && j.error.message) ? j.error.message : 'HTTP ' + r.status;
+          var err = new Error(msg);
+          err.status = r.status;
+          throw err;
+        }
+        return j;
+      });
+    });
+  }
+
+  function fbErr(what, e) {
+    var status = e.status || 0;
+    var msg = e.message || 'Network error';
+    setSync('err', what);
+    showDiag(what + ' · ' + (status ? 'HTTP ' + status : 'no response'),
+             msg, hintFor(status, msg));
+  }
+
   function setSync(state, text) {
     var el = document.getElementById('sync-state');
     el.className = 'sync-state ' + state;
@@ -459,46 +518,52 @@
   }
 
   function pushAlloc(potId) {
+    if (!CONFIGURED) return;
     setSync('busy', 'Saving\u2026');
     var fields = {};
     fields['alloc_' + potId] = { integerValue: String(potAlloc[potId] || 0) };
-    fetch(fbUrl('/config/current', '&updateMask.fieldPaths=alloc_' + potId), {
+    return fbFetch(fbUrl('/config/current', '&updateMask.fieldPaths=alloc_' + potId), {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ fields: fields })
-    }).then(function(r) {
-      if (!r.ok) throw new Error(r.status);
+    }).then(function() {
       setSync('ok', 'Synced');
-    }).catch(function() { setSync('err', 'Not saved'); });
+      hideDiag();
+    }).catch(function(e) { fbErr('Allocation not saved', e); });
   }
 
   function pullAll(silent) {
+    if (!CONFIGURED) {
+      setSync('err', 'Not set up');
+      showDiag('Firebase not configured',
+               'FB_PROJECT and FB_KEY are still set to their placeholder values.',
+               'Open home/finance-jnt/index.html and complete step 5 of the setup guide.');
+      return;
+    }
     if (!silent) setSync('busy', 'Syncing\u2026');
     var ck = cycleKey();
 
-    fetch(fbUrl('/config/current')).then(function(r) {
-      return r.ok ? r.json() : null;
-    }).then(function(cfg) {
+    fbFetch(fbUrl('/config/current')).then(function(cfg) {
       POTS.forEach(function(p) {
         var f = cfg && cfg.fields && cfg.fields['alloc_' + p.id];
         potAlloc[p.id] = f ? parseInt(f.integerValue, 10) : p.def;
       });
       paintAllocInputs();
       renderSummary();
-    }).catch(function() {});
+    }).catch(function(e) {
+      if (e.status !== 404) fbErr('Could not read allocations', e);
+    });
 
-    fetch(fbUrl('/spends', '&pageSize=300')).then(function(r) {
-      if (!r.ok) throw new Error(r.status);
-      return r.json();
-    }).then(function(data) {
-      var docs = (data.documents || []).map(fromDoc);
+    fbFetch(fbUrl('/spends', '&pageSize=300')).then(function(data) {
+      var docs = ((data && data.documents) || []).map(fromDoc);
       potLog = docs.filter(function(d) { return d.cycle === ck; });
       docs.filter(function(d) { return d.cycle !== ck; })
-          .forEach(function(d) { fetch(fbUrl('/spends/' + d.id), { method: 'DELETE' }); });
+          .forEach(function(d) { fbFetch(fbUrl('/spends/' + d.id), { method: 'DELETE' }).catch(function() {}); });
       renderSummary();
       renderHistory();
       setSync('ok', 'Synced');
-    }).catch(function() { setSync('err', 'Offline'); });
+      hideDiag();
+    }).catch(function(e) { fbErr('Could not load spends', e); });
   }
 
   function addSpend() {
@@ -508,20 +573,22 @@
     s.who = who;
     clearSpendForm();
     setSync('busy', 'Saving\u2026');
-    fetch(fbUrl('/spends'), {
+    fbFetch(fbUrl('/spends'), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(toDoc(s))
-    }).then(function(r) {
-      if (!r.ok) throw new Error(r.status);
-      return r.json();
     }).then(function(d) {
       s.id = d.name.split('/').pop();
       potLog.push(s);
       renderSummary();
       renderHistory();
       setSync('ok', 'Synced');
-    }).catch(function() { setSync('err', 'Not saved \u2014 retry'); });
+      hideDiag();
+    }).catch(function(e) {
+      document.getElementById('spend-amount').value = s.amount;
+      document.getElementById('spend-note').value = s.note;
+      fbErr('Spend not saved', e);
+    });
   }
 
   function removeSpend(id) {
@@ -529,10 +596,33 @@
     renderSummary();
     renderHistory();
     setSync('busy', 'Saving\u2026');
-    fetch(fbUrl('/spends/' + id), { method: 'DELETE' }).then(function(r) {
-      if (!r.ok) throw new Error(r.status);
+    fbFetch(fbUrl('/spends/' + id), { method: 'DELETE' }).then(function() {
       setSync('ok', 'Synced');
-    }).catch(function() { setSync('err', 'Not saved'); });
+      hideDiag();
+    }).catch(function(e) { fbErr('Spend not removed', e); });
+  }
+
+  function resetCycle() {
+    if (!CONFIGURED) { pullAll(false); return; }
+    if (!confirm('Clear the shared spend log and reset all pots to their defaults?\n\nThis affects both phones and cannot be undone.')) return;
+    setSync('busy', 'Resetting\u2026');
+    fbFetch(fbUrl('/spends', '&pageSize=300')).then(function(data) {
+      var docs = ((data && data.documents) || []).map(fromDoc);
+      return Promise.all(docs.map(function(d) {
+        return fbFetch(fbUrl('/spends/' + d.id), { method: 'DELETE' });
+      }));
+    }).then(function() {
+      potLog = [];
+      POTS.forEach(function(p) { potAlloc[p.id] = p.def; });
+      paintAllocInputs();
+      clearErr();
+      renderSummary();
+      renderHistory();
+      return Promise.all(POTS.map(function(p) { return pushAlloc(p.id); }));
+    }).then(function() {
+      setSync('ok', 'Reset');
+      hideDiag();
+    }).catch(function(e) { fbErr('Reset failed', e); });
   }
 
   setCycle();
