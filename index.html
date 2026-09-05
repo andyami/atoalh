@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ATO ALH — Home</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Syne:wght@500;600&family=DM+Mono:wght@400;500&display=swap">
+<style>
+  :root {
+    --bg: #0c0e0d;
+    --card: #141714;
+    --text: #dde6df;
+    --muted: #8a9088;
+    --faint: #6b7168;
+    --gold: #c8a97a;
+    --green: #3ddc84;
+    --green-light: #8ce9b0;
+    --blue: #4a9eff;
+    --blue-light: #7fb8ff;
+    --orange: #EF6C00;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Mono', monospace;
+  }
+  .wrap {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 28px 20px 60px;
+  }
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+  .header .date {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    color: var(--muted);
+    letter-spacing: .02em;
+  }
+  .header h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: 24px;
+    font-weight: 600;
+    margin: 4px 0 0;
+  }
+  .dash-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    border-radius: 999px;
+    padding: 8px 16px;
+    font-size: 12px;
+    font-family: 'DM Mono', monospace;
+    text-decoration: none;
+    flex-shrink: 0;
+  }
+  .weather {
+    background: var(--card);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 22px;
+    font-size: 14px;
+  }
+  .weather .sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .grid {
+    display: flex;
+    flex-direction: column;
+  }
+  .section { margin-bottom: 22px; }
+  .section-label {
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    margin-bottom: 8px;
+  }
+  .event-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--card);
+    border-radius: 10px;
+    padding: 10px 14px;
+    margin-bottom: 6px;
+    font-size: 14px;
+  }
+  .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .time { font-size: 12px; color: var(--muted); width: 48px; flex-shrink: 0; }
+  .next-row .time { width: 62px; }
+  .faint { color: var(--faint); }
+  .empty-state {
+    text-align: center;
+    padding: 16px;
+    color: var(--faint);
+    font-size: 13px;
+    background: var(--card);
+    border-radius: 10px;
+  }
+  .exercise-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background: var(--card);
+    border-radius: 10px;
+    padding: 12px 14px;
+    margin-bottom: 6px;
+  }
+  .exercise-row .dot { margin-top: 5px; }
+  .exercise-name { font-size: 11px; color: var(--muted); margin-bottom: 2px; }
+  .exercise-plan { font-size: 14px; }
+  @media (min-width: 700px) {
+    .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; align-items: start; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="header">
+    <div>
+      <div class="date" id="date-label">Loading…</div>
+      <h1>Good morning</h1>
+    </div>
+    <a class="dash-btn" href="https://andyami.github.io/atoalh/">Dashboard</a>
+  </div>
+
+  <div class="weather" id="weather">
+    <span>Loading weather…</span>
+  </div>
+
+  <div class="grid">
+    <div class="col-left">
+      <div class="section">
+        <div class="section-label">Today</div>
+        <div id="today"><div class="empty-state">Loading…</div></div>
+      </div>
+      <div class="section">
+        <div class="section-label" id="tomorrow-label">Tomorrow</div>
+        <div id="tomorrow"><div class="empty-state">Loading…</div></div>
+      </div>
+    </div>
+    <div class="col-right">
+      <div class="section">
+        <div class="section-label">Next up</div>
+        <div id="nextup"><div class="empty-state">Loading…</div></div>
+      </div>
+      <div class="section">
+        <div class="section-label">Exercise · today</div>
+        <div id="exercise"><div class="empty-state">Loading…</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ---- Configuration ----
+// Fill this in once the Netlify function is deployed, e.g.
+// https://atoalh-brief.netlify.app/.netlify/functions/calendar-brief
+const CONFIG = {
+  PROXY_URL: 'https://atoalh-calendar.netlify.app/.netlify/functions/calendar-brief',
+  WEATHER_LAT: 53.5697,
+  WEATHER_LON: -2.8871,
+};
+
+const CAL_META = {
+  andrew: { name: 'Andrew', color: 'var(--blue)' },
+  ami: { name: 'Ami', color: 'var(--green)' },
+  bobby: { name: 'Bobby', color: 'var(--orange)' },
+  joint: { name: 'Joint', color: 'var(--gold)' },
+};
+
+const EXERCISE_META = {
+  andrewFitness: { name: 'Andrew', color: 'var(--blue-light)' },
+  amiFitness: { name: 'Ami', color: 'var(--green-light)' },
+};
+
+function localDateKey(d) {
+  return d.toLocaleDateString('en-CA');
+}
+
+function dayLabel(d) {
+  return d.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+}
+
+function formatTime(iso) {
+  return new Date(iso).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+}
+
+function eventTimeLabel(ev) {
+  return ev.allDay ? 'All day' : formatTime(ev.start);
+}
+
+function renderFullDay(elId, list) {
+  const el = document.getElementById(elId);
+  if (!list || !list.length) {
+    el.innerHTML = '<div class="empty-state">Nothing scheduled</div>';
+    return;
+  }
+  el.innerHTML = list.map(({ meta, event }) =>
+    '<div class="event-row"><span class="dot" style="background:' + meta.color + '"></span>' +
+    '<span class="time">' + eventTimeLabel(event) + '</span>' +
+    '<span class="title">' + event.summary + '</span></div>'
+  ).join('');
+}
+
+async function loadBrief() {
+  const today = new Date();
+  const todayKey = localDateKey(today);
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+  const tomorrowKey = localDateKey(tomorrow);
+  const nextDays = [];
+  for (let i = 2; i <= 6; i++) {
+    const d = new Date(today);
+    d.setDate(d.getDate() + i);
+    nextDays.push(d);
+  }
+
+  document.getElementById('date-label').textContent =
+    today.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+  document.getElementById('tomorrow-label').textContent = 'Tomorrow · ' + dayLabel(tomorrow);
+
+  let data;
+  try {
+    const res = await fetch(CONFIG.PROXY_URL);
+    if (!res.ok) throw new Error('bad response');
+    data = await res.json();
+  } catch (e) {
+    ['today', 'tomorrow', 'nextup', 'exercise'].forEach((id) => {
+      document.getElementById(id).innerHTML = '<div class="empty-state">Unable to load calendars right now</div>';
+    });
+    return;
+  }
+
+  const dayEvents = {};
+  Object.entries(CAL_META).forEach(([key, meta]) => {
+    (data[key] || []).forEach((event) => {
+      const dKey = localDateKey(new Date(event.start));
+      (dayEvents[dKey] = dayEvents[dKey] || []).push({ meta, event });
+    });
+  });
+  Object.values(dayEvents).forEach((list) => {
+    list.sort((a, b) => {
+      if (a.event.allDay !== b.event.allDay) return a.event.allDay ? -1 : 1;
+      return new Date(a.event.start) - new Date(b.event.start);
+    });
+  });
+
+  renderFullDay('today', dayEvents[todayKey]);
+  renderFullDay('tomorrow', dayEvents[tomorrowKey]);
+
+  const nextupEl = document.getElementById('nextup');
+  nextupEl.innerHTML = nextDays.map((d) => {
+    const list = dayEvents[localDateKey(d)];
+    if (!list || !list.length) {
+      return '<div class="event-row next-row"><span class="time">' + dayLabel(d) +
+        '</span><span class="faint">Nothing scheduled</span></div>';
+    }
+    const first = list[0];
+    const extra = list.length > 1 ? ' +' + (list.length - 1) + ' more' : '';
+    return '<div class="event-row next-row"><span class="time">' + dayLabel(d) + '</span>' +
+      '<span class="dot" style="background:' + first.meta.color + '"></span>' +
+      '<span>' + first.event.summary + extra + '</span></div>';
+  }).join('');
+
+  const exerciseEl = document.getElementById('exercise');
+  exerciseEl.innerHTML = Object.entries(EXERCISE_META).map(([key, meta]) => {
+    const events = (data[key] || []).filter((ev) => localDateKey(new Date(ev.start)) === todayKey);
+    const plan = events.length
+      ? events.map((e) => eventTimeLabel(e) + ' · ' + e.summary).join('<br>')
+      : '<span class="faint">Nothing planned for today — rest day</span>';
+    return '<div class="exercise-row"><span class="dot" style="background:' + meta.color + '"></span>' +
+      '<div><div class="exercise-name">' + meta.name + '</div><div class="exercise-plan">' + plan + '</div></div></div>';
+  }).join('');
+}
+
+async function loadWeather() {
+  const el = document.getElementById('weather');
+  try {
+    const url = 'https://api.open-meteo.com/v1/forecast?latitude=' + CONFIG.WEATHER_LAT +
+      '&longitude=' + CONFIG.WEATHER_LON + '&current=temperature_2m,weather_code&timezone=Europe%2FLondon';
+    const res = await fetch(url);
+    const data = await res.json();
+    const temp = Math.round(data.current.temperature_2m);
+    const desc = weatherDescription(data.current.weather_code);
+    el.innerHTML = '<span>' + temp + '°C, ' + desc + '</span>';
+  } catch (e) {
+    el.innerHTML = '<span class="faint">Weather unavailable</span>';
+  }
+}
+
+function weatherDescription(code) {
+  const map = {
+    0: 'clear', 1: 'mostly clear', 2: 'partly cloudy', 3: 'overcast',
+    45: 'foggy', 48: 'foggy', 51: 'light drizzle', 53: 'drizzle', 55: 'heavy drizzle',
+    61: 'light rain', 63: 'rain', 65: 'heavy rain', 71: 'light snow', 73: 'snow',
+    75: 'heavy snow', 80: 'showers', 81: 'heavy showers', 82: 'violent showers',
+    95: 'thunderstorm',
+  };
+  return map[code] || 'mixed conditions';
+}
+
+loadBrief();
+loadWeather();
+</script>
+
+</body>
+</html>
