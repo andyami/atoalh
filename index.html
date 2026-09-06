@@ -14,11 +14,12 @@
     --muted: #8a9088;
     --faint: #6b7168;
     --gold: #c8a97a;
-    --green: #3ddc84;
-    --green-light: #8ce9b0;
-    --blue: #4a9eff;
-    --blue-light: #7fb8ff;
-    --orange: #EF6C00;
+    --c-andrew: #A48300;
+    --c-andrew-fitness: #C59100;
+    --c-ami: #216A39;
+    --c-ami-fitness: #55B080;
+    --c-bobby: #EF6C00;
+    --c-joint: #A79B8E;
   }
   * { box-sizing: border-box; }
   body {
@@ -129,7 +130,7 @@
   <div class="header">
     <div>
       <div class="date" id="date-label">Loading…</div>
-      <h1>Good morning</h1>
+      <h1>☀️ Good Morning</h1>
     </div>
     <a class="dash-btn" href="https://andyami.github.io/atoalh/menu/">Dashboard</a>
   </div>
@@ -173,15 +174,15 @@ const CONFIG = {
 };
 
 const CAL_META = {
-  andrew: { name: 'Andrew', color: 'var(--blue)' },
-  ami: { name: 'Ami', color: 'var(--green)' },
-  bobby: { name: 'Bobby', color: 'var(--orange)' },
-  joint: { name: 'Joint', color: 'var(--gold)' },
+  andrew: { name: 'Andrew', color: 'var(--c-andrew)' },
+  ami: { name: 'Ami', color: 'var(--c-ami)' },
+  bobby: { name: 'Bobby', color: 'var(--c-bobby)' },
+  joint: { name: 'Joint', color: 'var(--c-joint)' },
 };
 
 const EXERCISE_META = {
-  andrewFitness: { name: 'Andrew', color: 'var(--blue-light)' },
-  amiFitness: { name: 'Ami', color: 'var(--green-light)' },
+  andrewFitness: { name: 'Andrew', color: 'var(--c-andrew-fitness)' },
+  amiFitness: { name: 'Ami', color: 'var(--c-ami-fitness)' },
 };
 
 function localDateKey(d) {
