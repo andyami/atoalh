@@ -97,7 +97,6 @@
   }
   .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
   .time { font-size: 12px; color: var(--muted); width: 48px; flex-shrink: 0; }
-  .next-row .time { width: 62px; }
   .faint { color: var(--faint); }
   .empty-state {
     text-align: center;
@@ -119,6 +118,12 @@
   .exercise-row .dot { margin-top: 5px; }
   .exercise-name { font-size: 11px; color: var(--muted); margin-bottom: 2px; }
   .exercise-plan { font-size: 14px; }
+  .day-sub-label {
+    font-size: 11px;
+    color: var(--muted);
+    margin: 12px 0 4px;
+  }
+  .day-sub-label:first-child { margin-top: 0; }
   @media (min-width: 700px) {
     .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; align-items: start; }
   }
@@ -152,12 +157,12 @@
     </div>
     <div class="col-right">
       <div class="section">
-        <div class="section-label">Next up</div>
-        <div id="nextup"><div class="empty-state">Loading…</div></div>
-      </div>
-      <div class="section">
         <div class="section-label">Exercise · today</div>
         <div id="exercise"><div class="empty-state">Loading…</div></div>
+      </div>
+      <div class="section">
+        <div class="section-label">Next up</div>
+        <div id="nextup"><div class="empty-state">Loading…</div></div>
       </div>
     </div>
   </div>
@@ -198,7 +203,7 @@ function formatTime(iso) {
 }
 
 function eventTimeLabel(ev) {
-  return ev.allDay ? 'All day' : formatTime(ev.start);
+  return ev.allDay ? 'All Day' : formatTime(ev.start);
 }
 
 function renderFullDay(elId, list) {
@@ -263,15 +268,16 @@ async function loadBrief() {
   const nextupEl = document.getElementById('nextup');
   nextupEl.innerHTML = nextDays.map((d) => {
     const list = dayEvents[localDateKey(d)];
+    const label = '<div class="day-sub-label">' + dayLabel(d) + '</div>';
     if (!list || !list.length) {
-      return '<div class="event-row next-row"><span class="time">' + dayLabel(d) +
-        '</span><span class="faint">Nothing scheduled</span></div>';
+      return label + '<div class="empty-state">Nothing scheduled</div>';
     }
-    const first = list[0];
-    const extra = list.length > 1 ? ' +' + (list.length - 1) + ' more' : '';
-    return '<div class="event-row next-row"><span class="time">' + dayLabel(d) + '</span>' +
-      '<span class="dot" style="background:' + first.meta.color + '"></span>' +
-      '<span>' + first.event.summary + extra + '</span></div>';
+    const rows = list.map(({ meta, event }) =>
+      '<div class="event-row"><span class="dot" style="background:' + meta.color + '"></span>' +
+      '<span class="time">' + eventTimeLabel(event) + '</span>' +
+      '<span class="title">' + event.summary + '</span></div>'
+    ).join('');
+    return label + rows;
   }).join('');
 
   const exerciseEl = document.getElementById('exercise');
