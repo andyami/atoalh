@@ -85,16 +85,20 @@
     letter-spacing: .05em;
     margin-bottom: 8px;
   }
-  .event-row {
+  .day-block {
+    background: var(--card);
+    border-radius: 10px;
+    padding: 0 14px;
+    margin-bottom: 6px;
+  }
+  .event-line {
     display: flex;
     align-items: center;
     gap: 10px;
-    background: var(--card);
-    border-radius: 10px;
-    padding: 10px 14px;
-    margin-bottom: 6px;
+    padding: 10px 0;
     font-size: 14px;
   }
+  .event-line + .event-line { border-top: 1px solid rgba(255,255,255,0.06); }
   .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
   .time { font-size: 12px; color: var(--muted); width: 48px; flex-shrink: 0; }
   .faint { color: var(--faint); }
@@ -212,11 +216,12 @@ function renderFullDay(elId, list) {
     el.innerHTML = '<div class="empty-state">Nothing scheduled</div>';
     return;
   }
-  el.innerHTML = list.map(({ meta, event }) =>
-    '<div class="event-row"><span class="dot" style="background:' + meta.color + '"></span>' +
+  const rows = list.map(({ meta, event }) =>
+    '<div class="event-line"><span class="dot" style="background:' + meta.color + '"></span>' +
     '<span class="time">' + eventTimeLabel(event) + '</span>' +
     '<span class="title">' + event.summary + '</span></div>'
   ).join('');
+  el.innerHTML = '<div class="day-block">' + rows + '</div>';
 }
 
 async function loadBrief() {
@@ -273,11 +278,11 @@ async function loadBrief() {
       return label + '<div class="empty-state">Nothing scheduled</div>';
     }
     const rows = list.map(({ meta, event }) =>
-      '<div class="event-row"><span class="dot" style="background:' + meta.color + '"></span>' +
+      '<div class="event-line"><span class="dot" style="background:' + meta.color + '"></span>' +
       '<span class="time">' + eventTimeLabel(event) + '</span>' +
       '<span class="title">' + event.summary + '</span></div>'
     ).join('');
-    return label + rows;
+    return label + '<div class="day-block">' + rows + '</div>';
   }).join('');
 
   const exerciseEl = document.getElementById('exercise');
@@ -295,12 +300,19 @@ async function loadWeather() {
   const el = document.getElementById('weather');
   try {
     const url = 'https://api.open-meteo.com/v1/forecast?latitude=' + CONFIG.WEATHER_LAT +
-      '&longitude=' + CONFIG.WEATHER_LON + '&current=temperature_2m,weather_code&timezone=Europe%2FLondon';
+      '&longitude=' + CONFIG.WEATHER_LON +
+      '&current=temperature_2m,weather_code' +
+      '&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max' +
+      '&forecast_days=1&timezone=Europe%2FLondon';
     const res = await fetch(url);
     const data = await res.json();
     const temp = Math.round(data.current.temperature_2m);
     const desc = weatherDescription(data.current.weather_code);
-    el.innerHTML = '<span>' + temp + '°C, ' + desc + '</span>';
+    const high = Math.round(data.daily.temperature_2m_max[0]);
+    const low = Math.round(data.daily.temperature_2m_min[0]);
+    const rain = Math.round(data.daily.precipitation_probability_max[0]);
+    el.innerHTML = '<div>' + temp + '°C, ' + desc + '</div>' +
+      '<div class="sub">H:' + high + '° L:' + low + '° · ' + rain + '% chance of rain</div>';
   } catch (e) {
     el.innerHTML = '<span class="faint">Weather unavailable</span>';
   }
