@@ -286,22 +286,58 @@
         font-size: 14px;
       }
 
-      .pot-selector {
-        display: grid;
-        gap: 8px;
+      .alloc-item {
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
       }
-      .pot-btn {
-        padding: 10px 6px;
+      .alloc-item label {
+        line-height: 1.25;
+      }
+      .pot-selector {
+        position: relative;
+      }
+      .pot-selector .pot-dot {
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 10px;
+        height: 10px;
+        pointer-events: none;
+      }
+      .pot-selector select {
+        width: 100%;
+        padding: 12px 40px 12px 34px;
+        font-family: inherit;
+        font-size: 16px;
+        font-weight: 600;
         border: 1.5px solid var(--border);
         border-radius: 10px;
         background: var(--card2);
-        font-family: inherit;
-        font-size: 13px;
-        font-weight: 600;
-        color: var(--muted);
+        color: var(--text);
+        -webkit-appearance: none;
+        appearance: none;
         cursor: pointer;
-        transition: all 0.15s;
-        text-align: center;
+        transition: border-color 0.15s, color 0.15s;
+      }
+      .pot-selector select:focus {
+        outline: none;
+      }
+      .pot-selector select option {
+        background: var(--card2);
+        color: var(--text);
+      }
+      .pot-chev {
+        position: absolute;
+        right: 16px;
+        top: 50%;
+        width: 8px;
+        height: 8px;
+        border-right: 2px solid var(--muted);
+        border-bottom: 2px solid var(--muted);
+        transform: translateY(-70%) rotate(45deg);
+        pointer-events: none;
       }
       .add-btn {
         width: 100%;
@@ -674,6 +710,18 @@
           colour: "#E68346",
           def: 0,
         },
+        {
+          id: "joint",
+          name: "Joint Purchases",
+          colour: "#00B050",
+          def: 0,
+        },
+        {
+          id: "home",
+          name: "Home Maintenance",
+          colour: "#FF96F6",
+          def: 100,
+        },
       ];
 
       var potAlloc = {};
@@ -723,7 +771,7 @@
       function buildAllocInputs() {
         var grid = document.getElementById("alloc-grid");
         grid.style.gridTemplateColumns =
-          POTS.length > 1 ? "repeat(" + POTS.length + ", 1fr)" : "1fr";
+          "repeat(" + Math.min(POTS.length, 3) + ", 1fr)";
         var html = "";
         POTS.forEach(function (p) {
           html +=
@@ -761,37 +809,27 @@
       }
 
       function buildSelector() {
-        var sel = document.getElementById("pot-selector");
-        sel.style.gridTemplateColumns = "repeat(" + POTS.length + ", 1fr)";
-        var html = "";
+        var wrap = document.getElementById("pot-selector");
+        var html =
+          '<span class="pot-dot" id="pot-select-dot"></span>' +
+          '<select id="pot-select" aria-label="Pot" onchange="selectPot(this.value)">';
         POTS.forEach(function (p) {
-          html +=
-            '<button class="pot-btn" id="potbtn-' +
-            p.id +
-            '" onclick="selectPot(\'' +
-            p.id +
-            "')\">" +
-            p.name +
-            "</button>";
+          html += '<option value="' + p.id + '">' + p.name + "</option>";
         });
-        sel.innerHTML = html;
+        html += '</select><span class="pot-chev"></span>';
+        wrap.innerHTML = html;
         selectPot(POTS[0].id);
       }
 
       function selectPot(id) {
-        selectedPot = id;
-        POTS.forEach(function (p) {
-          var b = document.getElementById("potbtn-" + p.id);
-          if (p.id === id) {
-            b.style.background = hexA(p.colour, 0.15);
-            b.style.borderColor = p.colour;
-            b.style.color = p.colour;
-          } else {
-            b.style.background = "";
-            b.style.borderColor = "";
-            b.style.color = "";
-          }
-        });
+        var p = potById(id);
+        selectedPot = p.id;
+        var sel = document.getElementById("pot-select");
+        sel.value = p.id;
+        sel.style.background = hexA(p.colour, 0.12);
+        sel.style.borderColor = p.colour;
+        sel.style.color = p.colour;
+        document.getElementById("pot-select-dot").style.background = p.colour;
       }
 
       function showErr(msg) {
