@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="The 100">
+<title>The 100</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme:dark;
+  --bg:#0c0e0d;--card:#141714;--card2:#1a1e1b;--line:#252b27;
+  --text:#dde6df;--muted:#7d8a81;--dim:#4a534d;--accent:#e8734a;
+  --watched:#3ddc84;--watching:#5aa7ff;--watchlist:#e3b95b;--nope:#5f6862;--empty:#1c211e;
+  --ato:#e8734a;--alh:#c9a2f2;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{-webkit-text-size-adjust:100%}
+body{
+  font-family:'DM Mono',ui-monospace,Menlo,Consolas,monospace;
+  background:var(--bg);color:var(--text);font-size:14px;line-height:1.5;min-height:100vh;
+  padding:calc(env(safe-area-inset-top,0px) + 28px) 18px calc(env(safe-area-inset-bottom,0px) + 64px);
+}
+.wrap{max-width:1120px;margin:0 auto}
+h1,h2,h3,.syne{font-family:'Syne','Helvetica Neue',Arial,sans-serif}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+button:disabled{opacity:.3;cursor:default}
+button:focus-visible,select:focus-visible,input:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+a{color:inherit}
+.muted{color:var(--muted)}
+
+/* Header */
+.top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:22px}
+h1{font-size:48px;font-weight:800;letter-spacing:-.03em;line-height:.95}
+.sub{color:var(--muted);font-size:12px;margin-top:8px;max-width:40ch}
+.back{flex-shrink:0;font-size:12px;color:var(--muted);text-decoration:none;border:1px solid var(--line);padding:6px 12px;border-radius:999px}
+.back:hover{color:var(--text);border-color:var(--dim)}
+.nav{display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between;align-items:center;margin-bottom:22px}
+.seg{display:inline-flex;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:3px;gap:2px}
+.seg button{padding:7px 14px;border-radius:999px;font-size:12px;color:var(--muted);white-space:nowrap}
+.seg button:hover{color:var(--text)}
+.seg button.on{background:var(--text);color:var(--bg)}
+.seg button.on[data-who="ATO"]{background:var(--ato)}
+.seg button.on[data-who="ALH"]{background:var(--alh)}
+
+/* Cards */
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px}
+.card h3{font-size:17px;font-weight:700;margin-bottom:12px;letter-spacing:-.01em}
+.card h3 small{font-family:'DM Mono',monospace;font-weight:400;font-size:11px;color:var(--muted);margin-left:6px}
+.stack{display:grid;gap:16px}
+.dash{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:16px;align-items:start}
+@media (max-width:880px){.dash{grid-template-columns:minmax(0,1fr)}}
+
+/* Mosaic */
+.mosaic{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:4px}
+.cell{aspect-ratio:1;border-radius:5px;background:var(--empty);font-size:9px;color:var(--dim);display:flex;align-items:flex-end;justify-content:flex-start;padding:3px 4px;line-height:1;transition:transform .12s}
+.cell:hover{transform:scale(1.12);position:relative;z-index:2}
+.cell.fill{color:rgba(12,14,13,.72);font-weight:500}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:14px;font-size:11px;color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.legend-note{font-size:11px;color:var(--muted);margin-top:8px}
+
+/* Progress */
+.prog{margin-top:18px;display:grid;gap:12px}
+.prog-row .pr-top{display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px}
+.prog-row .pr-top b{font-weight:500}
+.stackbar{display:flex;height:8px;border-radius:99px;overflow:hidden;background:var(--empty)}
+.stackbar i{display:block;height:100%}
+
+/* Lists */
+.list{display:grid}
+.row{display:grid;grid-template-columns:34px minmax(0,1fr) auto;align-items:center;gap:10px;text-align:left;padding:9px 4px;border-top:1px solid var(--line)}
+.row:first-child{border-top:0}
+.row:hover .rt{color:#fff}
+.row .rn{font-family:'Syne',sans-serif;font-weight:800;font-size:18px;color:var(--dim)}
+.row .rt{display:block;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row .rm{display:block;font-size:11px;color:var(--muted)}
+.empty{font-size:12px;color:var(--muted);padding:6px 0}
+
+/* Chips */
+.chips{display:flex;flex-wrap:wrap;gap:4px;justify-content:flex-end}
+.chip{font-size:10px;padding:2px 7px;border-radius:99px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.chip b{font-weight:500;margin-right:4px;color:var(--text)}
+.chip.s-watched{background:var(--watched);color:#0c0e0d;border-color:transparent}
+.chip.s-watching{background:var(--watching);color:#0c0e0d;border-color:transparent}
+.chip.s-watchlist{background:var(--watchlist);color:#0c0e0d;border-color:transparent}
+.chip.s-nope{background:var(--nope);color:#0c0e0d;border-color:transparent}
+.chip[class*="s-"]:not(.s-none) b{color:#0c0e0d}
+
+/* Library */
+.ctrls{display:grid;gap:10px;margin-bottom:14px}
+.ctrl-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+input[type=search]{width:100%;background:var(--card);border:1px solid var(--line);border-radius:12px;color:var(--text);font:inherit;padding:11px 14px;font-size:14px}
+input[type=search]::placeholder{color:var(--dim)}
+select{appearance:none;-webkit-appearance:none;background:var(--card) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%237d8a81'/%3E%3C/svg%3E") no-repeat right 12px center;border:1px solid var(--line);border-radius:999px;color:var(--text);font:inherit;font-size:12px;padding:7px 30px 7px 13px;max-width:100%}
+.count{font-size:11px;color:var(--muted);margin-bottom:10px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px}
+@media (max-width:460px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.tile{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;text-align:left;display:flex;flex-direction:column;gap:4px;min-height:168px}
+.tile:hover{border-color:var(--dim)}
+.tile .rk{font-family:'Syne',sans-serif;font-weight:800;font-size:44px;line-height:.9;letter-spacing:-.04em;color:var(--dim);margin-bottom:8px}
+.tile .tt{font-size:13px;font-weight:500;line-height:1.3}
+.tile .mt{font-size:11px;color:var(--muted)}
+.tile .chips{justify-content:flex-start;margin-top:auto;padding-top:10px}
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:14px}
+table{width:100%;border-collapse:collapse;font-size:12px;min-width:640px}
+th{text-align:left;font-weight:400;color:var(--muted);font-size:11px;padding:10px 12px;border-bottom:1px solid var(--line);background:var(--card)}
+td{padding:9px 12px;border-bottom:1px solid var(--line)}
+tr:last-child td{border-bottom:0}
+tbody tr{cursor:pointer}
+tbody tr:hover td{background:var(--card)}
+td.n{font-family:'Syne',sans-serif;font-weight:800;color:var(--dim);font-size:15px}
+.stars-sm{color:var(--watchlist);letter-spacing:1px}
+
+/* Sheet */
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.62);display:flex;align-items:flex-end;justify-content:center;z-index:50}
+.ov[hidden]{display:none}
+.sheet{background:var(--card);border:1px solid var(--line);border-radius:20px 20px 0 0;width:100%;max-width:560px;max-height:90vh;overflow:auto;padding:22px 20px calc(env(safe-area-inset-bottom,0px) + 22px)}
+@media (min-width:700px){.ov{align-items:center}.sheet{border-radius:20px}}
+.sh-head{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:14px;align-items:start;margin-bottom:18px}
+.sh-rank{font-family:'Syne',sans-serif;font-weight:800;font-size:56px;line-height:.85;letter-spacing:-.04em;color:var(--accent)}
+.sh-head h2{font-size:22px;font-weight:700;line-height:1.1;letter-spacing:-.01em}
+.sh-head .mt{font-size:12px;color:var(--muted);margin-top:4px}
+.x{font-size:24px;line-height:1;color:var(--muted);padding:2px 6px}
+.pb{border-top:1px solid var(--line);padding:14px 0}
+.pb-h{font-size:12px;margin-bottom:10px}
+.pb-h b{font-weight:500;padding:2px 9px;border-radius:99px;color:#0c0e0d}
+.pb-h b.w-ATO{background:var(--ato)}
+.pb-h b.w-ALH{background:var(--alh)}
+.sbtns{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+@media (max-width:420px){.sbtns{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.sb{border:1px solid var(--line);border-radius:10px;padding:10px 6px;font-size:12px;color:var(--muted)}
+.sb:hover{color:var(--text);border-color:var(--dim)}
+.sb.on{color:#0c0e0d;border-color:transparent;font-weight:500}
+.sb.on.s-watched{background:var(--watched)}
+.sb.on.s-watching{background:var(--watching)}
+.sb.on.s-watchlist{background:var(--watchlist)}
+.sb.on.s-nope{background:var(--nope)}
+.stars{display:flex;align-items:center;gap:2px;margin-top:12px}
+.star{font-size:26px;line-height:1;color:var(--dim);padding:0 2px}
+.star.on{color:var(--watchlist)}
+.stars span{font-size:11px;margin-left:8px}
+.dt{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--muted);margin-top:12px}
+.dt input{background:var(--card2);border:1px solid var(--line);border-radius:8px;color:var(--text);font:inherit;font-size:12px;padding:6px 8px}
+.sh-nav{display:flex;justify-content:space-between;border-top:1px solid var(--line);padding-top:14px}
+.sh-nav button{font-size:12px;color:var(--muted);padding:6px 4px}
+.sh-nav button:hover:not(:disabled){color:var(--text)}
+
+/* Stats */
+.stats{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;align-items:start}
+@media (max-width:400px){.stats{grid-template-columns:minmax(0,1fr)}}
+.nums{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.num{background:var(--card2);border-radius:10px;padding:10px}
+.num b{display:block;font-family:'Syne',sans-serif;font-weight:800;font-size:26px;line-height:1}
+.num span{font-size:10px;color:var(--muted)}
+.who-l{font-size:11px;margin:12px 0 6px}
+.who-l:first-of-type{margin-top:0}
+.grp{margin-bottom:10px}
+.grp-l{font-size:11px;color:var(--muted);margin-bottom:4px}
+.hb{display:grid;grid-template-columns:34px minmax(0,1fr) 44px;gap:8px;align-items:center;font-size:11px;margin-bottom:3px}
+.hb-t{height:7px;border-radius:99px;background:var(--empty);overflow:hidden}
+.hb-t i{display:block;height:100%;border-radius:99px}
+.hb-v{text-align:right;color:var(--muted)}
+.rec{display:grid;gap:8px;font-size:12px}
+.rec div{display:grid;grid-template-columns:minmax(0,1fr);gap:1px}
+.rec span{font-size:10px;color:var(--muted)}
+
+/* Data */
+.btns{display:flex;flex-wrap:wrap;gap:8px}
+.btn{border:1px solid var(--line);border-radius:999px;padding:9px 16px;font-size:12px}
+.btn:hover{border-color:var(--dim)}
+.btn.danger{width:100%;color:var(--muted);border-radius:12px;margin-top:6px}
+.btn.danger:hover{color:#fff;background:#b3402a;border-color:transparent}
+.note{font-size:11px;color:var(--muted);margin-top:12px;max-width:60ch}
+
+.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 22px);transform:translateX(-50%);background:var(--text);color:var(--bg);font-size:12px;padding:9px 16px;border-radius:99px;z-index:60;opacity:0;transition:opacity .2s;pointer-events:none}
+.toast.show{opacity:1}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>The 100</h1>
+      <p class="sub">The New York Times' best TV shows of the 21st century, tracked by ATO and ALH.</p>
+    </div>
+    <a class="back" href="../../menu/">‹ Menu</a>
+  </header>
+
+  <nav class="nav">
+    <div class="seg" id="tabs">
+      <button data-tab="dash">Dashboard</button>
+      <button data-tab="lib">Library</button>
+      <button data-tab="stats">Stats</button>
+      <button data-tab="data">Data</button>
+    </div>
+    <div class="seg" id="whoSeg">
+      <button data-who="both">Both</button>
+      <button data-who="ATO">ATO</button>
+      <button data-who="ALH">ALH</button>
+    </div>
+  </nav>
+
+  <main id="main"></main>
+</div>
+
+<div class="ov" id="ov" hidden><div class="sheet" id="sheet" role="dialog" aria-modal="true"></div></div>
+<input type="file" id="restoreFile" accept=".json,application/json" hidden>
+<div class="toast" id="toast"></div>
+
+<script>
+/* ---------- The list (NYT, 2025) ---------- */
+/* [rank, title, years, type]  type: D Drama, C Comedy, R Reality, X Documentary, A Animation */
+const SHOWS = [
+[1,"Breaking Bad","2008-2013","D"],
+[2,"The Wire","2002-2008","D"],
+[3,"Mad Men","2007-2015","D"],
+[4,"Succession","2018-2023","D"],
+[5,"Fleabag","2016-2019","C"],
+[6,"Game of Thrones","2011-2019","D"],
+[7,"Veep","2012-2019","C"],
+[8,"30 Rock","2006-2013","C"],
+[9,"Curb Your Enthusiasm","2000-2024","C"],
+[10,"Atlanta","2016-2022","C"],
+[11,"The Office (U.S.)","2005-2013","C"],
+[12,"Arrested Development","2003-2019","C"],
+[13,"Girls","2012-2017","C"],
+[14,"Friday Night Lights","2006-2011","D"],
+[15,"Six Feet Under","2001-2005","D"],
+[16,"The Office (U.K.)","2001-2003","C"],
+[17,"The Americans","2013-2018","D"],
+[18,"I May Destroy You","2020","D"],
+[19,"Chernobyl","2019","D"],
+[20,"The Crown","2016-2023","D"],
+[21,"The White Lotus","2021-present","D"],
+[22,"Lost","2004-2010","D"],
+[23,"The Comeback","2005-2026","C"],
+[24,"Deadwood","2004-2006","D"],
+[25,"The Leftovers","2014-2017","D"],
+[26,"Black Mirror","2011-present","D"],
+[27,"Better Call Saul","2015-2022","D"],
+[28,"Band of Brothers","2001","D"],
+[29,"Key & Peele","2012-2015","C"],
+[30,"Severance","2022-present","D"],
+[31,"Survivor","2000-present","R"],
+[32,"Andor","2022-2025","D"],
+[33,"Enlightened","2011-2013","C"],
+[34,"Schitt's Creek","2015-2020","C"],
+[35,"True Detective (Season 1)","2014","D"],
+[36,"The Pitt","2025-present","D"],
+[37,"Battlestar Galactica","2005-2009","D"],
+[38,"Homeland","2011-2020","D"],
+[39,"Watchmen","2019","D"],
+[40,"Adolescence","2025","D"],
+[41,"Louie","2010-2015","C"],
+[42,"Hacks","2021-2026","C"],
+[43,"Peaky Blinders","2013-2022","D"],
+[44,"BoJack Horseman","2014-2020","A"],
+[45,"Happy Valley","2014-2023","D"],
+[46,"Broad City","2014-2019","C"],
+[47,"Twin Peaks: The Return","2017","D"],
+[48,"House of Cards","2013-2018","D"],
+[49,"Normal People","2020","D"],
+[50,"Parks and Recreation","2009-2015","C"],
+[51,"The Good Place","2016-2020","C"],
+[52,"Downton Abbey","2010-2015","D"],
+[53,"Stranger Things","2016-2025","D"],
+[54,"The Bureau","2015-2020","D"],
+[55,"Insecure","2016-2021","C"],
+[56,"Nathan for You","2013-2017","C"],
+[57,"I Think You Should Leave","2019-present","C"],
+[58,"Chappelle's Show","2003-2006","C"],
+[59,"PEN15","2019-2021","C"],
+[60,"Peep Show","2003-2015","C"],
+[61,"RuPaul's Drag Race","2009-present","R"],
+[62,"Slow Horses","2022-present","D"],
+[63,"The Thick of It","2005-2012","C"],
+[64,"Anthony Bourdain: Parts Unknown","2013-2018","X"],
+[65,"Mare of Easttown","2021","D"],
+[66,"The Rehearsal","2022-present","C"],
+[67,"The Handmaid's Tale","2017-2025","D"],
+[68,"Ozark","2017-2022","D"],
+[69,"Anthony Bourdain: No Reservations","2005-2012","X"],
+[70,"The Shield","2002-2008","D"],
+[71,"Beef (Season 1)","2023","D"],
+[72,"Squid Game","2021-2025","D"],
+[73,"Barry","2018-2023","C"],
+[74,"The Bear","2022-2026","C"],
+[75,"Ted Lasso","2020-present","C"],
+[76,"Somebody Somewhere","2022-2024","C"],
+[77,"Modern Family","2009-2020","C"],
+[78,"It's Always Sunny in Philadelphia","2005-present","C"],
+[79,"The Good Wife","2009-2016","D"],
+[80,"How To With John Wilson","2020-2023","C"],
+[81,"The Queen's Gambit","2020","D"],
+[82,"Better Things","2016-2022","C"],
+[83,"Justified","2010-2015","D"],
+[84,"Planet Earth","2006","X"],
+[85,"The Great British Baking Show","2010-present","R"],
+[86,"Shogun","2024-present","D"],
+[87,"Reservation Dogs","2021-2023","C"],
+[88,"Dexter","2006-2013","D"],
+[89,"Baby Reindeer","2024","D"],
+[90,"Eastbound & Down","2009-2013","C"],
+[91,"Catastrophe","2015-2019","C"],
+[92,"The Night Of","2016","D"],
+[93,"Station Eleven","2021-2022","D"],
+[94,"The Diplomat","2023-present","D"],
+[95,"House","2004-2012","D"],
+[96,"Halt and Catch Fire","2014-2017","D"],
+[97,"Community","2009-2015","C"],
+[98,"The OA","2016-2019","D"],
+[99,"Gilmore Girls","2000-2007","D"],
+[100,"Scandal","2012-2018","D"]
+];
+/* Extra search terms (UK names etc.) */
+const ALIAS = {85:"great british bake off bake off gbbo",16:"office uk",11:"office us",54:"le bureau des legendes",86:"shōgun",35:"true detective",71:"beef"};
+
+const TYPES = {D:"Drama",C:"Comedy",R:"Reality",X:"Documentary",A:"Animation"};
+const STATUS = {watched:"Watched",watching:"Watching",watchlist:"Watchlist",nope:"Not for me"};
+const SKEYS = Object.keys(STATUS);
+const PEOPLE = ["ATO","ALH"];
+const PC = {ATO:"var(--ato)",ALH:"var(--alh)"};
+const KEY = "atoalh_tv100_v1";
+const THIS_YEAR = new Date().getFullYear();
+
+const SHOW = SHOWS.map(([rank,title,yrs,type])=>{
+  const [a,b] = yrs.split("-");
+  const start = +a;
+  const end = b===undefined ? start : (b==="present" ? null : +b);
+  return {rank,title,yrs:yrs.replace("-","–"),type,start,end,
+    search:(title+" "+(ALIAS[rank]||"")).toLowerCase()};
+});
+const BY = {}; SHOW.forEach(s=>BY[s.rank]=s);
+
+/* ---------- State ---------- */
+function blank(){return {v:1,data:{},ui:{tab:"dash",who:"both",layout:"grid",sort:"rank",q:"",status:"all",type:"all",decade:"all"}};}
+function load(){
+  try{
+    const raw = localStorage.getItem(KEY);
+    if(!raw) return blank();
+    const o = JSON.parse(raw), b = blank();
+    return {v:1,data:(o&&o.data)||{},ui:Object.assign(b.ui,(o&&o.ui)||{})};
+  }catch(e){return blank();}
+}
+let S = load();
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){toast("Couldn't save in this browser");}}
+function get(r,p){const d=S.data[r];return Object.assign({s:"",r:0,d:""},(d&&d[p])||{});}
+function put(r,p,patch){
+  const d = S.data[r] || (S.data[r]={});
+  const cur = Object.assign(get(r,p),patch);
+  if(!cur.s && !cur.r && !cur.d) delete d[p]; else d[p]=cur;
+  if(!d.ATO && !d.ALH) delete S.data[r];
+  save();
+}
+const who = ()=>S.ui.who==="both" ? PEOPLE : [S.ui.who];
+const today = ()=>{const d=new Date();return new Date(d.getTime()-d.getTimezoneOffset()*6e4).toISOString().slice(0,10);};
+const esc = s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const $ = id=>document.getElementById(id);
+
+/* ---------- Shared bits ---------- */
+function chip(r,p){
+  const e=get(r,p);
+  if(!e.s) return `<span class="chip s-none"><b>${p}</b>–</span>`;
+  const star = e.r ? ` ★${e.r}` : "";
+  return `<span class="chip s-${e.s}"><b>${p}</b>${STATUS[e.s]}${star}</span>`;
+}
+function chips(r,ps){return `<span class="chips">${(ps||who()).map(p=>chip(r,p)).join("")}</span>`;}
+function row(r,ps){
+  const s=BY[r];
+  return `<button class="row" data-open="${r}"><span class="rn">${r}</span><span><span class="rt">${esc(s.title)}</span><span class="rm">${s.yrs} · ${TYPES[s.type]}</span></span>${chips(r,ps)}</button>`;
+}
+function list(rs,emptyMsg,ps){return rs.length ? `<div class="list">${rs.map(r=>row(r,ps)).join("")}</div>` : `<p class="empty">${emptyMsg}</p>`;}
+const ranksWhere = fn=>SHOW.filter(s=>fn(s.rank)).map(s=>s.rank);
+const col = s=>s ? `var(--${s})` : "var(--empty)";
+
+/* ---------- Dashboard ---------- */
+function renderDash(){
+  const both = S.ui.who==="both", ps = who();
+  let cells = "";
+  SHOW.forEach(s=>{
+    const r=s.rank;
+    let bg, fill;
+    if(both){
+      const a=get(r,"ATO").s, b=get(r,"ALH").s;
+      fill = !!(a||b);
+      bg = `linear-gradient(135deg,${col(a)} 0 50%,${col(b)} 50% 100%)`;
+    }else{
+      const a=get(r,S.ui.who).s; fill=!!a; bg=col(a);
+    }
+    cells += `<button class="cell${fill?" fill":""}" style="background:${bg}" data-open="${r}" title="${r}. ${esc(s.title)}" aria-label="${r}. ${esc(s.title)}">${r}</button>`;
+  });
+  const legend = `<div class="legend">${SKEYS.map(k=>`<span><i style="background:var(--${k})"></i>${STATUS[k]}</span>`).join("")}<span><i style="background:var(--empty);outline:1px solid var(--line)"></i>Not set</span></div>`
+    + (both ? `<p class="legend-note">Each square is split: ATO top-left, ALH bottom-right. Tap one to update it.</p>` : `<p class="legend-note">Tap a square to update it.</p>`);
+
+  const prog = ps.map(p=>{
+    const c={}; SKEYS.forEach(k=>c[k]=0);
+    SHOW.forEach(s=>{const x=get(s.rank,p).s; if(x) c[x]++;});
+    return `<div class="prog-row"><div class="pr-top"><b style="color:${PC[p]}">${p}</b><span class="muted">${c.watched}/100 watched · ${c.watching} watching · ${c.watchlist} on watchlist</span></div>
+      <div class="stackbar">${SKEYS.map(k=>`<i style="width:${c[k]}%;background:var(--${k})"></i>`).join("")}</div></div>`;
+  }).join("");
+
+  let right = "";
+  if(both){
+    const st=(r,p)=>get(r,p).s;
+    const watching = ranksWhere(r=>st(r,"ATO")==="watching"||st(r,"ALH")==="watching");
+    const together = ranksWhere(r=>st(r,"ATO")==="watchlist"&&st(r,"ALH")==="watchlist");
+    const catchup = ranksWhere(r=>(st(r,"ATO")==="watched"&&st(r,"ALH")==="watchlist")||(st(r,"ALH")==="watched"&&st(r,"ATO")==="watchlist"));
+    const next = ranksWhere(r=>PEOPLE.every(p=>!st(r,p))).slice(0,5);
+    right = `
+      <section class="card"><h3>Watching now</h3>${list(watching,"Nothing on the go.")}</section>
+      <section class="card"><h3>Watch together<small>on both watchlists</small></h3>${list(together,"Nothing on both watchlists yet.")}</section>
+      <section class="card"><h3>Catch up<small>one's seen it, the other wants to</small></h3>${list(catchup,"Nothing to catch up on.")}</section>
+      <section class="card"><h3>Next up on the list<small>untouched by both</small></h3>${list(next,"You've both set a status on every show.")}</section>`;
+  }else{
+    const p=S.ui.who, st=r=>get(r,p).s;
+    const watching = ranksWhere(r=>st(r)==="watching");
+    const wl = ranksWhere(r=>st(r)==="watchlist");
+    const next = ranksWhere(r=>!st(r)).slice(0,5);
+    const recent = ranksWhere(r=>st(r)==="watched"&&get(r,p).d).sort((a,b)=>get(b,p).d.localeCompare(get(a,p).d)).slice(0,5);
+    right = `
+      <section class="card"><h3>Watching now</h3>${list(watching,"Nothing on the go.",[p])}</section>
+      <section class="card"><h3>Watchlist<small>${wl.length} show${wl.length===1?"":"s"}</small></h3>${list(wl.slice(0,8),"Watchlist is empty.",[p])}</section>
+      <section class="card"><h3>Recently finished</h3>${list(recent,"No finish dates yet.",[p])}</section>
+      <section class="card"><h3>Next up on the list<small>no status yet</small></h3>${list(next,"Every show has a status.",[p])}</section>`;
+  }
+
+  $("main").innerHTML = `<div class="dash">
+    <section class="card"><h3>All 100</h3><div class="mosaic">${cells}</div>${legend}<div class="prog">${prog}</div></section>
+    <div class="stack">${right}</div></div>`;
+}
+
+/* ---------- Library ---------- */
+function statusOpts(){
+  return S.ui.who==="both"
+    ? [["all","All statuses"],["bothwatched","Both watched"],["either","Either watched"],["watching","Either watching"],["together","Watch together"],["neither","Neither watched"],["nope","Either: not for me"]]
+    : [["all","All statuses"],["watched","Watched"],["watching","Watching"],["watchlist","Watchlist"],["nope","Not for me"],["unset","Not set"]];
+}
+const SORTS = [["rank","NYT rank"],["title","Title A–Z"],["newest","Premiere · newest"],["oldest","Premiere · oldest"],["ours","Our rating · highest"],["ATO","ATO's rating · highest"],["ALH","ALH's rating · highest"],["recent","Recently finished"]];
+const DECADES = [["all","All decades"],["2000","Premiered 2000s"],["2010","Premiered 2010s"],["2020","Premiered 2020s"]];
+function opts(arr,val){return arr.map(([v,l])=>`<option value="${v}"${v===val?" selected":""}>${l}</option>`).join("");}
+
+function passStatus(r){
+  const f=S.ui.status; if(f==="all") return true;
+  if(S.ui.who==="both"){
+    const a=get(r,"ATO").s, b=get(r,"ALH").s;
+    switch(f){
+      case "bothwatched": return a==="watched"&&b==="watched";
+      case "either": return a==="watched"||b==="watched";
+      case "watching": return a==="watching"||b==="watching";
+      case "together": return a==="watchlist"&&b==="watchlist";
+      case "neither": return a!=="watched"&&b!=="watched";
+      case "nope": return a==="nope"||b==="nope";
+    }
+    return true;
+  }
+  const s=get(r,S.ui.who).s;
+  return f==="unset" ? !s : s===f;
+}
+function rating(r,key){
+  if(key==="ours"){const rs=PEOPLE.map(p=>get(r,p).r).filter(Boolean);return rs.length?rs.reduce((a,b)=>a+b,0)/rs.length:0;}
+  return get(r,key).r;
+}
+function lastDate(r){return (who().map(p=>get(r,p).d).filter(Boolean).sort().pop())||"";}
+function filtered(){
+  const q=S.ui.q.trim().toLowerCase();
+  let out = SHOW.filter(s=>
+    (!q || s.search.includes(q) || String(s.rank)===q) &&
+    (S.ui.type==="all" || s.type===S.ui.type) &&
+    (S.ui.decade==="all" || Math.floor(s.start/10)*10===+S.ui.decade) &&
+    passStatus(s.rank));
+  const k=S.ui.sort;
+  const byRank=(a,b)=>a.rank-b.rank;
+  const sorts={
+    rank:byRank,
+    title:(a,b)=>a.title.replace(/^The /,"").localeCompare(b.title.replace(/^The /,"")),
+    newest:(a,b)=>b.start-a.start||byRank(a,b),
+    oldest:(a,b)=>a.start-b.start||byRank(a,b),
+    recent:(a,b)=>lastDate(b.rank).localeCompare(lastDate(a.rank))||byRank(a,b)
+  };
+  out.sort(sorts[k] || ((a,b)=>rating(b.rank,k)-rating(a.rank,k)||byRank(a,b)));
+  return out;
+}
+function renderLib(){
+  if(!statusOpts().some(o=>o[0]===S.ui.status)) S.ui.status="all";
+  $("main").innerHTML = `
+    <div class="ctrls">
+      <input type="search" id="q" placeholder="Search the 100" value="${esc(S.ui.q)}" autocomplete="off">
+      <div class="ctrl-row">
+        <select data-f="status" aria-label="Status">${opts(statusOpts(),S.ui.status)}</select>
+        <select data-f="type" aria-label="Type">${opts([["all","All types"],...Object.entries(TYPES)],S.ui.type)}</select>
+        <select data-f="decade" aria-label="Decade">${opts(DECADES,S.ui.decade)}</select>
+        <select data-f="sort" aria-label="Sort">${opts(SORTS,S.ui.sort)}</select>
+        <div class="seg"><button data-layout="grid" class="${S.ui.layout==="grid"?"on":""}">Grid</button><button data-layout="table" class="${S.ui.layout==="table"?"on":""}">Table</button></div>
+      </div>
+    </div>
+    <div class="count" id="count"></div>
+    <div id="results"></div>`;
+  renderResults();
+}
+function renderResults(){
+  const rows=filtered(), ps=who(), single=S.ui.who!=="both";
+  $("count").textContent = `${rows.length} show${rows.length===1?"":"s"}`;
+  if(!rows.length){$("results").innerHTML=`<p class="empty">No shows match those filters.</p>`;return;}
+  if(S.ui.layout==="grid"){
+    $("results").innerHTML = `<div class="grid">${rows.map(s=>{
+      const st = single ? get(s.rank,S.ui.who).s : "";
+      return `<button class="tile" data-open="${s.rank}"><span class="rk"${st?` style="color:var(--${st})"`:""}>${s.rank}</span><span class="tt">${esc(s.title)}</span><span class="mt">${s.yrs} · ${TYPES[s.type]}</span>${chips(s.rank,ps)}</button>`;
+    }).join("")}</div>`;
+  }else{
+    const stars=n=>n?`<span class="stars-sm">${"★".repeat(n)}</span>`:`<span class="muted">–</span>`;
+    $("results").innerHTML = `<div class="tbl-wrap"><table><thead><tr><th>#</th><th>Show</th><th>Years</th><th>Type</th>${ps.map(p=>`<th>${p}</th><th>${p} rating</th>`).join("")}</tr></thead><tbody>${
+      rows.map(s=>`<tr data-open="${s.rank}"><td class="n">${s.rank}</td><td>${esc(s.title)}</td><td class="muted">${s.yrs}</td><td class="muted">${TYPES[s.type]}</td>${
+        ps.map(p=>{const e=get(s.rank,p);return `<td>${e.s?`<span class="chip s-${e.s}">${STATUS[e.s]}</span>`:`<span class="muted">–</span>`}</td><td>${stars(e.r)}</td>`;}).join("")}</tr>`).join("")
+    }</tbody></table></div>`;
+  }
+}
+
+/* ---------- Stats ---------- */
+function hb(label,val,max,color,note){
+  const pct = max ? Math.round(val/max*100) : 0;
+  return `<div class="hb"><span>${label}</span><span class="hb-t"><i style="width:${pct}%;background:${color}"></i></span><span class="hb-v">${note!==undefined?note:val}</span></div>`;
+}
+function grp(title,inner){return `<div class="grp"><div class="grp-l">${title}</div>${inner}</div>`;}
+function renderStats(){
+  const ps=who(), both=S.ui.who==="both";
+  const W=(r,p)=>get(r,p).s==="watched";
+  const cards=[];
+
+  // Overview
+  cards.push(`<section class="card"><h3>Where you're at</h3>${ps.map(p=>{
+    const c={}; SKEYS.forEach(k=>c[k]=SHOW.filter(s=>get(s.rank,p).s===k).length);
+    return `${both?`<div class="who-l" style="color:${PC[p]}">${p}</div>`:""}<div class="nums">${SKEYS.map(k=>`<div class="num"><b style="color:var(--${k})">${c[k]}</b><span>${STATUS[k]}</span></div>`).join("")}</div>`;
+  }).join("")}</section>`);
+
+  // Top N
+  cards.push(`<section class="card"><h3>How far down the list</h3>${[10,25,50,100].map(n=>grp(`Top ${n}`,ps.map(p=>{
+    const v=SHOW.filter(s=>s.rank<=n&&W(s.rank,p)).length; return hb(p,v,n,PC[p],`${v}/${n}`);}).join(""))).join("")}</section>`);
+
+  // By type
+  cards.push(`<section class="card"><h3>Watched by type</h3>${Object.entries(TYPES).map(([k,l])=>{
+    const tot=SHOW.filter(s=>s.type===k).length;
+    return grp(`${l} (${tot} on the list)`,ps.map(p=>{const v=SHOW.filter(s=>s.type===k&&W(s.rank,p)).length;return hb(p,v,tot,PC[p],`${v}/${tot}`);}).join(""));
+  }).join("")}</section>`);
+
+  // By decade
+  cards.push(`<section class="card"><h3>Watched by premiere decade</h3>${[2000,2010,2020].map(d=>{
+    const tot=SHOW.filter(s=>Math.floor(s.start/10)*10===d).length;
+    return grp(`${d}s (${tot} on the list)`,ps.map(p=>{const v=SHOW.filter(s=>Math.floor(s.start/10)*10===d&&W(s.rank,p)).length;return hb(p,v,tot,PC[p],`${v}/${tot}`);}).join(""));
+  }).join("")}</section>`);
+
+  // Ratings
+  const rated = p=>SHOW.map(s=>get(s.rank,p).r).filter(Boolean);
+  const maxR = Math.max(1,...ps.flatMap(p=>[1,2,3,4,5].map(n=>rated(p).filter(x=>x===n).length)));
+  cards.push(`<section class="card"><h3>Rating spread</h3>${[5,4,3,2,1].map(n=>grp("★".repeat(n),ps.map(p=>{
+    const v=rated(p).filter(x=>x===n).length; return hb(p,v,maxR,PC[p]);}).join(""))).join("")}
+    <p class="note">${ps.map(p=>{const r=rated(p);return `${p}: ${r.length?`${(r.reduce((a,b)=>a+b,0)/r.length).toFixed(1)}★ average across ${r.length}`:"nothing rated yet"}`;}).join(" · ")}</p></section>`);
+
+  // By year finished
+  const years=[...new Set(ps.flatMap(p=>SHOW.map(s=>get(s.rank,p)).filter(e=>e.s==="watched"&&e.d).map(e=>e.d.slice(0,4))))].sort().reverse();
+  const yc=(y,p)=>SHOW.filter(s=>{const e=get(s.rank,p);return e.s==="watched"&&e.d.slice(0,4)===y;}).length;
+  const maxY=Math.max(1,...years.flatMap(y=>ps.map(p=>yc(y,p))));
+  cards.push(`<section class="card"><h3>Finished by year</h3>${years.length?years.map(y=>grp(y,ps.map(p=>hb(p,yc(y,p),maxY,PC[p])).join(""))).join(""):`<p class="empty">Finish dates are stamped when you mark a show Watched.</p>`}</section>`);
+
+  // Together (both only)
+  if(both){
+    const bw=SHOW.filter(s=>W(s.rank,"ATO")&&W(s.rank,"ALH")).length;
+    const tog=SHOW.filter(s=>PEOPLE.every(p=>get(s.rank,p).s==="watchlist")).length;
+    const pairs=SHOW.map(s=>({s,a:get(s.rank,"ATO").r,b:get(s.rank,"ALH").r})).filter(x=>x.a&&x.b);
+    let body=`<div class="nums" style="grid-template-columns:repeat(3,minmax(0,1fr))"><div class="num"><b>${bw}</b><span>Both watched</span></div><div class="num"><b>${tog}</b><span>Watch together</span></div><div class="num"><b>${pairs.length}</b><span>Both rated</span></div></div>`;
+    if(pairs.length){
+      const gap=pairs.reduce((t,x)=>t+Math.abs(x.a-x.b),0)/pairs.length;
+      const close=Math.round(pairs.filter(x=>Math.abs(x.a-x.b)<=1).length/pairs.length*100);
+      const worst=[...pairs].sort((x,y)=>Math.abs(y.a-y.b)-Math.abs(x.a-x.b)||x.s.rank-y.s.rank)[0];
+      const fives=pairs.filter(x=>x.a===5&&x.b===5).map(x=>esc(x.s.title));
+      body+=`<div class="rec" style="margin-top:14px">
+        <div><span>Taste match</span>${close}% of shared ratings within one star · average gap ${gap.toFixed(1)}★</div>
+        ${Math.abs(worst.a-worst.b)?`<div><span>Biggest disagreement</span>${esc(worst.s.title)}: ATO ${worst.a}★, ALH ${worst.b}★</div>`:""}
+        <div><span>Both gave five stars</span>${fives.length?fives.join(", "):"Nothing yet"}</div></div>`;
+    }
+    cards.push(`<section class="card"><h3>Together</h3>${body}</section>`);
+  }
+
+  // Records
+  cards.push(`<section class="card"><h3>Records</h3>${ps.map(p=>{
+    const w=SHOW.filter(s=>W(s.rank,p));
+    const todo=SHOW.find(s=>!["watched","nope"].includes(get(s.rank,p).s));
+    const long=[...w].sort((a,b)=>((b.end??THIS_YEAR)-b.start)-((a.end??THIS_YEAR)-a.start))[0];
+    const newest=[...w].sort((a,b)=>b.start-a.start||a.rank-b.rank)[0];
+    const fives=SHOW.filter(s=>get(s.rank,p).r===5).map(s=>esc(s.title));
+    const line=(l,v)=>`<div><span>${l}</span>${v}</div>`;
+    return `${both?`<div class="who-l" style="color:${PC[p]}">${p}</div>`:""}<div class="rec">
+      ${line("Highest ranked watched",w[0]?`#${w[0].rank} ${esc(w[0].title)}`:"–")}
+      ${line("Highest ranked still to see",todo?`#${todo.rank} ${esc(todo.title)}`:"All done")}
+      ${line("Longest-running watched",long?`${esc(long.title)} (${long.yrs})`:"–")}
+      ${line("Newest watched",newest?`${esc(newest.title)} (${newest.start})`:"–")}
+      ${line("Five stars",fives.length?fives.join(", "):"–")}</div>`;
+  }).join("")}</section>`);
+
+  $("main").innerHTML = `<div class="stats">${cards.join("")}</div>`;
+}
+
+/* ---------- Data ---------- */
+function renderData(){
+  const n=Object.keys(S.data).length;
+  $("main").innerHTML = `<div class="stats">
+    <section class="card"><h3>Backup</h3>
+      <div class="btns"><button class="btn" data-act="backup">Download backup (.json)</button><button class="btn" data-act="restore">Restore from backup</button></div>
+      <p class="note">The tracker lives in this browser, so each phone keeps its own copy. Download a backup before switching device, then restore it on the other one. ${n} show${n===1?" has":"s have"} a status or rating saved here.</p>
+    </section>
+    <section class="card"><h3>Export</h3>
+      <div class="btns"><button class="btn" data-act="csv">Export list (.csv)</button></div>
+      <p class="note">All 100 shows with both statuses, ratings and finish dates. Opens in Excel.</p>
+      <button class="btn danger" data-act="reset">Reset everything</button>
+    </section></div>`;
+}
+function download(name,text,type){
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([text],{type}));
+  a.download=name; document.body.appendChild(a); a.click();
+  setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},800);
+}
+function doAct(act){
+  if(act==="backup"){
+    download(`tv100-backup-${today()}.json`,JSON.stringify({app:"tv100",v:1,exported:new Date().toISOString(),data:S.data},null,1),"application/json");
+  }else if(act==="restore"){
+    $("restoreFile").value=""; $("restoreFile").click();
+  }else if(act==="csv"){
+    const q=v=>`"${String(v).replace(/"/g,'""')}"`;
+    const head=["Rank","Title","Years","Type",...PEOPLE.flatMap(p=>[`${p} status`,`${p} rating`,`${p} finished`])];
+    const lines=[head.map(q).join(",")].concat(SHOW.map(s=>[s.rank,s.title,s.yrs,TYPES[s.type],...PEOPLE.flatMap(p=>{const e=get(s.rank,p);return [e.s?STATUS[e.s]:"",e.r||"",e.d];})].map(q).join(",")));
+    download(`tv100-${today()}.csv`,"\ufeff"+lines.join("\r\n"),"text/csv");
+  }else if(act==="reset"){
+    if(confirm("Clear every status, rating and date for both of you? This can't be undone.")){S.data={};save();render();toast("Everything cleared");}
+  }
+}
+$("restoreFile").addEventListener("change",e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const rd=new FileReader();
+  rd.onload=()=>{
+    try{
+      const o=JSON.parse(rd.result), src=o&&o.data;
+      if(!src||typeof src!=="object") throw 0;
+      const clean={};
+      Object.entries(src).forEach(([r,v])=>{
+        if(!BY[r]||!v) return;
+        PEOPLE.forEach(p=>{
+          const e=v[p]; if(!e) return;
+          const x={s:SKEYS.includes(e.s)?e.s:"",r:[1,2,3,4,5].includes(+e.r)?+e.r:0,d:/^\d{4}-\d{2}-\d{2}$/.test(e.d||"")?e.d:""};
+          if(x.s||x.r||x.d){(clean[r]||(clean[r]={}))[p]=x;}
+        });
+      });
+      S.data=clean; save(); render(); toast(`Restored ${Object.keys(clean).length} shows`);
+    }catch(err){toast("That file isn't a TV 100 backup");}
+  };
+  rd.readAsText(f);
+});
+
+/* ---------- Sheet ---------- */
+let openRank=null;
+function sheetHTML(r){
+  const s=BY[r];
+  let h=`<div class="sh-head"><div class="sh-rank">${r}</div><div><h2>${esc(s.title)}</h2><div class="mt">${s.yrs} · ${TYPES[s.type]}</div></div><button class="x" data-close aria-label="Close">×</button></div>`;
+  PEOPLE.forEach(p=>{
+    const e=get(r,p);
+    h+=`<div class="pb"><div class="pb-h"><b class="w-${p}">${p}</b></div>
+      <div class="sbtns">${SKEYS.map(k=>`<button class="sb s-${k}${e.s===k?" on":""}" data-st="${k}" data-p="${p}" aria-pressed="${e.s===k}">${STATUS[k]}</button>`).join("")}</div>`;
+    if(e.s==="watched"||e.s==="watching"){
+      h+=`<div class="stars">${[1,2,3,4,5].map(n=>`<button class="star${n<=e.r?" on":""}" data-star="${n}" data-p="${p}" aria-label="${n} star${n>1?"s":""}">★</button>`).join("")}<span class="muted">${e.r?`${e.r}/5 · tap again to clear`:"Rate it"}</span></div>`;
+    }
+    if(e.s==="watched"){
+      h+=`<label class="dt">Finished <input type="date" value="${e.d}" data-date data-p="${p}" max="${today()}"></label>`;
+    }
+    h+=`</div>`;
+  });
+  h+=`<div class="sh-nav"><button data-open="${r-1}"${r===1?" disabled":""}>‹ Previous</button><button data-open="${r+1}"${r===100?" disabled":""}>Next ›</button></div>`;
+  return h;
+}
+function openSheet(r){
+  if(!BY[r]) return;
+  const same = openRank===r;
+  openRank=r;
+  const sh=$("sheet"), top=same?sh.scrollTop:0;
+  sh.innerHTML=sheetHTML(r);
+  $("ov").hidden=false;
+  sh.scrollTop=top;
+  document.body.style.overflow="hidden";
+}
+function closeSheet(){$("ov").hidden=true;openRank=null;document.body.style.overflow="";}
+function refresh(){render();if(openRank)openSheet(openRank);}
+
+/* ---------- Render + events ---------- */
+function render(){
+  document.querySelectorAll("[data-tab]").forEach(b=>b.classList.toggle("on",b.dataset.tab===S.ui.tab));
+  document.querySelectorAll("[data-who]").forEach(b=>b.classList.toggle("on",b.dataset.who===S.ui.who));
+  ({dash:renderDash,lib:renderLib,stats:renderStats,data:renderData}[S.ui.tab]||renderDash)();
+}
+
+document.addEventListener("click",e=>{
+  const t=e.target.closest("button,[data-open]");
+  if(e.target===$("ov")){closeSheet();return;}
+  if(!t) return;
+  const d=t.dataset;
+  if(d.tab){S.ui.tab=d.tab;save();render();window.scrollTo(0,0);return;}
+  if(d.who){S.ui.who=d.who;save();render();return;}
+  if(d.layout){S.ui.layout=d.layout;save();renderLib();return;}
+  if(d.act){doAct(d.act);return;}
+  if("close" in d){closeSheet();return;}
+  if(d.st && openRank){
+    const r=openRank, p=d.p, cur=get(r,p), k=d.st;
+    if(cur.s===k){put(r,p,{s:"",r:0,d:""});}
+    else{
+      const patch={s:k};
+      if(k==="watched"){if(!cur.d)patch.d=today();}else patch.d="";
+      if(k!=="watched"&&k!=="watching")patch.r=0;
+      put(r,p,patch);
+    }
+    refresh();return;
+  }
+  if(d.star && openRank){
+    const n=+d.star, cur=get(openRank,d.p);
+    put(openRank,d.p,{r:cur.r===n?0:n}); refresh(); return;
+  }
+  if(d.open){openSheet(+d.open);return;}
+});
+document.addEventListener("change",e=>{
+  const t=e.target;
+  if(t.matches("select[data-f]")){S.ui[t.dataset.f]=t.value;save();renderResults();}
+  if(t.matches("[data-date]")&&openRank){put(openRank,t.dataset.p,{d:t.value});render();}
+});
+document.addEventListener("input",e=>{
+  if(e.target.id==="q"){S.ui.q=e.target.value;save();renderResults();}
+});
+document.addEventListener("keydown",e=>{
+  if(!openRank) return;
+  if(e.key==="Escape") closeSheet();
+  if(e.target.tagName==="INPUT") return;
+  if(e.key==="ArrowRight"&&openRank<100) openSheet(openRank+1);
+  if(e.key==="ArrowLeft"&&openRank>1) openSheet(openRank-1);
+});
+
+let tt;
+function toast(msg){const el=$("toast");el.textContent=msg;el.classList.add("show");clearTimeout(tt);tt=setTimeout(()=>el.classList.remove("show"),2200);}
+
+render();
+</script>
+</body>
+</html>

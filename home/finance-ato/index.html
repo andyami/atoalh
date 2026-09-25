@@ -147,14 +147,6 @@
         </div>
       </div>
       <div class="field">
-        <label>AMEX</label>
-        <div class="input-wrap">
-          <span class="pound">&pound;</span>
-          <input type="number" inputmode="numeric" id="amex" placeholder="0">
-          <span class="saved-tag">saved</span>
-        </div>
-      </div>
-      <div class="field">
         <label>EVERYDAY ACCOUNT</label>
         <div class="input-wrap">
           <span class="pound">&pound;</span>
@@ -235,7 +227,8 @@
   }
 
   /* ------- BUDGET TRACKER ------- */
-  var PERSIST = ["spends", "barclays", "sta", "amex"];
+  var PERSIST = ["spends", "barclays", "sta"];
+  try { localStorage.removeItem(PFX + '_amex'); } catch(e) {}
 
   function val(id) {
     var el = document.getElementById(id);
@@ -260,10 +253,9 @@
   function calc() {
     saveAll();
     var spends    = val('spends');
-    var amex      = val('amex');
     var barcl     = val('barclays');
     var sta       = val('sta');
-    var available = (spends + sta) - amex - barcl;
+    var available = (spends + sta) - barcl;
 
     var card    = document.getElementById('result-card');
     var amount  = document.getElementById('result-amount');
