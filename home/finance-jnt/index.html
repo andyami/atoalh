@@ -48,12 +48,10 @@
       }
       header {
         display: flex;
-        align-items: baseline;
-        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 8px 10px;
         margin-bottom: 28px;
-      }
-      header .cycle {
-        margin-left: auto;
       }
       .name {
         font-family: "Syne", sans-serif;
@@ -64,9 +62,76 @@
       .name span {
         color: var(--accent);
       }
-      .cycle {
+
+      /* ---- Period selector (top right) ---- */
+      .period-wrap {
+        position: relative;
+        margin-left: auto;
+      }
+      .period-pill {
+        display: flex;
+        align-items: center;
+        gap: 7px;
         font-size: 12px;
         color: var(--muted);
+        border: 1px solid var(--border2);
+        border-radius: 6px;
+        padding: 4px 9px 4px 10px;
+        white-space: nowrap;
+        line-height: 1.4;
+        transition: all 0.15s;
+      }
+      .period-chev {
+        width: 6px;
+        height: 6px;
+        border-right: 1.5px solid currentColor;
+        border-bottom: 1.5px solid currentColor;
+        transform: translateY(-2px) rotate(45deg);
+        flex-shrink: 0;
+      }
+      .period-wrap.off .period-pill {
+        color: var(--amber);
+        border-color: rgba(240, 180, 41, 0.45);
+        background: rgba(240, 180, 41, 0.08);
+      }
+      .period-wrap select {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        font-size: 16px;
+        cursor: pointer;
+        -webkit-appearance: none;
+        appearance: none;
+      }
+      .period-note {
+        display: none;
+        align-items: center;
+        gap: 10px;
+        background: rgba(240, 180, 41, 0.07);
+        border: 1px solid rgba(240, 180, 41, 0.25);
+        border-radius: 10px;
+        padding: 10px 12px;
+        margin: -10px 0 12px;
+        font-size: 11px;
+        line-height: 1.5;
+        color: var(--amber);
+      }
+      .period-note.show {
+        display: flex;
+      }
+      .period-note button {
+        margin-left: auto;
+        flex-shrink: 0;
+        background: transparent;
+        border: 1px solid rgba(240, 180, 41, 0.45);
+        border-radius: 6px;
+        padding: 3px 9px;
+        font-family: inherit;
+        font-size: 11px;
+        color: var(--amber);
+        cursor: pointer;
       }
 
       .card {
@@ -89,12 +154,6 @@
       }
       .field:last-child {
         margin-bottom: 0;
-      }
-      .field label {
-        display: block;
-        font-size: 13px;
-        color: var(--muted);
-        margin-bottom: 5px;
       }
       .input-wrap {
         position: relative;
@@ -127,116 +186,10 @@
         outline: none;
         border-color: var(--accent);
       }
-      .input-wrap input.spends-input:focus {
-        border-color: var(--amber);
-      }
       .input-wrap input.note-input {
         padding: 11px 13px;
         font-size: 14px;
         font-weight: 400;
-      }
-      .saved-tag {
-        position: absolute;
-        right: 10px;
-        font-size: 10px;
-        color: var(--muted);
-        background: var(--card2);
-        border: none;
-        border-radius: 4px;
-        padding: 2px 6px;
-        pointer-events: none;
-      }
-      .two-col {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 10px;
-      }
-
-      .result-card {
-        border-radius: 14px;
-        padding: 22px 20px;
-        margin-bottom: 12px;
-      }
-      .result-card.empty {
-        background: var(--card);
-        border: 1px solid var(--border);
-      }
-      .result-card.positive {
-        background: rgba(61, 220, 132, 0.07);
-        border: 1px solid rgba(61, 220, 132, 0.25);
-      }
-      .result-card.warning {
-        background: rgba(240, 180, 41, 0.07);
-        border: 1px solid rgba(240, 180, 41, 0.25);
-      }
-      .result-card.negative {
-        background: rgba(255, 87, 87, 0.07);
-        border: 1px solid rgba(255, 87, 87, 0.25);
-      }
-      .result-label {
-        font-size: 11px;
-        font-weight: 600;
-        letter-spacing: 0.07em;
-        text-transform: uppercase;
-        margin-bottom: 4px;
-      }
-      .result-amount {
-        font-size: 44px;
-        font-weight: 800;
-        letter-spacing: -1.5px;
-        line-height: 1;
-      }
-      .result-context {
-        font-size: 12px;
-        margin-top: 8px;
-      }
-      .empty .result-label {
-        color: var(--muted);
-      }
-      .empty .result-amount {
-        color: var(--muted2);
-      }
-      .empty .result-context {
-        color: var(--muted);
-      }
-      .positive .result-label,
-      .positive .result-amount,
-      .positive .result-context {
-        color: var(--green);
-      }
-      .warning .result-label,
-      .warning .result-amount,
-      .warning .result-context {
-        color: var(--amber);
-      }
-      .negative .result-label,
-      .negative .result-amount,
-      .negative .result-context {
-        color: var(--red);
-      }
-
-      .reset-btn {
-        width: 100%;
-        padding: 12px;
-        background: transparent;
-        border: 1px solid var(--border);
-        border-radius: 10px;
-        font-family: inherit;
-        font-size: 13px;
-        color: var(--muted);
-        cursor: pointer;
-        margin-top: 4px;
-        transition: background 0.15s;
-      }
-      .reset-btn:hover {
-        background: var(--card2);
-        color: var(--text);
-      }
-      .footer {
-        text-align: center;
-        font-size: 11px;
-        color: var(--muted);
-        margin-top: 24px;
       }
 
       .section-divider {
@@ -263,6 +216,11 @@
         display: grid;
         gap: 10px;
       }
+      .alloc-item {
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-end;
+      }
       .alloc-item label {
         display: flex;
         align-items: center;
@@ -270,6 +228,7 @@
         font-size: 12px;
         color: var(--text);
         margin-bottom: 6px;
+        line-height: 1.25;
       }
       .pot-dot {
         width: 8px;
@@ -286,14 +245,6 @@
         font-size: 14px;
       }
 
-      .alloc-item {
-        display: flex;
-        flex-direction: column;
-        justify-content: flex-end;
-      }
-      .alloc-item label {
-        line-height: 1.25;
-      }
       .pot-selector {
         position: relative;
       }
@@ -509,24 +460,11 @@
         display: flex;
         gap: 6px;
       }
-      .reset-pill {
-        display: block;
-        width: 100%;
-        margin-top: 20px;
-        padding: 11px;
-        border: 1px solid var(--border);
-        background: transparent;
-        border-radius: 10px;
-        font-family: inherit;
-        font-size: 12px;
-        color: var(--muted2);
-        cursor: pointer;
-        transition: all 0.15s;
-      }
-      .reset-pill:hover {
-        background: rgba(255, 87, 87, 0.08);
-        border-color: rgba(255, 87, 87, 0.4);
-        color: var(--red);
+      .footer {
+        text-align: center;
+        font-size: 11px;
+        color: var(--muted);
+        margin-top: 24px;
       }
       .diag {
         display: none;
@@ -603,7 +541,16 @@
       <header>
         <div class="name">Joint <span>Tracker</span></div>
         <span class="back-links" id="back-links"></span>
-        <div class="cycle" id="cycle-label"></div>
+        <div class="period-wrap" id="period-wrap">
+          <div class="period-pill">
+            <span id="period-text"></span><span class="period-chev"></span>
+          </div>
+          <select
+            id="period-select"
+            aria-label="Pay period"
+            onchange="choosePeriod(this.value)"
+          ></select>
+        </div>
       </header>
 
       <div class="who-row">
@@ -615,6 +562,11 @@
           ALH
         </button>
         <span class="sync-state" id="sync-state">Connecting&#8230;</span>
+      </div>
+
+      <div class="period-note" id="period-note">
+        <span id="period-note-text"></span>
+        <button onclick="choosePeriod(currentPeriod())">Current</button>
       </div>
 
       <div class="diag" id="diag"></div>
@@ -672,12 +624,8 @@
       </div>
 
       <div class="footer">
-        Shared between both devices &middot; pots clear on the 25th
+        Shared between both devices &middot; a new period starts each payday
       </div>
-
-      <button class="reset-pill" onclick="resetCycle()">
-        Reset pots &amp; clear spend log
-      </button>
     </div>
     <script>
       var PFX = "jnt";
@@ -688,52 +636,176 @@
       function fmtSigned(n) {
         return (n < 0 ? "\u2212\u2009" : "") + fmt(n);
       }
+      function esc(s) {
+        return String(s)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
 
-      /* ------- POT TRACKING -------
-     Add a pot by adding one entry to POTS below. Nothing else needs to change. */
+      /* ------- POTS -------
+     Add a pot by adding one entry to POTS below. Nothing else needs to change.
+     "def" is the allocation each new period starts with. */
       var POTS = [
-        {
-          id: "shopping",
-          name: "Shopping",
-          colour: "#6582fc",
-          def: 200,
-        },
-        {
-          id: "petrol",
-          name: "Petrol",
-          colour: "#a36bf9",
-          def: 150,
-        },
-        {
-          id: "bobby",
-          name: "Bobby",
-          colour: "#E68346",
-          def: 0,
-        },
-        {
-          id: "joint",
-          name: "Joint Purchases",
-          colour: "#00B050",
-          def: 0,
-        },
-        {
-          id: "home",
-          name: "Home Maintenance",
-          colour: "#FF96F6",
-          def: 100,
-        },
+        { id: "shopping", name: "Shopping", colour: "#6582fc", def: 200 },
+        { id: "petrol", name: "Petrol", colour: "#a36bf9", def: 150 },
+        { id: "bobby", name: "Bobby", colour: "#E68346", def: 0 },
+        { id: "joint", name: "Joint Purchases", colour: "#00B050", def: 0 },
+        { id: "home", name: "Home Maintenance", colour: "#FF96F6", def: 100 },
       ];
 
-      var potAlloc = {};
+      /* ------- PAY PERIODS -------
+     Payday is the 25th. If the 25th is a weekend or an England & Wales bank
+     holiday, payday moves back to the previous working day (so a weekend 25th
+     becomes the Friday before).
+
+     PAY_OVERRIDES fixes any month that doesn't follow that rule — mainly
+     Christmas. Add a line each year once you know the date: "YYYY-MM": day
+     A December with no override falls back to the rule above (24th or earlier). */
+      var PAY_OVERRIDES = {
+        "2026-12": 21,
+      };
+      var FIRST_PERIOD = "2026-09"; // earliest period the dropdown will offer
+      var PAST_PERIODS = 5; // how many past periods the dropdown shows
+      // The old single set of allocations was entered for this period.
+      var LEGACY_ALLOC_PERIOD = "2026-10";
+
+      function pad(n) {
+        return ("0" + n).slice(-2);
+      }
+      function keyOf(y, m0) {
+        var d = new Date(y, m0, 1);
+        return d.getFullYear() + "-" + pad(d.getMonth() + 1);
+      }
+      function parseKey(k) {
+        return {
+          y: parseInt(k.slice(0, 4), 10),
+          m0: parseInt(k.slice(5, 7), 10) - 1,
+        };
+      }
+      function addPeriods(k, n) {
+        var p = parseKey(k);
+        return keyOf(p.y, p.m0 + n);
+      }
+      function sameDay(a, b) {
+        return (
+          a.getFullYear() === b.getFullYear() &&
+          a.getMonth() === b.getMonth() &&
+          a.getDate() === b.getDate()
+        );
+      }
+      function easterSunday(y) {
+        var a = y % 19,
+          b = Math.floor(y / 100),
+          c = y % 100,
+          d = Math.floor(b / 4),
+          e = b % 4,
+          f = Math.floor((b + 8) / 25),
+          g = Math.floor((b - f + 1) / 3),
+          h = (19 * a + b - d - g + 15) % 30,
+          i = Math.floor(c / 4),
+          k = c % 4,
+          l = (32 + 2 * e + 2 * i - h - k) % 7,
+          m = Math.floor((a + 11 * h + 22 * l) / 451),
+          month = Math.floor((h + l - 7 * m + 114) / 31),
+          day = ((h + l - 7 * m + 114) % 31) + 1;
+        return new Date(y, month - 1, day);
+      }
+      function lastMonday(y, m0) {
+        var d = new Date(y, m0 + 1, 0);
+        while (d.getDay() !== 1) d.setDate(d.getDate() - 1);
+        return d;
+      }
+      // Only bank holidays that can land on or just before the 25th matter.
+      function isBankHoliday(d) {
+        var y = d.getFullYear(),
+          e = easterSunday(y);
+        var list = [
+          new Date(y, e.getMonth(), e.getDate() - 2), // Good Friday
+          new Date(y, e.getMonth(), e.getDate() + 1), // Easter Monday
+          lastMonday(y, 4), // Spring bank holiday
+          lastMonday(y, 7), // Summer bank holiday
+          new Date(y, 11, 25),
+          new Date(y, 11, 26),
+        ];
+        return list.some(function (h) {
+          return sameDay(h, d);
+        });
+      }
+
+      var payCache = {};
+      function payDate(k) {
+        if (!payCache[k]) {
+          var p = parseKey(k),
+            d;
+          if (PAY_OVERRIDES[k]) {
+            d = new Date(p.y, p.m0, PAY_OVERRIDES[k]);
+          } else {
+            d = new Date(p.y, p.m0, 25);
+            while (d.getDay() === 0 || d.getDay() === 6 || isBankHoliday(d))
+              d.setDate(d.getDate() - 1);
+          }
+          payCache[k] = d.getTime();
+        }
+        return new Date(payCache[k]);
+      }
+      function periodEnd(k) {
+        var d = payDate(addPeriods(k, 1));
+        d.setDate(d.getDate() - 1);
+        return d;
+      }
+      function currentPeriod() {
+        var n = new Date();
+        var today = new Date(n.getFullYear(), n.getMonth(), n.getDate());
+        var k = keyOf(today.getFullYear(), today.getMonth());
+        if (today < payDate(k)) k = addPeriods(k, -1);
+        return k;
+      }
+      var MONTHS = "Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec".split(" ");
+      function shortDate(d) {
+        return d.getDate() + " " + MONTHS[d.getMonth()];
+      }
+      function periodLabel(k) {
+        return shortDate(payDate(k)) + " \u2013 " + shortDate(periodEnd(k));
+      }
+      function periodList() {
+        var cur = currentPeriod(),
+          out = [];
+        for (var i = -PAST_PERIODS; i <= 1; i++) {
+          var k = addPeriods(cur, i);
+          if (k >= FIRST_PERIOD) out.push(k);
+        }
+        return out;
+      }
+
+      /* ------- STATE ------- */
+      var period = currentPeriod();
+      var pinned = false; // true when a non-current period was picked by hand
+      var cfgFields = {}; // config/current fields (all periods' allocations)
+      var dirty = {}; // field names edited locally, not yet saved
+      var cfgSeq = 0; // bumps on every allocation write
+      var spendSeq = 0; // bumps on every spend add/remove
       var potLog = [];
       var selectedPot = POTS[0].id;
+      var allocTimer = null;
+      var who = null;
 
+      function allocField(k, potId) {
+        return "p_" + k.replace("-", "_") + "_" + potId;
+      }
+      function allocFor(k, potId) {
+        var f = cfgFields[allocField(k, potId)];
+        if (f) return parseInt(f.integerValue, 10) || 0;
+        if (k === LEGACY_ALLOC_PERIOD && cfgFields["alloc_" + potId])
+          return parseInt(cfgFields["alloc_" + potId].integerValue, 10) || 0;
+        return potById(potId).def;
+      }
       function potById(id) {
         for (var i = 0; i < POTS.length; i++)
           if (POTS[i].id === id) return POTS[i];
         return POTS[0];
       }
-
       function hexA(hex, a) {
         var r = parseInt(hex.slice(1, 3), 16),
           g = parseInt(hex.slice(3, 5), 16),
@@ -741,33 +813,76 @@
         return "rgba(" + r + "," + g + "," + b + "," + a + ")";
       }
 
-      function cycleKey() {
-        var n = new Date(),
-          d = n.getDate();
-        var s =
-          d >= 25
-            ? new Date(n.getFullYear(), n.getMonth(), 25)
-            : new Date(n.getFullYear(), n.getMonth() - 1, 25);
-        return (
-          s.getFullYear() + "-" + ("0" + (s.getMonth() + 1)).slice(-2) + "-25"
-        );
+      /* ------- PERIOD SELECTOR ------- */
+      function renderPeriodSelect() {
+        var cur = currentPeriod();
+        var list = periodList();
+        if (list.indexOf(period) === -1) list.push(period);
+        list.sort();
+        var html = "";
+        list.forEach(function (k) {
+          var tag = k === cur ? " \u00b7 current" : k > cur ? " \u00b7 next" : "";
+          html +=
+            '<option value="' +
+            k +
+            '"' +
+            (k === period ? " selected" : "") +
+            ">" +
+            periodLabel(k) +
+            tag +
+            "</option>";
+        });
+        var sel = document.getElementById("period-select");
+        sel.innerHTML = html;
+        sel.value = period;
+        document.getElementById("period-text").textContent =
+          periodLabel(period);
+        document.getElementById("period-wrap").className =
+          "period-wrap" + (period === cur ? "" : " off");
+
+        var note = document.getElementById("period-note");
+        if (period === cur) {
+          note.className = "period-note";
+        } else {
+          document.getElementById("period-note-text").textContent =
+            (period < cur ? "Past period." : "Next period.") +
+            " Allocations and spends you add here are saved to " +
+            periodLabel(period) +
+            ".";
+          note.className = "period-note show";
+        }
       }
 
-      function setCycle() {
-        var n = new Date(),
-          d = n.getDate();
-        var s =
-          d >= 25
-            ? new Date(n.getFullYear(), n.getMonth(), 25)
-            : new Date(n.getFullYear(), n.getMonth() - 1, 25);
-        var e = new Date(s.getFullYear(), s.getMonth() + 1, 24);
-        var o = { day: "numeric", month: "short" };
-        document.getElementById("cycle-label").textContent =
-          s.toLocaleDateString("en-GB", o) +
-          " \u2013 " +
-          e.toLocaleDateString("en-GB", o);
+      function choosePeriod(k) {
+        if (k === period) return;
+        period = k;
+        pinned = k !== currentPeriod();
+        potLog = [];
+        spendSeq++;
+        renderPeriodSelect();
+        paintAllocInputs(true);
+        renderSummary();
+        renderHistory(true);
+        clearErr();
+        pullAll(false);
       }
 
+      // Called on each poll: if the page is left open over payday, move on
+      // to the new period unless a different one was picked by hand.
+      function checkRollover() {
+        var cur = currentPeriod();
+        if (!pinned && period !== cur) {
+          period = cur;
+          potLog = [];
+          spendSeq++;
+          paintAllocInputs(true);
+          renderSummary();
+          renderHistory(true);
+        }
+        renderPeriodSelect();
+      }
+
+      /* ------- ALLOCATION ------- */
       function buildAllocInputs() {
         var grid = document.getElementById("alloc-grid");
         grid.style.gridTemplateColumns =
@@ -794,20 +909,57 @@
           document
             .getElementById("alloc-" + p.id)
             .addEventListener("input", function () {
-              potAlloc[p.id] = Math.round(parseFloat(this.value) || 0);
-              onAllocChange(p.id);
+              var f = allocField(period, p.id);
+              cfgFields[f] = {
+                integerValue: String(Math.round(parseFloat(this.value) || 0)),
+              };
+              dirty[f] = true;
+              cfgSeq++;
+              clearTimeout(allocTimer);
+              allocTimer = setTimeout(flushAllocs, 700);
               renderSummary();
             });
         });
       }
 
-      function paintAllocInputs() {
+      function paintAllocInputs(force) {
         POTS.forEach(function (p) {
           var el = document.getElementById("alloc-" + p.id);
-          if (el && document.activeElement !== el) el.value = potAlloc[p.id];
+          if (el && (force || document.activeElement !== el))
+            el.value = allocFor(period, p.id);
         });
       }
 
+      function flushAllocs() {
+        var names = Object.keys(dirty);
+        if (!names.length || !CONFIGURED) return;
+        dirty = {};
+        cfgSeq++;
+        var fields = {},
+          mask = "";
+        names.forEach(function (n) {
+          fields[n] = cfgFields[n];
+          mask += "&updateMask.fieldPaths=" + n;
+        });
+        setSync("busy", "Saving\u2026");
+        fbFetch(fbUrl("/config/current", mask), {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ fields: fields }),
+        })
+          .then(function () {
+            setSync("ok", "Synced");
+            hideDiag();
+          })
+          .catch(function (e) {
+            names.forEach(function (n) {
+              dirty[n] = true;
+            });
+            fbErr("Allocation not saved", e);
+          });
+      }
+
+      /* ------- SPEND FORM ------- */
       function buildSelector() {
         var wrap = document.getElementById("pot-selector");
         var html =
@@ -841,6 +993,46 @@
         document.getElementById("spend-error").className = "form-error";
       }
 
+      function readSpendForm() {
+        var amtEl = document.getElementById("spend-amount");
+        var amount = Math.round(parseFloat(amtEl.value) || 0);
+        if (amount <= 0) {
+          showErr("Enter an amount first");
+          amtEl.focus();
+          return null;
+        }
+        clearErr();
+        var now = new Date();
+        return {
+          id: "",
+          pot: selectedPot,
+          amount: amount,
+          note: document.getElementById("spend-note").value.trim(),
+          cycle: period,
+          ts: now.getTime(),
+          time:
+            now.toLocaleDateString("en-GB", {
+              day: "numeric",
+              month: "short",
+            }) +
+            " " +
+            now.toLocaleTimeString("en-GB", {
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
+        };
+      }
+
+      function clearSpendForm() {
+        document.getElementById("spend-amount").value = "";
+        document.getElementById("spend-note").value = "";
+      }
+
+      document
+        .getElementById("spend-amount")
+        .addEventListener("input", clearErr);
+
+      /* ------- RENDER ------- */
       function amountClass(left, alloc) {
         if (left < 0) return "over";
         if (alloc === 0) return "neutral";
@@ -851,7 +1043,7 @@
       function renderSummary() {
         var html = "";
         POTS.forEach(function (p) {
-          var alloc = potAlloc[p.id] || 0;
+          var alloc = allocFor(period, p.id);
           var spent = potLog
             .filter(function (e) {
               return e.pot === p.id;
@@ -882,19 +1074,13 @@
         document.getElementById("summary-rows").innerHTML = html;
       }
 
-      function esc(s) {
-        return String(s)
-          .replace(/&/g, "&amp;")
-          .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;")
-          .replace(/"/g, "&quot;");
-      }
-
-      function renderHistory() {
+      function renderHistory(loading) {
         var list = document.getElementById("history-list");
         if (potLog.length === 0) {
           list.innerHTML =
-            '<div class="history-empty">No spends logged this cycle</div>';
+            '<div class="history-empty">' +
+            (loading ? "Loading\u2026" : "No spends logged in this period") +
+            "</div>";
           return;
         }
         var sorted = potLog.slice().sort(function (a, b) {
@@ -935,47 +1121,7 @@
         list.innerHTML = html;
       }
 
-      function readSpendForm() {
-        var amtEl = document.getElementById("spend-amount");
-        var amount = Math.round(parseFloat(amtEl.value) || 0);
-        if (amount <= 0) {
-          showErr("Enter an amount first");
-          amtEl.focus();
-          return null;
-        }
-        clearErr();
-        var now = new Date();
-        return {
-          id: String(Date.now()) + String(Math.floor(Math.random() * 1000)),
-          pot: selectedPot,
-          amount: amount,
-          note: document.getElementById("spend-note").value.trim(),
-          cycle: cycleKey(),
-          ts: now.getTime(),
-          time:
-            now.toLocaleDateString("en-GB", {
-              day: "numeric",
-              month: "short",
-            }) +
-            " " +
-            now.toLocaleTimeString("en-GB", {
-              hour: "2-digit",
-              minute: "2-digit",
-            }),
-        };
-      }
-
-      function clearSpendForm() {
-        document.getElementById("spend-amount").value = "";
-        document.getElementById("spend-note").value = "";
-      }
-
-      document
-        .getElementById("spend-amount")
-        .addEventListener("input", clearErr);
-
-      /* ------- SHARED STORAGE (Firebase Firestore REST) -------
-     Fill these two in after creating your Firebase project. */
+      /* ------- SHARED STORAGE (Firebase Firestore REST) ------- */
       var FB_PROJECT = "atoalh-pots";
       var FB_KEY = "AIzaSyDIB_ztBaofZYfhfV5OdvFFT81JxSpVTdI";
 
@@ -983,16 +1129,13 @@
         "https://firestore.googleapis.com/v1/projects/" +
         FB_PROJECT +
         "/databases/(default)/documents";
-      var allocTimer = null;
-      var who = null;
 
       function fbUrl(path, extra) {
         return FB_ROOT + path + "?key=" + FB_KEY + (extra || "");
       }
 
       var CONFIGURED =
-        FB_PROJECT !== "YOUR_PROJECT_ID" &&
-        FB_KEY !== "YOUR_WEB_API_KEY";
+        FB_PROJECT !== "YOUR_PROJECT_ID" && FB_KEY !== "YOUR_WEB_API_KEY";
 
       function showDiag(title, detail, hint) {
         var el = document.getElementById("diag");
@@ -1012,7 +1155,7 @@
         if (status === 403 && /API key/i.test(msg))
           return "The API key is being rejected. If you restricted it to a website, check the entry is exactly andyami.github.io/* — or remove the restriction and try again.";
         if (status === 403)
-          return "Firestore refused the write. Check the security rules from step 3 have been published.";
+          return "Firestore refused the request. Check the security rules allow read and write on the spends and config collections.";
         if (status === 404)
           return "Project or database not found. Check FB_PROJECT matches your projectId exactly, and that Firestore is created in Native mode.";
         if (status === 400)
@@ -1030,9 +1173,10 @@
               j = JSON.parse(t);
             } catch (e) {}
             if (!r.ok) {
+              var err0 = Array.isArray(j) ? j[0] : j;
               var msg =
-                j && j.error && j.error.message
-                  ? j.error.message
+                err0 && err0.error && err0.error.message
+                  ? err0.error.message
                   : "HTTP " + r.status;
               var err = new Error(msg);
               err.status = r.status;
@@ -1126,35 +1270,37 @@
         };
       }
 
-      function onAllocChange(potId) {
-        clearTimeout(allocTimer);
-        allocTimer = setTimeout(function () {
-          pushAlloc(potId);
-        }, 700);
-      }
-
-      function pushAlloc(potId) {
-        if (!CONFIGURED) return;
-        setSync("busy", "Saving\u2026");
-        var fields = {};
-        fields["alloc_" + potId] = {
-          integerValue: String(potAlloc[potId] || 0),
-        };
-        return fbFetch(
-          fbUrl("/config/current", "&updateMask.fieldPaths=alloc_" + potId),
-          {
-            method: "PATCH",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ fields: fields }),
-          },
-        )
-          .then(function () {
-            setSync("ok", "Synced");
-            hideDiag();
-          })
-          .catch(function (e) {
-            fbErr("Allocation not saved", e);
-          });
+      // Spends for one period. Older spends were stored with a "YYYY-MM-25"
+      // cycle key, so both forms are matched.
+      function loadSpends(k) {
+        return fbFetch(fbUrl(":runQuery"), {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            structuredQuery: {
+              from: [{ collectionId: "spends" }],
+              where: {
+                fieldFilter: {
+                  field: { fieldPath: "cycle" },
+                  op: "IN",
+                  value: {
+                    arrayValue: {
+                      values: [{ stringValue: k }, { stringValue: k + "-25" }],
+                    },
+                  },
+                },
+              },
+            },
+          }),
+        }).then(function (rows) {
+          return (rows || [])
+            .filter(function (r) {
+              return r.document;
+            })
+            .map(function (r) {
+              return fromDoc(r.document);
+            });
+        });
       }
 
       function pullAll(silent) {
@@ -1163,47 +1309,42 @@
           showDiag(
             "Firebase not configured",
             "FB_PROJECT and FB_KEY are still set to their placeholder values.",
-            "Open home/finance-jnt/index.html and complete step 5 of the setup guide.",
+            "Open home/finance-jnt/index.html and complete the setup guide.",
           );
           return;
         }
         if (!silent) setSync("busy", "Syncing\u2026");
-        var ck = cycleKey();
+        var k = period,
+          cSeq = cfgSeq,
+          sSeq = spendSeq;
 
         fbFetch(fbUrl("/config/current"))
           .then(function (cfg) {
-            POTS.forEach(function (p) {
-              var f = cfg && cfg.fields && cfg.fields["alloc_" + p.id];
-              potAlloc[p.id] = f ? parseInt(f.integerValue, 10) : p.def;
+            if (cSeq !== cfgSeq) return; // a newer local edit wins
+            var fresh = (cfg && cfg.fields) || {};
+            Object.keys(dirty).forEach(function (n) {
+              fresh[n] = cfgFields[n];
             });
-            paintAllocInputs();
+            cfgFields = fresh;
+            if (k !== period) return;
+            paintAllocInputs(false);
             renderSummary();
           })
           .catch(function (e) {
             if (e.status !== 404) fbErr("Could not read allocations", e);
           });
 
-        fbFetch(fbUrl("/spends", "&pageSize=300"))
-          .then(function (data) {
-            var docs = ((data && data.documents) || []).map(fromDoc);
-            potLog = docs.filter(function (d) {
-              return d.cycle === ck;
-            });
-            docs
-              .filter(function (d) {
-                return d.cycle !== ck;
-              })
-              .forEach(function (d) {
-                fbFetch(fbUrl("/spends/" + d.id), { method: "DELETE" }).catch(
-                  function () {},
-                );
-              });
+        loadSpends(k)
+          .then(function (docs) {
+            if (k !== period || sSeq !== spendSeq) return;
+            potLog = docs;
             renderSummary();
-            renderHistory();
+            renderHistory(false);
             setSync("ok", "Synced");
             hideDiag();
           })
           .catch(function (e) {
+            if (k === period) renderHistory(false);
             fbErr("Could not load spends", e);
           });
       }
@@ -1217,6 +1358,7 @@
         if (!s) return;
         s.who = who;
         clearSpendForm();
+        spendSeq++;
         setSync("busy", "Saving\u2026");
         fbFetch(fbUrl("/spends"), {
           method: "POST",
@@ -1225,9 +1367,11 @@
         })
           .then(function (d) {
             s.id = d.name.split("/").pop();
-            potLog.push(s);
-            renderSummary();
-            renderHistory();
+            if (s.cycle === period) {
+              potLog.push(s);
+              renderSummary();
+              renderHistory(false);
+            }
             setSync("ok", "Synced");
             hideDiag();
           })
@@ -1242,8 +1386,9 @@
         potLog = potLog.filter(function (e) {
           return e.id !== id;
         });
+        spendSeq++;
         renderSummary();
-        renderHistory();
+        renderHistory(false);
         setSync("busy", "Saving\u2026");
         fbFetch(fbUrl("/spends/" + id), { method: "DELETE" })
           .then(function () {
@@ -1255,60 +1400,13 @@
           });
       }
 
-      function resetCycle() {
-        if (!CONFIGURED) {
-          pullAll(false);
-          return;
-        }
-        if (
-          !confirm(
-            "Clear the shared spend log and reset all pots to their defaults?\n\nThis affects both phones and cannot be undone.",
-          )
-        )
-          return;
-        setSync("busy", "Resetting\u2026");
-        fbFetch(fbUrl("/spends", "&pageSize=300"))
-          .then(function (data) {
-            var docs = ((data && data.documents) || []).map(fromDoc);
-            return Promise.all(
-              docs.map(function (d) {
-                return fbFetch(fbUrl("/spends/" + d.id), { method: "DELETE" });
-              }),
-            );
-          })
-          .then(function () {
-            potLog = [];
-            POTS.forEach(function (p) {
-              potAlloc[p.id] = p.def;
-            });
-            paintAllocInputs();
-            clearErr();
-            renderSummary();
-            renderHistory();
-            return Promise.all(
-              POTS.map(function (p) {
-                return pushAlloc(p.id);
-              }),
-            );
-          })
-          .then(function () {
-            setSync("ok", "Reset");
-            hideDiag();
-          })
-          .catch(function (e) {
-            fbErr("Reset failed", e);
-          });
-      }
-
-      setCycle();
+      /* ------- START ------- */
       buildAllocInputs();
       buildSelector();
-      POTS.forEach(function (p) {
-        potAlloc[p.id] = p.def;
-      });
-      paintAllocInputs();
+      renderPeriodSelect();
+      paintAllocInputs(true);
       renderSummary();
-      renderHistory();
+      renderHistory(true);
 
       renderBackLinks();
       try {
@@ -1318,10 +1416,16 @@
 
       pullAll(false);
       setInterval(function () {
-        if (!document.hidden) pullAll(true);
+        if (!document.hidden) {
+          checkRollover();
+          pullAll(true);
+        }
       }, 30000);
       document.addEventListener("visibilitychange", function () {
-        if (!document.hidden) pullAll(true);
+        if (!document.hidden) {
+          checkRollover();
+          pullAll(true);
+        }
       });
     </script>
   </body>
