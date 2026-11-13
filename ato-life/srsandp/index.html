@@ -135,6 +135,19 @@ html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:var
 .t-lbl{font-size:11px;color:var(--muted);margin-top:4px}
 
 .strength-set{margin:18px 0 8px;font-size:11px;letter-spacing:0.08em;text-transform:uppercase;color:var(--amber);font-weight:500}
+
+/* Rebuild tab */
+.tab-btn{font-size:11.5px;padding:10px 4px}
+.badge-col{display:flex;flex-direction:column;align-items:flex-end;gap:6px}
+.rule-list{list-style:none;margin:0 0 18px}
+.rule-list li{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:7px;font-size:12px;color:var(--muted);line-height:1.6}
+.rule-list li strong{display:block;color:var(--text);font-size:13px;font-weight:500;margin-bottom:2px}
+.stop-list{margin:4px 0 0 16px}
+.stop-list li{margin-bottom:2px}
+.phase-meta{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:16px 0 4px}
+.gate{background:var(--card2);border:1px dashed var(--green-border);border-radius:12px;padding:12px 14px;font-size:12px;color:var(--muted);line-height:1.65;margin-top:18px}
+.gate strong{color:var(--green)}
+.swap{font-size:11px;color:var(--gold);margin-top:4px}
 </style>
 </head>
 <body>
@@ -149,6 +162,7 @@ html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:var
     <button class="tab-btn active" onclick="switchMainTab(0,this)">Stretching</button>
     <button class="tab-btn" onclick="switchMainTab(1,this)">Running</button>
     <button class="tab-btn" onclick="switchMainTab(2,this)">S&amp;P</button>
+    <button class="tab-btn" onclick="switchMainTab(3,this)">Rebuild</button>
   </div>
 
   <!-- ====================== STRETCHING ====================== -->
@@ -782,6 +796,305 @@ html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:var
     </div>
   </div>
 
+  <!-- ====================== REBUILD (post-op return) ====================== -->
+  <div class="view" id="view-rebuild">
+    <div class="sub-tab-bar" id="rebuild-subtabs">
+      <button class="sub-tab-btn active" onclick="switchRebuildSub(0,this)">Rules</button>
+      <button class="sub-tab-btn" onclick="switchRebuildSub(1,this)">Wk 1–2</button>
+      <button class="sub-tab-btn" onclick="switchRebuildSub(2,this)">Wk 3–4</button>
+      <button class="sub-tab-btn" onclick="switchRebuildSub(3,this)">Wk 5–6</button>
+    </div>
+
+    <!-- Rules -->
+    <div class="subview active" id="rb-rules">
+      <div class="note" style="margin-top:16px">
+        <strong>6-week return to S&amp;P</strong> after sternotomy. Cleared for upper-body loading with caution, max lifting still deferred. Kit: 2 × 8kg KB, 1 × 16kg KB
+      </div>
+
+      <ul class="rule-list">
+        <li><strong>RPE cap 5–6</strong>Train by feel, not HR. Bisoprolol blunts it and Elvanse lifts it. Finish every set with 3–4 reps still in the tank</li>
+        <li><strong>Breathe every rep</strong>Exhale on the effort. No breath-holding or hard bracing. That spikes blood pressure, which is the one thing to keep off the table right now</li>
+        <li><strong>2 sessions a week</strong>Non-consecutive days (e.g. Tue &amp; Fri), same session both times. Keep them away from your hardest run</li>
+        <li><strong>Reps before load</strong>Add reps first. Only go up a bell when the top of the rep range feels RPE 5</li>
+        <li><strong>Slow, even, symmetrical</strong>Controlled lowering, no jerking. No swings, cleans or snatches in this block</li>
+        <li><strong>Warm up first</strong>Running › Warm-Up steps 1–6 before every session (~4 min)</li>
+      </ul>
+
+      <div class="note-red">
+        <strong>STOP and contact the cardiac team if you get:</strong>
+        <ul class="stop-list">
+          <li>chest pain or tightness</li>
+          <li>palpitations or an irregular beat that doesn't settle</li>
+          <li>dizziness or light-headedness</li>
+          <li>breathlessness out of proportion to the effort</li>
+          <li>any clicking, shifting or pain at the sternum</li>
+        </ul>
+        Chest pain that doesn't settle with rest &rarr; 999
+      </div>
+
+      <div class="note-green">
+        <strong>CARDIAC REHAB</strong> If the Phase III referral comes through, their exercise prescription takes priority over this block
+      </div>
+    </div>
+
+    <!-- Phase 1 -->
+    <div class="subview" id="rb-p1">
+      <div class="phase-meta">
+        <div class="t-card"><div class="t-val" style="color:var(--green)">Phase 1</div><div class="t-lbl">Re-groove</div></div>
+        <div class="t-card"><div class="t-val" style="color:var(--gold)">2 rounds</div><div class="t-lbl">60–90s rest</div></div>
+        <div class="t-card"><div class="t-val" style="color:var(--amber)">~20 min</div><div class="t-lbl">RPE 4–5</div></div>
+      </div>
+
+      <div class="strength-set">2 ROUNDS — circuit, rest at the end of each round</div>
+
+      <div class="step-card">
+        <div class="rpe-badge ssp-1">1</div>
+        <div class="step-body">
+          <div class="step-title">Goblet Squat to Box</div>
+          <div class="step-detail">Squat to a chair or sofa edge, touch and stand. Bell close to chest, elbows down. Exhale as you stand</div>
+        </div>
+        <div class="badge-col"><div class="rpe-tag tag-timeBadge">10 REPS</div><div class="weight-badge">8KG KB</div></div>
+      </div>
+
+      <div class="step-card">
+        <div class="rpe-badge ssp-1">2</div>
+        <div class="step-body">
+          <div class="step-title">Kettlebell Romanian Deadlift</div>
+          <div class="step-detail">Both hands on the bell, soft knees, push hips back until the hamstrings stretch. Flat back. Exhale on the way up</div>
+        </div>
+        <div class="badge-col"><div class="rpe-tag tag-timeBadge">10 REPS</div><div class="weight-badge">16KG KB</div></div>
+      </div>
+
+      <div class="step-card">
+        <div class="rpe-badge ssp-1">3</div>
+        <div class="step-body">
+          <div class="step-title">Incline Push-Up</div>
+          <div class="step-detail">Hands on the kitchen worktop (~waist height). Slow lower, even pressure through both hands. Stop if anything pulls at the sternum</div>
+        </div>
+        <div class="badge-col"><div class="rpe-tag tag-timeBadge">8 REPS</div><div class="weight-badge">BW</div></div>
+      </div>
+
+      <div class="step-card">
+        <div class="rpe-badge ssp-1">4</div>
+        <div class="step-body">
+          <div class="step-title">Supported Single-Arm Row</div>
+          <div class="step-detail">Hand and knee on a bench or sofa. Pull the bell to your hip, no twisting. Smooth, not jerky</div>
+        </div>
+        <div class="badge-col"><div class="rpe-tag tag-timeBadge">10 EACH</div><div class="weight-badge">8KG KB</div></div>
+      </div>
+
+      <div class="step-card">
+        <div class="rpe-badge ssp-1">5</div>
+        <div class="step-body">
+          <div class="step-title">Glute Bridge</div>
+          <div class="step-detail">Arms flat by your sides. Drive through heels, 2s squeeze at the top</div>
+        </div>
+        <div class="badge-col"><div class="rpe-tag tag-timeBadge">12 REPS</div><div class="weight-badge">BW</div></div>
+      </div>
+
+      <div class="step-card">
+        <div class="rpe-badge ssp-1">6</div>
+        <div class="step-body">
+          <div class="step-title">Dead Bug</div>
+          <div class="step-detail">Lower back pressed into the floor. Breathe out as arm and leg extend</div>
+        </div>
+        <div class="badge-col"><div class="rpe-tag tag-timeBadge">6 EACH</div><div class="weight-badge">BW</div></div>
+      </div>
+
+      <div class="step-card">
+        <div class="rpe-badge ssp-1">7</div>
+        <div class="step-body">
+          <div class="step-title">Calf Raise</div>
+          <div class="step-detail">Both feet, 3s lower. Hand on a wall for balance</div>
+        </div>
+        <div class="badge-col"><div class="rpe-tag tag-timeBadge">15 REPS</div><div class="weight-badge">BW</div></div>
+      </div>
+
+      <div class="gate">
+        <strong>MOVE TO WEEK 3 WHEN:</strong> 4 sessions done, every set at RPE 5 or below, no symptoms during or the day after, and no sternal discomfort on push-ups
+      </div>
+    </div>
+
+    <!-- Phase 2 -->
+    <div class="subview" id="rb-p2">
+      <div class="phase-meta">
+        <div class="t-card"><div class="t-val" style="color:var(--green)">Phase 2</div><div class="t-lbl">Build</div></div>
+        <div class="t-card"><div class="t-val" style="color:var(--gold)">3 rounds</div><div class="t-lbl">60–90s rest</div></div>
+        <div class="t-card"><div class="t-val" style="color:var(--amber)">~30 min</div><div class="t-lbl">RPE 5–6</div></div>
+      </div>
+
+      <div class="strength-set">3 ROUNDS — circuit, rest at the end of each round</div>
+
+      <div class="step-card">
+        <div class="rpe-badge ssp-1">1</div>
+        <div class="step-body">
+          <div class="step-title">Goblet Squat</div>
+          <div class="step-detail">No box. Full depth if comfortable, drive through heels</div>
+          <div class="swap">16kg feels over RPE 6? → 8kg × 12</div>
+        </div>
+        <div class="badge-col"><div class="rpe-tag tag-timeBadge">8 REPS</div><div class="weight-badge">16KG KB</div></div>
+      </div>
+
+      <div class="step-card">
+        <div class="rpe-badge ssp-1">2</div>
+        <div class="step-body">
+          <div class="step-title">Kettlebell Romanian Deadlift</div>
+          <div class="step-detail">Same as Phase 1, more reps. 2s lower</div>
+        </div>
+        <div class="badge-col"><div class="rpe-tag tag-timeBadge">12 REPS</div><div class="weight-badge">16KG KB</div></div>
+      </div>
+
+      <div class="step-card">
+        <div class="rpe-badge ssp-1">3</div>
+        <div class="step-body">
+          <div class="step-title">Low Incline Push-Up</div>
+          <div class="step-detail">Hands on a sofa or bench (~knee height). Same slow tempo</div>
+        </div>
+        <div class="badge-col"><div class="rpe-tag tag-timeBadge">10 REPS</div><div class="weight-badge">BW</div></div>
+      </div>
+
+      <div class="step-card">
+        <div class="rpe-badge ssp-1">4</div>
+        <div class="step-body">
+          <div class="step-title">Supported Single-Arm Row</div>
+          <div class="step-detail">Squeeze the shoulder blade back at the top</div>
+        </div>
+        <div class="badge-col"><div class="rpe-tag tag-timeBadge">12 EACH</div><div class="weight-badge">8KG KB</div></div>
+      </div>
+
+      <div class="step-card">
+        <div class="rpe-badge ssp-1">5</div>
+        <div class="step-body">
+          <div class="step-title">Split Squat</div>
+          <div class="step-detail">Static lunge stance, back knee lowers towards the floor. Hand on a wall if needed</div>
+        </div>
+        <div class="badge-col"><div class="rpe-tag tag-timeBadge">8 EACH</div><div class="weight-badge">BW</div></div>
+      </div>
+
+      <div class="step-card">
+        <div class="rpe-badge ssp-1">6</div>
+        <div class="step-body">
+          <div class="step-title">Single Leg Glute Bridge</div>
+          <div class="step-detail">One leg extended, hips stay level</div>
+        </div>
+        <div class="badge-col"><div class="rpe-tag tag-timeBadge">8 EACH</div><div class="weight-badge">BW</div></div>
+      </div>
+
+      <div class="step-card">
+        <div class="rpe-badge ssp-1">7</div>
+        <div class="step-body">
+          <div class="step-title">Bird Dog</div>
+          <div class="step-detail">Opposite arm and leg, 2s hold, no hip rotation</div>
+        </div>
+        <div class="badge-col"><div class="rpe-tag tag-timeBadge">6 EACH</div><div class="weight-badge">BW</div></div>
+      </div>
+
+      <div class="step-card">
+        <div class="rpe-badge ssp-1">8</div>
+        <div class="step-body">
+          <div class="step-title">Farmer Carry</div>
+          <div class="step-detail">A bell in each hand, tall posture, shoulders down. Walk and keep breathing normally</div>
+        </div>
+        <div class="badge-col"><div class="rpe-tag tag-timeBadge">40S</div><div class="weight-badge">2 × 8KG KB</div></div>
+      </div>
+
+      <div class="gate">
+        <strong>MOVE TO WEEK 5 WHEN:</strong> goblet squat done at 16kg for all sets, every set at RPE 6 or below, and no symptoms during or the day after
+      </div>
+    </div>
+
+    <!-- Phase 3 -->
+    <div class="subview" id="rb-p3">
+      <div class="phase-meta">
+        <div class="t-card"><div class="t-val" style="color:var(--green)">Phase 3</div><div class="t-lbl">Bridge back</div></div>
+        <div class="t-card"><div class="t-val" style="color:var(--gold)">3 rounds</div><div class="t-lbl">60–90s rest</div></div>
+        <div class="t-card"><div class="t-val" style="color:var(--amber)">~35 min</div><div class="t-lbl">RPE 5–6</div></div>
+      </div>
+
+      <div class="strength-set">3 ROUNDS — circuit, rest at the end of each round</div>
+
+      <div class="step-card">
+        <div class="rpe-badge ssp-1">1</div>
+        <div class="step-body">
+          <div class="step-title">Goblet Squat</div>
+          <div class="step-detail">Back to your pre-op prescription</div>
+        </div>
+        <div class="badge-col"><div class="rpe-tag tag-timeBadge">12 REPS</div><div class="weight-badge">16KG KB</div></div>
+      </div>
+
+      <div class="step-card">
+        <div class="rpe-badge ssp-1">2</div>
+        <div class="step-body">
+          <div class="step-title">Single Leg Romanian Deadlift</div>
+          <div class="step-detail">Bell in the opposite hand to the standing leg. Hinge, reach the free leg back</div>
+        </div>
+        <div class="badge-col"><div class="rpe-tag tag-timeBadge">8 EACH</div><div class="weight-badge">8KG KB</div></div>
+      </div>
+
+      <div class="step-card">
+        <div class="rpe-badge ssp-1">3</div>
+        <div class="step-body">
+          <div class="step-title">Push-Up</div>
+          <div class="step-detail">Floor. Drop back to the sofa incline the moment form or tempo goes</div>
+        </div>
+        <div class="badge-col"><div class="rpe-tag tag-timeBadge">8 REPS</div><div class="weight-badge">BW</div></div>
+      </div>
+
+      <div class="step-card">
+        <div class="rpe-badge ssp-1">4</div>
+        <div class="step-body">
+          <div class="step-title">Supported Single-Arm Row</div>
+          <div class="step-detail">Step up to the heavy bell</div>
+          <div class="swap">Pulls at the chest? → 8kg × 15</div>
+        </div>
+        <div class="badge-col"><div class="rpe-tag tag-timeBadge">10 EACH</div><div class="weight-badge">16KG KB</div></div>
+      </div>
+
+      <div class="step-card">
+        <div class="rpe-badge ssp-1">5</div>
+        <div class="step-body">
+          <div class="step-title">Bulgarian Split Squat</div>
+          <div class="step-detail">Rear foot on the sofa. Week 5 bodyweight, week 6 add a bell in each hand if smooth</div>
+        </div>
+        <div class="badge-col"><div class="rpe-tag tag-timeBadge">8 EACH</div><div class="weight-badge">BW → 8KG EA</div></div>
+      </div>
+
+      <div class="step-card">
+        <div class="rpe-badge ssp-1">6</div>
+        <div class="step-body">
+          <div class="step-title">Kettlebell Floor Press</div>
+          <div class="step-detail">Lie on the floor, press both bells together. The floor limits range, which makes it a gentle first loaded press</div>
+          <div class="swap">Any sternal discomfort? → skip, stay on push-ups</div>
+        </div>
+        <div class="badge-col"><div class="rpe-tag tag-timeBadge">10 REPS</div><div class="weight-badge">8KG EA</div></div>
+      </div>
+
+      <div class="step-card">
+        <div class="rpe-badge ssp-1">7</div>
+        <div class="step-body">
+          <div class="step-title">Side Plank</div>
+          <div class="step-detail">Knees bent version. Keep breathing throughout, don't hold your breath</div>
+        </div>
+        <div class="badge-col"><div class="rpe-tag tag-timeBadge">20S EACH</div><div class="weight-badge">BW</div></div>
+      </div>
+
+      <div class="strength-set">PLYO INTRO — after the circuit</div>
+
+      <div class="step-card">
+        <div class="rpe-badge ssp-1">8</div>
+        <div class="step-body">
+          <div class="step-title">Pogo Hops</div>
+          <div class="step-detail">Small, quick bounces off the ankles, knees almost straight. Low height. 2 sets, full rest between</div>
+        </div>
+        <div class="badge-col"><div class="rpe-tag tag-timeBadge">2 × 15</div><div class="weight-badge">BW</div></div>
+      </div>
+
+      <div class="gate">
+        <strong>AFTER WEEK 6:</strong> go back to S&amp;P › Session A / B at 2 rounds, adding the third round after 2 weeks. Where they say 12kg DB, use an 8kg or 16kg KB. Max-effort lifting stays parked until the surgical team says otherwise
+      </div>
+    </div>
+  </div>
+
 </div>
 
 <script>
@@ -789,19 +1102,20 @@ function switchMainTab(tabIndex, btn) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
 
-  document.getElementById('view-stretching').classList.remove('active');
-  document.getElementById('view-running').classList.remove('active');
-  document.getElementById('view-sp').classList.remove('active');
+  ['view-stretching','view-running','view-sp','view-rebuild'].forEach((id, i) => {
+    document.getElementById(id).classList.toggle('active', i === tabIndex);
+  });
+  window.scrollTo({top:0, behavior:'smooth'});
+}
 
-  if (tabIndex === 0) document.getElementById('view-stretching').classList.add('active');
-  else if (tabIndex === 1) {
-    document.getElementById('view-running').classList.add('active');
-    switchRunningSub(0);
+function switchRebuildSub(subIndex, btn) {
+  if (btn) {
+    document.querySelectorAll('#rebuild-subtabs .sub-tab-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
   }
-  else if (tabIndex === 2) {
-    document.getElementById('view-sp').classList.add('active');
-    switchSPSub(0);
-  }
+  ['rb-rules','rb-p1','rb-p2','rb-p3'].forEach((id, i) => {
+    document.getElementById(id).classList.toggle('active', i === subIndex);
+  });
   window.scrollTo({top:0, behavior:'smooth'});
 }
 
