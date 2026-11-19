@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>House Calculator</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#0c0e0d;--card:#141714;--card2:#1c201c;--border:#222822;--border2:#2e362e;
+  --text:#dde6df;--soft:#a9b6af;--muted:#8a9a92;
+  --blue:#4a9eff;--blue-bg:rgba(74,158,255,0.1);--blue-border:rgba(74,158,255,0.45);
+  --green:#3ddc84;--amber:#f0b429;--red:#ff7a7a;
+  --mono:'DM Mono',monospace;--sans:'Inter',sans-serif;
+}
+html,body{background:var(--bg);color:var(--text);font-family:var(--mono);-webkit-font-smoothing:antialiased}
+body{padding:24px 32px 56px;min-height:100vh}
+button{font-family:inherit}
+.wrap{max-width:1360px;margin:0 auto}
+.num{font-family:var(--sans);font-variant-numeric:tabular-nums lining-nums}
+
+/* top */
+.topbar{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:12px;margin-bottom:28px}
+.pill{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid rgba(74,158,255,0.4);color:var(--blue);border-radius:999px;padding:8px 16px;font-size:12px;text-decoration:none;background:none;cursor:pointer}
+.pill:hover{background:rgba(74,158,255,0.08)}
+.pill.grey{border-color:var(--border2);color:var(--soft)}
+.pill.danger{border-color:rgba(255,87,87,0.4);color:var(--red)}
+.house-select{appearance:none;-webkit-appearance:none;border:1px solid var(--border2);background:var(--card) url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L6 7L11 1' stroke='%238a9a92' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 14px center;color:var(--text);border-radius:999px;padding:8px 36px 8px 16px;font-size:12px;font-family:var(--mono);cursor:pointer}
+.house-select:focus{outline:none;border-color:var(--blue)}
+.hero{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:flex-end;gap:20px;padding-bottom:24px;border-bottom:1px solid var(--border);margin-bottom:24px}
+.eyebrow{font-size:11px;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.title{font-family:var(--sans);font-size:40px;font-weight:700;line-height:1.1;letter-spacing:-0.025em}
+.title span{color:var(--blue)}
+.sub{font-size:13px;color:var(--muted);margin-top:10px;line-height:1.6}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+
+/* layout */
+.layout{display:flex;flex-wrap:wrap;gap:24px;align-items:flex-start}
+.side{flex:1 1 340px;max-width:380px;display:flex;flex-direction:column;gap:14px}
+.main{flex:999 1 640px;min-width:0;display:flex;flex-direction:column;gap:24px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:18px 20px}
+.lbl{font-size:10px;letter-spacing:0.14em;text-transform:uppercase;color:var(--muted);margin-bottom:12px;font-weight:400}
+.row{display:flex;justify-content:space-between;align-items:baseline;gap:12px;font-size:13px;padding:6px 0}
+.row .k{color:var(--soft)}
+.row .v{font-family:var(--sans);font-variant-numeric:tabular-nums lining-nums;font-size:14px;font-weight:500;white-space:nowrap}
+.divider{height:1px;background:var(--border);margin:8px 0}
+.big{font-family:var(--sans);font-weight:600;letter-spacing:-0.02em;line-height:1;font-variant-numeric:tabular-nums lining-nums}
+.note{font-size:11px;color:var(--muted);line-height:1.6}
+.note b{color:var(--text);font-weight:500}
+.chip{display:inline-flex;align-items:center;border-radius:999px;padding:4px 10px;font-size:11px;font-weight:500;white-space:nowrap;font-family:var(--sans)}
+.c-green{background:rgba(61,220,132,0.1);border:1px solid rgba(61,220,132,0.3);color:var(--green)}
+.c-amber{background:rgba(240,180,41,0.1);border:1px solid rgba(240,180,41,0.3);color:var(--amber)}
+.c-red{background:rgba(255,87,87,0.1);border:1px solid rgba(255,87,87,0.3);color:var(--red)}
+.c-blue{background:var(--blue-bg);border:1px solid rgba(74,158,255,0.3);color:var(--blue)}
+.c-grey{background:var(--card2);border:1px solid var(--border2);color:var(--soft)}
+.t-green{color:var(--green)}.t-amber{color:var(--amber)}.t-red{color:var(--red)}.t-blue{color:var(--blue)}
+
+/* inputs */
+.range{width:100%;accent-color:var(--blue);margin:10px 0 2px;cursor:pointer}
+.scale{display:flex;justify-content:space-between;font-size:10px;color:var(--muted);font-family:var(--sans);font-variant-numeric:tabular-nums}
+.slhead{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.slhead .t{font-size:12px;color:var(--soft)}
+.slhead .val{font-family:var(--sans);font-variant-numeric:tabular-nums;font-size:16px;font-weight:600;color:var(--blue)}
+.seg{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.segbtn{background:var(--card2);border:1px solid var(--border);border-radius:10px;padding:9px 4px;color:var(--text);text-align:center;cursor:pointer}
+.segbtn:hover{border-color:var(--border2)}
+.segbtn.on{background:var(--blue-bg);border-color:var(--blue-border)}
+.segbtn .l{display:block;font-size:9px;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted)}
+.segbtn .n{display:block;font-size:13px;font-weight:500;margin-top:3px;font-family:var(--sans);font-variant-numeric:tabular-nums}
+.segbtn.on .l,.segbtn.on .n{color:var(--blue)}
+.seg2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.field{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:5px 0}
+.field label{font-size:12px;color:var(--soft);line-height:1.35}
+.field label small{display:block;font-size:10px;color:var(--muted);margin-top:2px}
+.inbox{display:flex;align-items:center;border:1px solid var(--border2);border-radius:8px;background:var(--card2);width:112px;flex-shrink:0}
+.inbox:focus-within{border-color:var(--blue)}
+.inbox span{font-size:12px;color:var(--muted);padding:0 0 0 9px;font-family:var(--sans)}
+.inbox span.suf{padding:0 9px 0 0}
+.inbox input{width:100%;min-width:0;border:none;background:transparent;color:var(--text);padding:7px 9px 7px 4px;font-family:var(--sans);font-variant-numeric:tabular-nums;font-size:14px;text-align:right}
+.inbox input:focus{outline:none}
+.inbox.wide{width:100%}
+.inbox.wide input{text-align:left;font-family:var(--mono);font-size:13px;padding-left:10px}
+.inbox.locked{border-style:dashed;background:transparent}
+.inbox.locked input{color:var(--muted)}
+input[type=number]::-webkit-outer-spin-button,input[type=number]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+input[type=number]{-moz-appearance:textfield}
+
+/* main */
+.kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
+.kpi{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px 18px}
+.kpi .l{font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted)}
+.kpi .n{font-family:var(--sans);font-weight:600;font-size:28px;letter-spacing:-0.02em;margin-top:10px;line-height:1;font-variant-numeric:tabular-nums lining-nums}
+.kpi .s{font-size:11px;color:var(--muted);margin-top:8px;line-height:1.5}
+.kpi.bad{border-color:rgba(255,87,87,0.4)}
+.kpi.warn{border-color:rgba(240,180,41,0.4)}
+.kpi.good{border-color:rgba(61,220,132,0.35)}
+.secrow{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+.sech{font-family:var(--sans);font-size:18px;font-weight:600;letter-spacing:-0.01em}
+.opts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.opt{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px 18px;display:flex;flex-direction:column;gap:10px;cursor:pointer;text-align:left;color:var(--text)}
+.opt:hover{border-color:var(--border2)}
+.opt.on{border-color:var(--blue-border);background:#151a1f}
+.opt.static{cursor:default}
+.opt-h{display:flex;align-items:center;gap:10px}
+.opt-letter{display:inline-flex;width:24px;height:24px;border-radius:7px;align-items:center;justify-content:center;font-size:12px;background:var(--card2);border:1px solid var(--border2);color:var(--soft);flex-shrink:0}
+.opt.on .opt-letter{color:var(--blue);border-color:var(--blue-border)}
+.opt-t{font-size:14px;font-weight:500}
+.opt .chip{align-self:flex-start}
+.opt .rows{width:100%}
+.cols2{display:grid;grid-template-columns:minmax(0,3fr) minmax(0,2fr);gap:24px}
+.cols2e{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px}
+.cols3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px}
+.gridbox{overflow-x:auto}
+.grid{display:grid;grid-template-columns:86px repeat(9,minmax(52px,1fr));gap:4px;min-width:600px}
+.gh{color:var(--muted);text-align:center;padding:6px 0;font-size:11px;font-family:var(--sans);font-variant-numeric:tabular-nums}
+.gh.on{color:var(--blue);font-weight:600}
+.gr{color:var(--soft);display:flex;flex-direction:column;justify-content:center;font-size:11px;font-family:var(--sans);font-variant-numeric:tabular-nums;line-height:1.25}
+.gr small{color:var(--muted);font-family:var(--mono);font-size:9px;text-transform:uppercase;letter-spacing:0.06em}
+.gc{border-radius:7px;text-align:center;padding:10px 0;font-weight:600;font-size:12px;font-family:var(--sans);font-variant-numeric:tabular-nums;cursor:pointer;border:none}
+.g-g{background:rgba(61,220,132,0.12);color:var(--green)}
+.g-a{background:rgba(240,180,41,0.13);color:var(--amber)}
+.g-r{background:rgba(255,87,87,0.13);color:var(--red)}
+.g-sel{outline:2px solid var(--blue);outline-offset:-2px}
+.legend{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.terms{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.term{background:var(--card2);border:1px solid var(--border);border-radius:11px;padding:12px 14px}
+.term.on{border-color:var(--blue-border)}
+.term .h3{font-size:10px;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.term.on .h3{color:var(--blue)}
+.unit{font-family:var(--mono);font-size:11px;font-weight:400;color:var(--muted);letter-spacing:0}
+.stack{display:flex;height:12px;border-radius:6px;overflow:hidden;margin:6px 0 12px;background:var(--card2)}
+.sw{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:7px;vertical-align:0}
+.banner{border-radius:12px;padding:12px 16px;font-size:12px;line-height:1.6}
+.foot{font-size:10px;color:#5d6b64;text-align:center;line-height:1.9;padding-top:18px;border-top:1px solid var(--border);margin-top:8px}
+
+/* modal */
+.modal-bg{position:fixed;inset:0;background:rgba(6,8,7,0.85);display:none;align-items:center;justify-content:center;z-index:100;padding:24px}
+.modal-bg.open{display:flex}
+.modal{width:min(820px,100%);max-height:calc(100vh - 48px);overflow:auto;background:var(--card);border:1px solid var(--border2);border-radius:18px;padding:28px 30px;display:flex;gap:28px;flex-wrap:wrap}
+.modal .col{flex:1 1 300px;min-width:0}
+.hitem{background:var(--card2);border:1px solid var(--border);border-radius:12px;padding:12px 14px;margin-bottom:8px;cursor:pointer;width:100%;text-align:left;color:var(--text);display:block}
+.hitem:hover{border-color:var(--border2)}
+.hitem.on{border-color:var(--blue-border)}
+.hitem .top{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:14px;font-weight:500}
+.btn-pri{background:var(--blue);color:#06121f;border:none;border-radius:999px;padding:10px 16px;font-size:13px;font-weight:500;cursor:pointer;flex:1}
+.btn-row{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
+
+@media (max-width:1180px){.kpis{grid-template-columns:repeat(3,minmax(0,1fr))}.opts{grid-template-columns:repeat(2,minmax(0,1fr))}.cols2,.cols3,.cols2e{grid-template-columns:minmax(0,1fr)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="topbar">
+    <a class="pill" href="../../menu/index.html">&#8592; Menu</a>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+      <label for="house-select" class="note" style="position:absolute;left:-9999px">Choose house</label>
+      <select id="house-select" class="house-select" onchange="selectHouse(this.value)"></select>
+      <button class="pill" onclick="openModal()">+ Add / edit house</button>
+    </div>
+  </div>
+
+  <header class="hero">
+    <div>
+      <div class="eyebrow">House calculator</div>
+      <h1 class="title" id="h-title"></h1>
+      <div class="sub" id="h-sub"></div>
+    </div>
+    <div class="chips" id="h-chips"></div>
+  </header>
+
+  <div class="layout">
+
+    <!-- ── INPUTS ── -->
+    <aside class="side" aria-label="Inputs">
+
+      <section class="card">
+        <h2 class="lbl">Offer &amp; valuation</h2>
+        <div class="slhead"><span class="t">Your offer</span><span class="val" id="offer-val"></span></div>
+        <input class="range" type="range" id="offer-range" step="500" aria-label="Offer amount" oninput="setHouse('offer',+this.value)">
+        <div class="scale"><span id="offer-min"></span><span id="offer-mid"></span><span id="offer-max"></span></div>
+        <div class="field" style="margin-top:8px"><label for="offer-in">Type an exact offer<small id="asking-note"></small></label><div class="inbox"><span>£</span><input type="number" id="offer-in" step="500" onchange="setHouse('offer',+this.value)"></div></div>
+        <div class="slhead" style="margin:12px 0 8px"><span class="t">Lender valuation</span><span class="val" id="val-val"></span></div>
+        <div class="seg" id="val-seg"></div>
+        <div class="field" id="custom-row" style="margin-top:8px;display:none"><label for="val-custom">Custom valuation</label><div class="inbox"><span>£</span><input type="number" id="val-custom" step="500" onchange="setHouse('valCustom',+this.value)"></div></div>
+      </section>
+
+      <section class="card">
+        <h2 class="lbl">Money you’ll have</h2>
+        <div id="money-fields"></div>
+        <div style="height:8px"></div>
+        <div class="slhead"><span class="t">Estimated completion<small class="note" style="display:block">End of the month</small></span><span class="val" id="comp-val"></span></div>
+        <input class="range" type="range" id="comp-range" min="0" step="1" aria-label="Estimated completion month" oninput="setS('compIdx',+this.value)">
+        <div class="scale" id="comp-scale"></div>
+        <div class="divider" style="margin-top:12px"></div>
+        <div id="money-sum"></div>
+      </section>
+
+      <section class="card">
+        <h2 class="lbl">Mortgage</h2>
+        <div id="mort-fields"></div>
+        <div style="height:10px"></div>
+        <div class="slhead"><span class="t">Term A</span><span class="val" id="termA-val"></span></div>
+        <input class="range" type="range" id="termA" min="10" max="40" step="1" aria-label="Term A in years" oninput="setS('termA',+this.value)">
+        <div class="scale"><span>10</span><span>25</span><span>40 yrs</span></div>
+        <div style="height:10px"></div>
+        <div class="slhead"><span class="t">Term B</span><span class="val" id="termB-val"></span></div>
+        <input class="range" type="range" id="termB" min="10" max="40" step="1" aria-label="Term B in years" oninput="setS('termB',+this.value)">
+        <div class="scale"><span>10</span><span>25</span><span>40 yrs</span></div>
+        <div style="height:10px"></div>
+        <div class="slhead"><span class="t">Overpay each month</span><span class="val" id="over-val"></span></div>
+        <input class="range" type="range" id="overpay" min="0" max="1000" step="25" aria-label="Monthly overpayment" oninput="setS('overpay',+this.value)">
+        <div class="scale"><span>£0</span><span>£500</span><span>£1,000</span></div>
+        <div class="seg2" style="margin-top:10px" id="over-on"></div>
+      </section>
+
+      <section class="card">
+        <h2 class="lbl">Buying costs</h2>
+        <div id="cost-fields"></div>
+      </section>
+
+      <section class="card">
+        <h2 class="lbl">Running costs a month</h2>
+        <div id="run-fields"></div>
+      </section>
+
+      <button class="pill grey" onclick="resetSettings()">Reset money, mortgage &amp; costs to defaults</button>
+    </aside>
+
+    <!-- ── RESULTS ── -->
+    <main class="main" id="main"></main>
+  </div>
+</div>
+
+<!-- ── HOUSES MODAL ── -->
+<div class="modal-bg" id="modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal" role="dialog" aria-modal="true" aria-label="Houses">
+    <div class="col">
+      <div class="eyebrow">Saved houses</div>
+      <div id="house-list"></div>
+      <button class="pill" style="margin-top:6px" onclick="newHouse()">+ New house</button>
+    </div>
+    <div class="col">
+      <div class="eyebrow" id="form-title">Edit house</div>
+      <div id="house-form"></div>
+      <div class="btn-row">
+        <button class="pill grey" style="flex:1" onclick="closeModal()">Close</button>
+        <button class="btn-pri" onclick="saveHouse()">Save house</button>
+      </div>
+      <div class="btn-row" style="margin-top:10px">
+        <button class="pill grey" style="flex:1" onclick="duplicateHouse()">Duplicate as template</button>
+        <button class="pill danger" style="flex:1" id="del-btn" onclick="deleteHouse()">Delete</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═════════════ DEFAULTS ═════════════ */
+var MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+var START={y:2026,m:10}; /* savings figure is as at 25 Nov 2026 (month index 10) */
+
+var DEFAULT_SETTINGS={
+  savings:19200,     /* LISA + Nationwide + loans back + Nov payday + all gifts */
+  lisa:10120,        /* only usable towards the price */
+  ringfenced:3000,   /* Dad's gift: things for the house only, never deposit or fees */
+  monthly:1400,
+  compIdx:3,         /* months after Nov 2026 → 3 = Mar 2027 (Dec..Mar = 4 paydays) */
+  maxLoan:256500,
+  rate:5.68, fixYrs:2, refix:5.0, svr:6.75,
+  termA:35, termB:30, overpay:150, overOn:'A',
+  broker:400, solicitor:1500, survey:800, removals:450, valuation:0, otherFees:0,
+  cashback:250, keep:3500, sunk:1550,
+  energy:165, water:55, insurance:32
+};
+var CROSSHALL={
+  id:'crosshall-43', name:'43 Crosshall Brow',
+  address:'Westhead, Ormskirk · L40 6JD · 3-bed mid-terrace · Freehold',
+  asking:225000, vWorst:208000, vLikely:215000, vBest:222000, councilTax:1893.57,
+  offer:225000, valSel:'likely', valCustom:215000, scenario:'A'
+};
+
+/* ═════════════ STATE ═════════════ */
+var KEY='atoalh_house_calc_v1';
+var ST=load();
+var editingId=null;
+
+function clone(o){return JSON.parse(JSON.stringify(o));}
+function load(){
+  var s=null;
+  try{s=JSON.parse(localStorage.getItem(KEY));}catch(e){}
+  if(!s||!s.houses||!s.houses.length) s={houses:[clone(CROSSHALL)],sel:CROSSHALL.id,settings:clone(DEFAULT_SETTINGS)};
+  for(var k in DEFAULT_SETTINGS) if(s.settings[k]===undefined) s.settings[k]=DEFAULT_SETTINGS[k];
+  if(!s.houses.some(function(h){return h.id===s.sel;})) s.sel=s.houses[0].id;
+  return s;
+}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(ST));}catch(e){}}
+function H(){for(var i=0;i<ST.houses.length;i++) if(ST.houses[i].id===ST.sel) return ST.houses[i];return ST.houses[0];}
+function S(){return ST.settings;}
+
+/* ═════════════ FORMAT ═════════════ */
+function gbp(n){var r=Math.round(n);return (r<0?'−':'')+'£'+Math.abs(r).toLocaleString('en-GB');}
+function gbpk(n){var a=Math.abs(n)/1000;return (n<0?'−':'')+'£'+(a>=100?a.toFixed(0):a.toFixed(1))+'k';}
+function kShort(n){return '£'+(n/1000).toLocaleString('en-GB',{maximumFractionDigits:1})+'k';}
+function pct(n){return (Math.round(n*100)/100).toFixed(2)+'%';}
+function monthLabel(off){var t=START.m+off;return MONTHS[t%12]+' '+(START.y+Math.floor(t/12));}
+function ym(off){var t=START.m+off;return MONTHS[t%12]+' '+String(START.y+Math.floor(t/12)).slice(2);}
+function yrsMths(n){var y=Math.floor(n/12),m=n%12;return y+' yrs'+(m?' '+m+' mth'+(m>1?'s':''):'');}
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+
+/* ═════════════ MATHS ═════════════ */
+function payment(P,rate,yrs){
+  var r=rate/1200,n=yrs*12;
+  if(P<=0) return 0;
+  if(r===0) return P/n;
+  return P*r/(1-Math.pow(1+r,-n));
+}
+function balanceAfter(P,rate,yrs,months,extra){
+  var r=rate/1200,m=payment(P,rate,yrs),b=P;
+  for(var i=0;i<months&&b>0;i++){b=b*(1+r)-m-(extra||0);}
+  return Math.max(0,b);
+}
+function payoff(P,rate,yrs,extra){
+  var r=rate/1200,m=payment(P,rate,yrs),b=P,n=0,I=0;
+  while(b>0.005&&n<1200){var i=b*r;I+=i;b=b+i-m-extra;n++;}
+  return {months:n,interest:I};
+}
+function valuation(h){
+  return h.valSel==='worst'?h.vWorst:h.valSel==='best'?h.vBest:h.valSel==='custom'?(h.valCustom||h.vLikely):h.vLikely;
+}
+function fees(s){return s.broker+s.solicitor+s.survey+s.removals+s.valuation+s.otherFees;}
+function paydays(s){return s.compIdx+1;}            /* completion at month end → that month's payday counts */
+function available(s){return s.savings-s.ringfenced+s.monthly*paydays(s);}
+
+/* Everything for one price / valuation pair */
+function calc(price,V,s){
+  var lend=0.95*Math.min(price,V);
+  var capped=lend>s.maxLoan;
+  var loan=Math.min(lend,s.maxLoan);
+  var fromCash=price-loan;                         /* deposit + any valuation gap */
+  var f=fees(s);
+  var need=fromCash+f;
+  var lisaUsed=Math.min(s.lisa,fromCash);
+  var lisaStuck=s.lisa-lisaUsed;                   /* LISA can't pay fees */
+  var have=available(s);
+  var left=have-lisaStuck-need;
+  var movingIn=s.ringfenced+Math.max(0,left);
+  var status=left<0?'red':(movingIn<s.keep?'amber':'green');
+  return {price:price,V:V,loan:loan,capped:capped,fromCash:fromCash,deposit:0.05*Math.min(price,V),
+          gap:Math.max(0,price-V),fees:f,need:need,have:have,left:left,movingIn:movingIn,status:status,
+          lisaUsed:lisaUsed,lisaStuck:lisaStuck,ltvPrice:loan/price};
+}
+/* Highest price that still leaves enough for the moving-in target */
+function maxOffer(V,s){
+  var c=available(s)-fees(s)-Math.max(0,s.keep-s.ringfenced);
+  if(c<=0) return 0;
+  var p=(20*c<=V)?20*c:c+0.95*V;
+  /* respect DIP cap: loan never above maxLoan */
+  if(0.95*Math.min(p,V)>s.maxLoan){ p=Math.min(p,c+s.maxLoan); }
+  return Math.floor(p/100)*100;
+}
+function scenarioPrice(h,V){
+  if(h.offer<=V) return h.offer;
+  if(h.scenario==='B') return V;
+  if(h.scenario==='C') return Math.round((h.offer+V)/2);
+  return h.offer;
+}
+
+/* ═════════════ STATE SETTERS ═════════════ */
+function setHouse(k,v){var h=H();if(isNaN(v)&&typeof v==='number')return;h[k]=v;save();renderAll();}
+function setS(k,v){if(typeof v==='number'&&isNaN(v))return;S()[k]=v;save();renderAll();}
+function selectHouse(id){ST.sel=id;save();renderAll();}
+function resetSettings(){if(!confirm('Reset money, mortgage and cost settings to the defaults? Your houses stay as they are.'))return;ST.settings=clone(DEFAULT_SETTINGS);save();renderAll();}
+
+/* ═════════════ INPUT BUILDERS ═════════════ */
+function fieldHTML(key,label,small,opts){
+  opts=opts||{};
+  var v=S()[key];
+  var pre=opts.suf?'':'<span>£</span>';
+  var suf=opts.suf?'<span class="suf">'+opts.suf+'</span>':'';
+  var lock=opts.locked?' locked':'';
+  var dis=opts.locked?' disabled':'';
+  return '<div class="field"><label for="f-'+key+'">'+label+(small?'<small>'+small+'</small>':'')+'</label>'
+    +'<div class="inbox'+lock+'">'+pre+'<input type="number" id="f-'+key+'" value="'+(opts.locked?opts.value:v)+'" step="'+(opts.step||1)+'"'+dis
+    +' onchange="setS(\''+key+'\',+this.value)">'+suf+'</div></div>';
+}
+function buildFields(){
+  document.getElementById('money-fields').innerHTML=
+     fieldHTML('savings','Savings &amp; gifts','As at 25 Nov · loans back, all gifts in')
+    +fieldHTML('lisa','of which LISA','Price only, can’t pay fees')
+    +fieldHTML('ringfenced','Ring-fenced (Dad)','House things only, never deposit or fees')
+    +fieldHTML('monthly','Saved each payday','25th of each month');
+  document.getElementById('mort-fields').innerHTML=
+     fieldHTML('rate','Initial rate','Santander DIP',{suf:'%',step:0.01})
+    +fieldHTML('fixYrs','Fixed for','',{suf:'yrs'})
+    +fieldHTML('refix','New-deal rate after fix','Your guess',{suf:'%',step:0.01})
+    +fieldHTML('svr','Standard rate','If nobody switches you',{suf:'%',step:0.01})
+    +fieldHTML('maxLoan','Max borrowing','From the DIP',{step:500});
+  document.getElementById('cost-fields').innerHTML=
+     fieldHTML('broker','Broker fee','Charged on application')
+    +fieldHTML('solicitor','Solicitor &amp; searches')
+    +fieldHTML('survey','Survey','RICS Level 3')
+    +fieldHTML('removals','Removals')
+    +fieldHTML('valuation','Lender valuation','Free with Santander')
+    +fieldHTML('otherFees','Anything else')
+    +fieldHTML('stamp','Stamp duty','First-time buyer',{locked:true,value:0})
+    +'<div class="divider"></div>'
+    +fieldHTML('cashback','Cashback','Paid after completion')
+    +fieldHTML('keep','Moving-in target','Incl. the ring-fenced money')
+    +fieldHTML('sunk','Lost if you walk away','Survey, broker, searches');
+  document.getElementById('run-fields').innerHTML=
+     '<div class="field"><label>Council tax<small>From the house · edit in Houses</small></label><div class="inbox locked"><span>£</span><input type="number" id="f-ct" disabled></div></div>'
+    +fieldHTML('energy','Energy')
+    +fieldHTML('water','Water','United Utilities average')
+    +fieldHTML('insurance','Home insurance','Buildings &amp; contents');
+}
+
+/* ═════════════ RENDER ═════════════ */
+function renderAll(){
+  var h=H(),s=S();
+  var V=valuation(h);
+
+  /* house select */
+  var sel=document.getElementById('house-select');
+  sel.innerHTML=ST.houses.map(function(x){return '<option value="'+esc(x.id)+'"'+(x.id===ST.sel?' selected':'')+'>'+esc(x.name)+'</option>';}).join('');
+
+  /* hero */
+  var parts=h.name.trim().split(' ');
+  var last=parts.length>1?parts.pop():'';
+  document.getElementById('h-title').innerHTML=esc(parts.join(' '))+(last?' <span>'+esc(last)+'</span>':'');
+  document.getElementById('h-sub').textContent=(h.address?h.address+' · ':'')+'Asking '+gbp(h.asking);
+  document.getElementById('h-chips').innerHTML='<span class="chip c-blue">Santander '+pct(s.rate)+' · '+s.fixYrs+'-yr fix</span><span class="chip c-grey">5% deposit</span><span class="chip c-grey">First-time buyers</span>';
+
+  /* offer slider */
+  var lo=Math.floor((h.asking*0.85)/5000)*5000, hi=Math.ceil((h.asking*1.08)/5000)*5000;
+  lo=Math.min(lo,Math.floor(h.offer/5000)*5000); hi=Math.max(hi,Math.ceil(h.offer/5000)*5000);
+  var r=document.getElementById('offer-range'); r.min=lo; r.max=hi; r.value=h.offer;
+  document.getElementById('offer-min').textContent=kShort(lo);
+  document.getElementById('offer-mid').textContent=kShort(Math.round((lo+hi)/2/1000)*1000);
+  document.getElementById('offer-max').textContent=kShort(hi);
+  document.getElementById('offer-val').textContent=gbp(h.offer);
+  var oi=document.getElementById('offer-in'); if(document.activeElement!==oi) oi.value=h.offer;
+  var diff=h.offer-h.asking;
+  document.getElementById('asking-note').textContent='Asking '+gbp(h.asking)+(diff===0?' · at asking':' · '+(diff>0?'+':'−')+gbp(Math.abs(diff))+(diff>0?' over':' under'));
+
+  /* valuation */
+  document.getElementById('val-val').textContent=gbp(V);
+  var segs=[['worst','Worst',h.vWorst],['likely','Likely',h.vLikely],['best','Best',h.vBest],['custom','Custom',h.valCustom]];
+  document.getElementById('val-seg').innerHTML=segs.map(function(x){
+    return '<button class="segbtn'+(h.valSel===x[0]?' on':'')+'" onclick="setHouse(\'valSel\',\''+x[0]+'\')"><span class="l">'+x[1]+'</span><span class="n">'+(x[0]==='custom'&&h.valSel!=='custom'?'…':kShort(x[2]||0))+'</span></button>';
+  }).join('');
+  document.getElementById('custom-row').style.display=h.valSel==='custom'?'flex':'none';
+  var vc=document.getElementById('val-custom'); if(document.activeElement!==vc) vc.value=h.valCustom||h.vLikely;
+
+  /* completion */
+  var cr=document.getElementById('comp-range'); cr.max=13; cr.value=s.compIdx;
+  document.getElementById('comp-val').textContent=monthLabel(s.compIdx+1);
+  document.getElementById('comp-scale').innerHTML='<span>'+ym(1)+'</span><span>'+ym(7)+'</span><span>'+ym(14)+'</span>';
+  document.getElementById('money-sum').innerHTML=
+     row('Paydays to completion',paydays(s)+' × '+gbp(s.monthly))
+    +row('For deposit &amp; fees',gbp(available(s)),'t-blue')
+    +row('Ring-fenced for the house',gbp(s.ringfenced));
+
+  /* terms / overpay */
+  document.getElementById('termA').value=s.termA; document.getElementById('termA-val').textContent=s.termA+' yrs';
+  document.getElementById('termB').value=s.termB; document.getElementById('termB-val').textContent=s.termB+' yrs';
+  document.getElementById('overpay').value=s.overpay; document.getElementById('over-val').textContent=gbp(s.overpay);
+  document.getElementById('over-on').innerHTML=['A','B'].map(function(t){
+    return '<button class="segbtn'+(s.overOn===t?' on':'')+'" onclick="setS(\'overOn\',\''+t+'\')"><span class="l">Apply to</span><span class="n">Term '+t+'</span></button>';
+  }).join('');
+
+  /* keep typed fields in sync */
+  ['savings','lisa','ringfenced','monthly','rate','fixYrs','refix','svr','maxLoan','broker','solicitor','survey','removals','valuation','otherFees','cashback','keep','sunk','energy','water','insurance'].forEach(function(k){
+    var el=document.getElementById('f-'+k); if(el&&document.activeElement!==el) el.value=s[k];
+  });
+  document.getElementById('f-ct').value=Math.round(h.councilTax/12);
+
+  renderMain(h,s,V);
+}
+
+function row(k,v,cls){return '<div class="row"><span class="k">'+k+'</span><span class="v'+(cls?' '+cls:'')+'">'+v+'</span></div>';}
+function kpi(l,n,sub,cls,state){return '<div class="kpi'+(state?' '+state:'')+'"><div class="l">'+l+'</div><div class="n '+(cls||'')+'">'+n+'</div><div class="s">'+sub+'</div></div>';}
+function statusChip(c){
+  if(c.status==='red') return '<span class="chip c-red">'+gbp(-c.left)+' short</span>';
+  if(c.status==='amber') return '<span class="chip c-amber">Eats moving-in money</span>';
+  return '<span class="chip c-green">Comfortable</span>';
+}
+function leftCls(c){return c.status==='red'?'t-red':c.status==='amber'?'t-amber':'t-green';}
+
+function renderMain(h,s,V){
+  var price=scenarioPrice(h,V);
+  var c=calc(price,V,s);
+  var gap=h.offer>V;
+  var compM=monthLabel(s.compIdx+1);
+  var monthlyA=payment(c.loan,s.rate,s.termA), monthlyB=payment(c.loan,s.rate,s.termB);
+  var ct=h.councilTax/12;
+  var bills=ct+s.energy+s.water+s.insurance;
+  var o='';
+
+  /* warnings */
+  if(c.capped) o+='<div class="banner c-amber">The loan would be above your DIP maximum of '+gbp(s.maxLoan)+'. The extra has been added to the cash needed.</div>';
+
+  /* KPIs */
+  var stateLeft=c.status==='red'?'bad':c.status==='amber'?'warn':'good';
+  var leftSub=c.left<0?'You can’t use the ring-fenced '+gbp(s.ringfenced)+' for this'
+             :'Moving-in money '+gbp(c.movingIn)+' with the ring-fenced '+gbp(s.ringfenced)+' (target '+gbp(s.keep)+')';
+  o+='<div class="kpis">'
+    +kpi('Cash needed up front',gbp(c.need),'Deposit '+gbp(c.deposit)+(c.gap&&price>V?' · gap '+gbp(price-V):'')+' · costs '+gbp(c.fees))
+    +kpi('You’ll have by '+compM,gbp(c.have),gbp(s.savings-s.ringfenced)+' now + '+paydays(s)+' paydays','t-blue')
+    +kpi('Left after completion',gbp(c.left),leftSub,leftCls(c),stateLeft)
+    +kpi('Mortgage',gbp(c.loan),(price>V?Math.round(c.ltvPrice*1000)/10+'% of the price · 95% of the valuation':'95% of the price'))
+    +kpi('Each month',gbp(monthlyA+bills),'Mortgage '+gbp(monthlyA)+' + bills '+gbp(bills))
+    +'</div>';
+
+  /* OPTIONS */
+  o+='<section>';
+  if(gap){
+    var cA=calc(h.offer,V,s), cB=calc(V,V,s), cC=calc(Math.round((h.offer+V)/2),V,s);
+    o+='<div class="secrow"><h2 class="sech">If it values at '+gbp(V)+'</h2><span class="note">Gap of '+gbp(h.offer-V)+' · mortgage '+gbp(cA.loan)+' and '+gbp(payment(cA.loan,s.rate,s.termA))+'/mo in every option · click one to use it</span></div>';
+    o+='<div class="opts">'
+      +optCard('A','Pay the gap ourselves',cA,'Keep the price and cover the gap from savings.',h.scenario==='A')
+      +optCard('B','Renegotiate to valuation',cB,'Ask the vendor to match the valuation. Their next buyer would hit the same gap.',h.scenario==='B')
+      +optCard('C','Split the gap 50/50',cC,'Meet in the middle at '+gbp(cC.price)+'.',h.scenario==='C')
+      +'<div class="opt static"><div class="opt-h"><span class="opt-letter">D</span><span class="opt-t">Walk away</span></div><span class="chip c-grey">'+gbp(s.sunk)+' lost</span>'
+      +'<div class="note">What’s already spent by the time the valuation lands: usually the survey, the broker fee and the solicitor’s searches. Edit it under Buying costs.</div></div>'
+      +'</div>';
+  }else{
+    o+='<div class="secrow"><h2 class="sech">Valuation covers your offer</h2><span class="note">'+gbp(V)+' valuation · '+gbp(h.offer)+' offer</span></div>';
+    o+='<div class="card" style="border-color:rgba(61,220,132,0.35)"><div class="note">No gap to cover. Santander lends 95% of the price ('+gbp(c.loan)+') and your deposit is the 5% ('+gbp(c.deposit)+'). '
+      +'Pick a lower valuation to see what happens if it comes in under your offer.</div></div>';
+  }
+  o+='</section>';
+
+  /* GRID + MAX OFFER */
+  var step=2500, offers=[];
+  var base=Math.round(h.offer/step)*step;
+  for(var i=-6;i<=2;i++) offers.push(base+i*step);
+  var vals=[h.vWorst,Math.round((h.vWorst+h.vLikely)/2/1000)*1000,h.vLikely,Math.round((h.vLikely+h.vBest)/2/1000)*1000,h.vBest];
+  if(h.valSel==='custom'&&vals.indexOf(V)<0){vals.push(V);}
+  vals=vals.filter(function(v,i,a){return a.indexOf(v)===i;}).sort(function(a,b){return a-b;});
+  var g='<div class="grid"><div class="gh" style="text-align:left">Valued at ↓</div>'+offers.map(function(p){return '<div class="gh'+(p===h.offer?' on':'')+'">'+kShort(p)+'</div>';}).join('');
+  vals.forEach(function(v){
+    var tag=v===h.vWorst?'worst':v===h.vLikely?'likely':v===h.vBest?'best':(v===V&&h.valSel==='custom'?'custom':'');
+    g+='<div class="gr">'+kShort(v)+(tag?'<small>'+tag+'</small>':'')+'</div>';
+    offers.forEach(function(p){
+      var cc=calc(p,v,s);
+      var cl=cc.status==='red'?'g-r':cc.status==='amber'?'g-a':'g-g';
+      var on=(p===h.offer&&v===V)?' g-sel':'';
+      g+='<button class="gc '+cl+on+'" title="Offer '+gbp(p)+', valued '+gbp(v)+': '+gbp(cc.left)+' left" onclick="pickCell('+p+','+v+')">'+gbpk(cc.left)+'</button>';
+    });
+  });
+  g+='</div>';
+  var keepNeed=Math.max(0,s.keep-s.ringfenced);
+  var mlist=[[h.vWorst,'worst'],[Math.round((h.vWorst+h.vLikely)/2/1000)*1000,''],[h.vLikely,'likely'],[Math.round((h.vLikely+h.vBest)/2/1000)*1000,''],[h.vBest,'best']];
+  var seen={};
+  var mrows=mlist.filter(function(x){if(!x[0]||seen[x[0]])return false;seen[x[0]]=1;return true;}).map(function(x){
+      return row('Valued at '+gbp(x[0])+(x[1]?' <span class="chip c-grey" style="margin-left:6px">'+x[1]+'</span>':''),gbp(maxOffer(x[0],s)));
+    }).join('');
+  o+='<div class="cols2"><section class="card"><div class="secrow"><h2 class="sech">Offer × valuation</h2><span class="note">Money left after completion if you pay the gap · click a cell to use it</span></div>'
+    +'<div class="gridbox">'+g+'</div>'
+    +'<div class="legend"><span class="chip c-green">Moving-in target kept</span><span class="chip c-amber">Eats into moving-in money</span><span class="chip c-red">Short</span><span class="chip c-blue">Outlined = current pick</span></div></section>'
+    +'<section class="card"><div class="secrow"><h2 class="sech">Highest offer you can cover</h2></div>'
+    +'<div class="note" style="margin-bottom:8px">Price you could still complete on at each valuation by '+compM+', keeping '+gbp(keepNeed)+' of savings back so moving-in money reaches '+gbp(s.keep)+'.</div>'
+    +mrows+'<div class="divider"></div>'
+    +'<div class="row"><span class="k t-blue">Safe even at the worst valuation</span><span class="big t-blue" style="font-size:24px">'+gbp(maxOffer(h.vWorst,s))+'</span></div>'
+    +'</section></div>';
+
+  /* MORTGAGE */
+  var overTerm=s.overOn==='B'?s.termB:s.termA;
+  var base0=payoff(c.loan,s.rate,overTerm,0), withO=payoff(c.loan,s.rate,overTerm,s.overpay);
+  var totA=payoff(c.loan,s.rate,s.termA,0).interest, totB=payoff(c.loan,s.rate,s.termB,0).interest;
+  var allowance=c.loan*0.10;
+  var fixM=s.fixYrs*12;
+  var balFix=balanceAfter(c.loan,s.rate,s.termA,fixM,0);
+  var remYrs=s.termA-s.fixYrs;
+  var payRefix=payment(balFix,s.refix,remYrs), paySvr=payment(balFix,s.svr,remYrs);
+  var fixEnd=monthLabel(s.compIdx+1+fixM), diary=monthLabel(s.compIdx+1+fixM-3);
+  var dMonthly=monthlyB-monthlyA, dInt=totA-totB;
+  var compareNote;
+  if(s.termA===s.termB) compareNote='Both terms are the same. Move a slider to compare.';
+  else compareNote='Term B costs <b>'+gbp(Math.abs(dMonthly))+(dMonthly>=0?' more':' less')+' a month</b> and <b>'+gbp(Math.abs(dInt))+(dInt>=0?' less':' more')+' interest</b>, if the rate never changed.';
+  o+='<div class="cols3">'
+    +'<section class="card"><h2 class="sech" style="margin-bottom:14px">Compare terms</h2><div class="terms">'
+    +'<div class="term on"><div class="h3">Term A · '+s.termA+' yrs</div><div class="big" style="font-size:24px">'+gbp(monthlyA)+'<span class="unit">/mo</span></div><div class="note" style="margin-top:8px">Interest '+gbp(totA)+'</div></div>'
+    +'<div class="term"><div class="h3">Term B · '+s.termB+' yrs</div><div class="big" style="font-size:24px">'+gbp(monthlyB)+'<span class="unit">/mo</span></div><div class="note" style="margin-top:8px">Interest '+gbp(totB)+'</div></div>'
+    +'</div><div class="note" style="margin-top:12px">'+compareNote+'</div></section>'
+    +'<section class="card"><h2 class="sech" style="margin-bottom:14px">Overpaying '+gbp(s.overpay)+'/mo</h2>'
+    +(s.overpay>0
+      ? row('Mortgage-free in',yrsMths(withO.months))+row('Sooner by',yrsMths(base0.months-withO.months),'t-green')+row('Interest saved',gbp(base0.interest-withO.interest),'t-green')
+      : '<div class="note">Move the overpayment slider to see how much sooner you’d be mortgage-free.</div>')
+    +'<div class="divider"></div><div class="note">Applied to Term '+s.overOn+'. Penalty-free limit is 10% a year: '+gbp(allowance)+', about '+gbp(allowance/12)+'/mo'
+    +(s.overpay*12>allowance?'. <span class="t-red">You’re over the limit.</span>':'.')+'</div></section>'
+    +'<section class="card"><h2 class="sech" style="margin-bottom:14px">When the fix ends</h2>'
+    +'<div class="note" style="margin-bottom:8px">'+pct(s.rate)+' lasts to about <b>'+fixEnd+'</b>. On Term A you’ll still owe <b>'+gbp(balFix)+'</b>.</div>'
+    +row('New deal at '+pct(s.refix),gbp(payRefix)+'/mo',payRefix<=monthlyA?'t-green':'t-amber')
+    +row('Standard rate ~'+pct(s.svr),gbp(paySvr)+'/mo','t-red')
+    +'<div class="divider"></div><div class="note">Compared with '+gbp(monthlyA)+' now. Your broker switches you for free. Diarise it for '+diary+'.</div></section>'
+    +'</div>';
+
+  /* CASH + MONTHLY */
+  var fromSav=Math.max(0,Math.min(c.need-c.lisaUsed,c.have-s.lisa));
+  var short=Math.max(0,-c.left);
+  var tot=c.lisaUsed+fromSav+short||1;
+  o+='<div class="cols2e">'
+    +'<section class="card"><h2 class="sech" style="margin-bottom:12px">Where the cash comes from</h2>'
+    +'<div class="stack" role="img" aria-label="LISA '+gbp(c.lisaUsed)+', savings '+gbp(fromSav)+', short '+gbp(short)+'">'
+    +'<div style="width:'+(c.lisaUsed/tot*100)+'%;background:#4a9eff"></div><div style="width:'+(fromSav/tot*100)+'%;background:#2d6fbf"></div><div style="width:'+(short/tot*100)+'%;background:#ff7a7a"></div></div>'
+    +row('<span class="sw" style="background:#4a9eff"></span>LISA → deposit',gbp(c.lisaUsed))
+    +row('<span class="sw" style="background:#2d6fbf"></span>Nationwide, gifts &amp; paydays',gbp(fromSav))
+    +(short>0?row('<span class="sw" style="background:#ff7a7a"></span>Still to find',gbp(short),'t-red'):'')
+    +(c.lisaStuck>0?'<div class="banner c-amber" style="margin-top:8px">'+gbp(c.lisaStuck)+' of the LISA can’t be used: it’s more than the deposit, and the LISA can’t pay fees.</div>':'')
+    +'<div class="divider"></div>'
+    +row('Ring-fenced for the house (Dad)',gbp(s.ringfenced))
+    +row('Cashback after completion','+'+gbp(s.cashback),'t-green')
+    +'<div class="note" style="margin-top:6px">The LISA can only pay towards the price, so it goes on the deposit first. Fees come from Nationwide.</div></section>'
+    +'<section class="card"><h2 class="sech" style="margin-bottom:12px">Each month</h2>'
+    +row('Mortgage · Term A',gbp(monthlyA))
+    +row('Council tax',gbp(ct))
+    +row('Energy',gbp(s.energy))
+    +row('Water',gbp(s.water))
+    +row('Home insurance',gbp(s.insurance))
+    +(s.overpay>0?row('Overpayment (optional)',gbp(s.overpay)):'')
+    +'<div class="divider"></div>'
+    +'<div class="row"><span class="k">Total'+(s.overpay>0?' with overpayment':'')+'</span><span class="big t-blue" style="font-size:24px">'+gbp(monthlyA+bills+s.overpay)+'</span></div>'
+    +'</section></div>';
+
+  o+='<div class="foot">Santander DIP 19 Nov 2026 · '+gbp(s.maxLoan)+' max · 5.68% 2-yr fix · fee-free · £250 cashback · 10% overpayments<br>Stamp duty £0 as first-time buyers under £300k · Lenders lend 95% of the lower of price and valuation · Figures are estimates, not advice</div>';
+
+  document.getElementById('main').innerHTML=o;
+}
+function optCard(L,title,c,txt,on){
+  return '<button class="opt'+(on?' on':'')+'" onclick="setHouse(\'scenario\',\''+L+'\')"><div class="opt-h"><span class="opt-letter">'+L+'</span><span class="opt-t">'+title+'</span></div>'
+    +statusChip(c)
+    +'<div class="rows">'+row('Price',gbp(c.price))+row('Cash up front',gbp(c.need))+row('Left over',gbp(c.left),leftCls(c))+'</div>'
+    +'<div class="note">'+txt+'</div></button>';
+}
+function pickCell(p,v){
+  var h=H(); h.offer=p; h.scenario='A';
+  if(v===h.vWorst) h.valSel='worst'; else if(v===h.vLikely) h.valSel='likely'; else if(v===h.vBest) h.valSel='best'; else {h.valSel='custom';h.valCustom=v;}
+  save(); renderAll();
+}
+
+/* ═════════════ HOUSES MODAL ═════════════ */
+var HF=[['name','Name','text'],['address','Area & description','text'],['asking','Asking price','num'],['vWorst','Valuation · worst','num'],['vLikely','Valuation · likely','num'],['vBest','Valuation · best','num'],['councilTax','Council tax a year','num']];
+function openModal(){editingId=ST.sel;renderModal();document.getElementById('modal').classList.add('open');}
+function closeModal(){document.getElementById('modal').classList.remove('open');}
+function renderModal(){
+  document.getElementById('house-list').innerHTML=ST.houses.map(function(x){
+    return '<button class="hitem'+(x.id===editingId?' on':'')+'" onclick="editHouse(\''+esc(x.id)+'\')"><div class="top"><span>'+esc(x.name)+'</span>'+(x.id===ST.sel?'<span class="chip c-blue">Selected</span>':'')+'</div>'
+      +'<div class="note" style="margin-top:6px">Asking '+gbp(x.asking)+' · '+kShort(x.vWorst)+' / '+kShort(x.vLikely)+' / '+kShort(x.vBest)+'</div></button>';
+  }).join('');
+  var h=editingId?ST.houses.filter(function(x){return x.id===editingId;})[0]:null;
+  document.getElementById('form-title').textContent=h?'Edit house':'New house';
+  document.getElementById('del-btn').style.display=(h&&ST.houses.length>1)?'':'none';
+  document.getElementById('house-form').innerHTML=HF.map(function(f){
+    var v=h?h[f[0]]:'';
+    if(f[2]==='text') return '<div class="field" style="flex-direction:column;align-items:stretch;gap:6px"><label for="hf-'+f[0]+'">'+f[1]+'</label><div class="inbox wide"><input type="text" id="hf-'+f[0]+'" value="'+esc(v)+'"></div></div>';
+    return '<div class="field"><label for="hf-'+f[0]+'">'+f[1]+'</label><div class="inbox"><span>£</span><input type="number" id="hf-'+f[0]+'" value="'+(v===''?'':v)+'"></div></div>';
+  }).join('')+'<div class="note" style="margin-top:8px">Leave worst or best blank to use the likely valuation.</div>';
+}
+function editHouse(id){editingId=id;renderModal();}
+function newHouse(){editingId=null;renderModal();document.getElementById('hf-name').focus();}
+function readForm(){
+  var o={};
+  HF.forEach(function(f){var v=document.getElementById('hf-'+f[0]).value;o[f[0]]=f[2]==='num'?(v===''?null:+v):v.trim();});
+  return o;
+}
+function saveHouse(){
+  var f=readForm();
+  if(!f.name){alert('Give the house a name.');return;}
+  if(!f.asking){alert('Add the asking price.');return;}
+  if(!f.vLikely) f.vLikely=f.asking;
+  if(!f.vWorst) f.vWorst=f.vLikely;
+  if(!f.vBest) f.vBest=f.vLikely;
+  if(!f.councilTax) f.councilTax=0;
+  var h=editingId?ST.houses.filter(function(x){return x.id===editingId;})[0]:null;
+  if(h){ for(var k in f) h[k]=f[k]; }
+  else{
+    h={id:'h'+Date.now(),offer:f.asking,valSel:'likely',valCustom:f.vLikely,scenario:'A'};
+    for(var k2 in f) h[k2]=f[k2];
+    ST.houses.push(h); editingId=h.id;
+  }
+  ST.sel=h.id; save(); renderAll(); renderModal();
+}
+function duplicateHouse(){
+  var src=editingId?ST.houses.filter(function(x){return x.id===editingId;})[0]:H();
+  var c=clone(src); c.id='h'+Date.now(); c.name=src.name+' (copy)';
+  ST.houses.push(c); ST.sel=c.id; editingId=c.id; save(); renderAll(); renderModal();
+}
+function deleteHouse(){
+  if(!editingId||ST.houses.length<2) return;
+  var h=ST.houses.filter(function(x){return x.id===editingId;})[0];
+  if(!confirm('Delete '+h.name+'?')) return;
+  ST.houses=ST.houses.filter(function(x){return x.id!==editingId;});
+  if(ST.sel===editingId) ST.sel=ST.houses[0].id;
+  editingId=ST.sel; save(); renderAll(); renderModal();
+}
+document.addEventListener('keydown',function(e){if(e.key==='Escape')closeModal();});
+
+/* ═════════════ INIT ═════════════ */
+buildFields();
+renderAll();
+</script>
+</body>
+</html>
