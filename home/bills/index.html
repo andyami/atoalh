@@ -320,14 +320,23 @@ async function graph(path, tk){
   return r.json();
 }
 
-const SEL = '?$select=id,name,lastModifiedDateTime,parentReference,@microsoft.graph.downloadUrl';
+const SEL = ''; // no $select: personal OneDrive omits @microsoft.graph.downloadUrl when $select is used
+/* Accepts "/Documents/x.xlsx" or a pasted PC path like C:\Users\me\OneDrive\Documents\x.xlsx */
+function cleanPath(p){
+  if (!p) return null;
+  let s = String(p).trim().replace(/^["']|["']$/g,'').replace(/\\/g,'/');
+  const i = s.toLowerCase().lastIndexOf('/onedrive');
+  if (i >= 0) s = s.slice(s.indexOf('/', i+1));
+  if (!/\.xlsx$/i.test(s)) s = s.replace(/\/+$/,'') + '/' + FILE_NAME;
+  return s.startsWith('/') ? s : '/' + s;
+}
 async function findFile(tk){
   // 1. remembered file id
   const id = localStorage.getItem(LS_FILE_ID);
   if (id){ try { return await graph(`/me/drive/items/${encodeURIComponent(id)}${SEL}`, tk); } catch(e){ if (e.status !== 404) throw e; localStorage.removeItem(LS_FILE_ID); } }
   // 2. a path the user typed in previously
   const saved = localStorage.getItem(LS_PATH);
-  const paths = [saved, `/${FILE_NAME}`, `/Documents/${FILE_NAME}`].filter(Boolean);
+  const paths = [cleanPath(saved), `/${FILE_NAME}`, `/Documents/${FILE_NAME}`].filter(Boolean);
   for (const p of paths){
     try { return await graph(`/me/drive/root:${encodeURI(p.startsWith('/')?p:'/'+p)}${SEL}`, tk); }
     catch(e){ if (e.status !== 404) throw e; }
@@ -346,9 +355,17 @@ async function loadFromOneDrive(){
     const tk = await token();
     const meta = await findFile(tk);
     localStorage.setItem(LS_FILE_ID, meta.id);
+    let buf;
     const url = meta['@microsoft.graph.downloadUrl'];
-    if (!url) throw new Error('OneDrive did not return a download link');
-    const buf = await (await fetch(url)).arrayBuffer();
+    if (url) {
+      const r = await fetch(url);
+      if (!r.ok) throw new Error('Download failed (' + r.status + ')');
+      buf = await r.arrayBuffer();
+    } else {
+      const r = await fetch(`${GRAPH}/me/drive/items/${encodeURIComponent(meta.id)}/content`, {headers:{Authorization:'Bearer '+tk}});
+      if (!r.ok) throw new Error('Download failed (' + r.status + ')');
+      buf = await r.arrayBuffer();
+    }
     FILE_META = {name:meta.name, modified:new Date(meta.lastModifiedDateTime), source:'onedrive',
                  folder:(meta.parentReference && meta.parentReference.path || '').replace(/^\/drive\/root:?/,'') || '/'};
     useWorkbook(buf);
