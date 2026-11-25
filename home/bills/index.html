@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="robots" content="noindex">
+<title>ATOALH — Bills</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500&display=swap" rel="stylesheet">
+<script src="../../vendor/msal-browser-4.30.0.min.js"></script>
+<script src="../../vendor/xlsx-0.18.5.core.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0c0e0d;--panel:#131614;--line:#1f2520;--text:#dde6df;--muted:#7d887f;--dim:#4c564f;--gold:#c8a97a;--blue:#4a9eff;--warn:#f18a59}
+body{font-family:'Instrument Sans',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);padding:max(24px,env(safe-area-inset-top)) 28px 48px;min-height:100vh;-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+.wrap{max-width:1240px;margin:0 auto}
+button{font:inherit;cursor:pointer}
+.top{display:flex;align-items:center;gap:16px;margin-bottom:18px;flex-wrap:wrap}
+.top h1{font-size:22px;font-weight:500;letter-spacing:-.01em}
+.top .sub{color:var(--muted);font-size:13px}
+.spacer{flex:1}
+.back{border:1px solid var(--gold);color:var(--gold);border-radius:999px;padding:7px 14px;font-size:13px;text-decoration:none}
+.filters{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:18px;align-items:center}
+.seg{display:inline-flex;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:3px;max-width:100%;overflow-x:auto;scrollbar-width:none}
+.seg::-webkit-scrollbar{display:none}
+.seg button{font-size:13px;color:var(--muted);background:none;border:0;border-radius:9px;padding:7px 13px;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.15;white-space:nowrap;flex-shrink:0}
+.seg button small{font-size:10px;color:var(--dim)}
+.seg button.on{background:#232a24;color:var(--text)}
+.seg button.on small{color:var(--muted)}
+.kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-bottom:16px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px 16px}
+.kpi .l{font-size:12px;color:var(--muted);margin-bottom:6px}
+.kpi .v{font-size:26px;font-weight:500;letter-spacing:-.02em}
+.kpi .n{font-size:12px;color:var(--muted);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kpi .bar{height:4px;background:#232a24;border-radius:4px;margin-top:9px;overflow:hidden}
+.kpi .bar i{display:block;height:100%;background:var(--blue);border-radius:4px}
+.main{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:12px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px 16px;min-width:0}
+.card h2{font-size:13px;font-weight:500;color:var(--muted);margin-bottom:10px;display:flex;justify-content:space-between;gap:8px}
+#tm{position:relative;height:470px}
+.grp{position:absolute;border-radius:8px;overflow:hidden}
+.gh{position:absolute;left:0;right:0;top:0;height:24px;padding:4px 8px;font-size:11.5px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gh b{font-weight:500}.gh span{color:var(--muted)}
+.tile{position:absolute;border-radius:5px;padding:6px 8px;overflow:hidden;cursor:default;transition:filter .12s;-webkit-tap-highlight-color:transparent}
+.tile:hover,.tile.sel{filter:brightness(1.15)}
+.tile.up{background:color-mix(in srgb,var(--c) 22%,#131614)!important;box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--c) 75%,transparent);background-image:repeating-linear-gradient(45deg,color-mix(in srgb,var(--c) 14%,transparent) 0 2px,transparent 2px 9px)!important;color:var(--text)!important}
+.tile .t{font-size:12.5px;font-weight:500;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tile .a{font-size:12px;margin-top:2px;opacity:.9;white-space:nowrap}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:12px;font-size:11.5px;color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.legend .hatch{background:#262b27;box-shadow:inset 0 0 0 1.5px #7d887f}
+.list{max-height:520px;overflow:auto}
+.row{display:grid;grid-template-columns:44px 1fr auto;gap:8px;align-items:center;padding:8px 0;border-top:1px solid var(--line);font-size:13px}
+.row:first-child{border-top:0}
+.row .dt{color:var(--muted);font-size:12px}
+.row .dt b{display:block;color:var(--text);font-size:15px;font-weight:500}
+.row .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .nm small{display:block;color:var(--muted);font-size:11px;overflow:hidden;text-overflow:ellipsis}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px}
+.own{font-size:10px;border:1px solid var(--dim);color:var(--muted);border-radius:4px;padding:0 4px;margin-left:4px}
+.empty{color:var(--muted);font-size:13px;padding:10px 0}
+#tip{position:fixed;pointer-events:none;background:#1b201c;border:1px solid #2c342d;border-radius:10px;padding:10px 12px;font-size:12.5px;min-width:200px;box-shadow:0 8px 24px rgba(0,0,0,.45);display:none;z-index:9}
+#tip .h{font-weight:500;font-size:14px;margin-bottom:6px}
+#tip .r{display:flex;justify-content:space-between;gap:16px;color:var(--muted);line-height:1.6}
+#tip .r b{color:var(--text);font-weight:500}
+.status{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:16px;justify-content:center}
+.status button,.link{background:none;border:1px solid var(--line);color:var(--muted);border-radius:999px;padding:5px 12px;font-size:12px}
+.status button:hover{color:var(--text)}
+.gate{max-width:440px;margin:12vh auto 0;background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:28px;text-align:center}
+.gate h2{font-size:20px;font-weight:500;margin-bottom:8px}
+.gate p{color:var(--muted);font-size:14px;line-height:1.5;margin-bottom:20px}
+.gate .primary{background:var(--blue);color:#06121f;border:0;border-radius:12px;padding:12px 20px;font-size:15px;font-weight:500;width:100%}
+.gate .secondary{margin-top:12px;background:none;border:0;color:var(--muted);font-size:13px;text-decoration:underline}
+.gate .err{color:var(--warn);font-size:13px;margin-bottom:16px;line-height:1.5;text-align:left;white-space:pre-wrap}
+.gate input[type=text]{width:100%;background:#0f1210;border:1px solid var(--line);color:var(--text);border-radius:10px;padding:10px 12px;font:inherit;font-size:14px;margin-bottom:10px}
+.spin{width:28px;height:28px;border:3px solid #232a24;border-top-color:var(--blue);border-radius:50%;margin:0 auto 14px;animation:s 0.9s linear infinite}
+@keyframes s{to{transform:rotate(360deg)}}
+.note{font-size:11.5px;color:var(--warn);margin-top:6px}
+.hide{display:none!important}
+@media(max-width:1000px){.kpi{padding:12px 13px}.kpi .v{font-size:21px}.main{grid-template-columns:1fr}#tm{height:420px}}
+@media(max-width:700px){.kpis{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:560px){body{padding:max(16px,env(safe-area-inset-top)) 14px 40px}.kpis{grid-template-columns:1fr 1fr}#tm{height:380px}.kpi .v{font-size:22px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"><h1>Bills</h1><span class="sub" id="range"></span><span class="spacer"></span><a class="back" href="../../menu/index.html">← Menu</a></div>
+
+  <!-- Sign-in / loading / error states -->
+  <div class="gate" id="gate">
+    <div id="gateBody"></div>
+    <input type="file" id="fileIn" accept=".xlsx" class="hide">
+  </div>
+
+  <!-- Dashboard -->
+  <div id="dash" class="hide">
+    <div class="filters"><div class="seg" id="periods"></div><div class="seg" id="owners"></div></div>
+    <div class="kpis" id="kpis"></div>
+    <div class="main">
+      <div class="card"><h2><span>Where the bill money goes</span><span id="tmtot"></span></h2><div id="tm"></div><div class="legend" id="legend"></div></div>
+      <div class="card"><h2><span id="listTitle">Still to come</span><span id="upcnt"></span></h2><div class="list" id="list"></div></div>
+    </div>
+    <div class="status" id="status"></div>
+  </div>
+</div>
+<div id="tip"></div>
+
+<script>
+/* =========================================================================
+   CONFIG
+   ========================================================================= */
+const CLIENT_ID   = '4224ec7d-8604-4ecb-99d0-f8c88e7723d6';
+const AUTHORITY   = 'https://login.microsoftonline.com/consumers';
+const SCOPES      = ['Files.Read'];
+const FILE_NAME   = 'Finances.xlsx';
+const GRAPH       = 'https://graph.microsoft.com/v1.0';
+const LS_FILE_ID  = 'atoalh.bills.fileId';
+const LS_PATH     = 'atoalh.bills.filePath';
+
+/* Category -> colour. Colour follows the category (fixed), never its size. */
+const CATS = ['Housing','Transport','Debt','Utilities','Health & Personal Care','Pet Care',
+              'Entertainment & Leisure','Subscriptions & Software','Office','Savings loan repayments'];
+const COL  = {'Housing':'#338ced','Transport':'#e76624','Debt':'#eb6263','Utilities':'#00a888',
+              'Health & Personal Care':'#e24d8b','Pet Care':'#d28e05','Entertainment & Leisure':'#9887ef',
+              'Subscriptions & Software':'#0aac23','Office':'#a79b8e','Savings loan repayments':'#6b736d'};
+const OTHER_COL = '#4c564f';
+const INK  = {'#d28e05':'#16110a','#00a888':'#06140f','#0aac23':'#06140a','#a79b8e':'#14110d'};
+const OWN  = {ALL:'Everyone',ATO:'ATO',ALH:'ALH',JNT:'Joint'};
+const MON  = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+/* =========================================================================
+   HELPERS
+   ========================================================================= */
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const gbp = (v,dp=0) => (v<0?'−':'')+'£'+Math.abs(v).toLocaleString('en-GB',{minimumFractionDigits:dp,maximumFractionDigits:dp});
+const money = v => Math.abs(Math.round(v*100) - Math.round(v)*100) < 1 ? gbp(Math.round(v)) : gbp(v,2);
+const pct = v => !isFinite(v) ? '–' : (v*100).toFixed(Math.abs(v)<0.1?1:0)+'%';
+const norm = s => String(s ?? '').toLowerCase().replace(/[^a-z0-9]/g,'');
+const dkey = d => `${d.getDate()} ${MON[d.getMonth()]}`;
+/* Excel serial -> local Date at noon (avoids timezone/DST edge cases) */
+function xlDate(v){
+  if (v == null || v === '') return null;
+  if (v instanceof Date) return new Date(v.getFullYear(), v.getMonth(), v.getDate(), 12);
+  if (typeof v !== 'number') return null;
+  const u = new Date(Date.UTC(1899,11,30) + Math.round(v)*864e5);
+  return new Date(u.getUTCFullYear(), u.getUTCMonth(), u.getUTCDate(), 12);
+}
+const today = () => { const n = new Date(); return new Date(n.getFullYear(), n.getMonth(), n.getDate(), 12); };
+
+/* =========================================================================
+   WORKBOOK -> MODEL
+   ========================================================================= */
+function cell(ws, r, c){ const x = ws[XLSX.utils.encode_cell({r,c})]; return x ? x.v : null; }
+function sheetRows(wb, name){
+  const ws = wb.Sheets[name]; if (!ws) return [];
+  return XLSX.utils.sheet_to_json(ws, {defval:null, raw:true});
+}
+function periodStart(id){ // "26 Nov" -> 25 Nov 2026
+  const m = /^(\d\d) ([A-Z][a-z]{2})$/.exec(id); if (!m) return null;
+  return new Date(2000 + +m[1], MON.indexOf(m[2]), 25, 12);
+}
+
+function parseMonthTab(ws, id, reg, warn){
+  const range = XLSX.utils.decode_range(ws['!ref'] || 'A1:A1');
+  const maxR = Math.min(range.e.r, 200), maxC = Math.min(range.e.c, 40);
+  // header row = first row containing "Payee / SP"
+  let hr = -1, cols = [];
+  for (let r = 0; r <= maxR && hr < 0; r++){
+    const hits = [];
+    for (let c = 0; c <= maxC; c++) if (String(cell(ws,r,c)??'').trim() === 'Payee / SP') hits.push(c);
+    if (hits.length){ hr = r; cols = hits; }
+  }
+  if (hr < 0){ warn.push(`${id}: couldn't find the "Payee / SP" header — tab skipped`); return null; }
+  const owners = ['ATO','JNT','ALH'];
+  const start = xlDate(cell(ws,0,cols[1]+1)) || periodStart(id);
+  const endV  = xlDate(cell(ws,0,cols[1]+4));
+  const end   = endV || new Date(start.getFullYear(), start.getMonth()+1, start.getDate()-1, 12);
+  // income row = row whose first column says "Salary"
+  const inc = {ATO:0, ALH:0, JNT:0};
+  for (let r = 0; r < hr; r++){
+    if (String(cell(ws,r,cols[0])??'').trim() === 'Salary'){
+      inc.ATO = +cell(ws,r,cols[0]+1) || 0;
+      inc.JNT = +cell(ws,r,cols[1]+1) || 0;
+      inc.ALH = +cell(ws,r,(cols[2]??cols[1])+1) || 0;
+      break;
+    }
+  }
+  const bills = [];
+  // Office pot (ATO payday move to "Office") counts as an ATO bill
+  for (let r = 0; r < hr; r++){
+    if (String(cell(ws,r,cols[0]+2)??'').trim() === 'Office'){
+      const a = cell(ws,r,cols[0]+4);
+      if (typeof a === 'number' && a !== 0)
+        bills.push({o:'ATO', p:'Office pot', raw:'Office pot', d:'25th', a, paid: cell(ws,r,cols[0]+5) === '✓',
+                    c:'Office', s:'Office pot (paid in on payday)', src:'plan'});
+    }
+  }
+  cols.forEach((c0, i) => {
+    const o = owners[i] || 'JNT';
+    for (let r = hr+1; r <= maxR; r++){
+      const n = cell(ws,r,c0), a = cell(ws,r,c0+3);
+      if (!n || typeof a !== 'number' || a === 0) continue;
+      const raw = String(n).trim();
+      let cat, sub, name = raw;
+      const rg = reg.get(norm(raw));
+      if (rg){ cat = rg.cat; sub = rg.sub; }
+      else if (/^NAT-JS\b/i.test(raw)){ cat = 'Savings loan repayments'; sub = 'Paid back to joint savings'; name = raw.replace(/^NAT-JS\s*/i,''); }
+      else { cat = 'Other'; sub = 'Not in Bills Register'; }
+      bills.push({o, p:name, raw, d:String(cell(ws,r,c0+1) ?? ''), a, paid: cell(ws,r,c0+5) === '✓', c:cat, s:sub, src:'plan'});
+    }
+  });
+  return {id, start, end, inc, bills, tab:true};
+}
+
+function buildModel(wb){
+  const warn = [];
+  // Bills Register: payee -> category
+  const reg = new Map();
+  for (const r of sheetRows(wb,'Bills Register')){
+    const p = r['Payee/SP']; if (!p) continue;
+    if (!reg.has(norm(p))) reg.set(norm(p), {cat:r['Category'], sub:r['Sub Category'], owner:r['Owner']});
+  }
+  if (!reg.size) warn.push('Bills Register tab not found or empty — categories may show as "Other"');
+
+  // Month tabs: names like "26 Nov"
+  const months = new Map();
+  for (const name of wb.SheetNames){
+    if (!/^\d\d [A-Z][a-z]{2}$/.test(name)) continue;
+    const m = parseMonthTab(wb.Sheets[name], name, reg, warn);
+    if (m) months.set(name, m);
+  }
+
+  // Actual bill transactions from Bills and Spending
+  const tx = sheetRows(wb,'Bills and Spending')
+    .filter(r => r['Transaction Type'] === 'Bills' && r['Period'] && typeof r['Amount'] === 'number')
+    .map(r => ({period:String(r['Period']).trim(), date:xlDate(r['Date']), o:r['Owner']||'JNT', p:String(r['Payee']||'').trim(),
+                a:r['Amount'], c:r['Category']||'Other', s:r['Sub Category']||''}));
+
+  // Salaries from Period Summary (used for months without a month tab)
+  const sal = {};
+  for (const r of sheetRows(wb,'Period Summary')){
+    if (r['Metric'] !== 'Salary' || !r['Period']) continue;
+    (sal[r['Period']] ??= {ATO:0,ALH:0,JNT:0})[r['Owner']] = +r['Amount'] || 0;
+  }
+
+  // Periods that only exist as transactions (history before month tabs)
+  for (const t of tx){
+    if (months.has(t.period)) continue;
+    const start = periodStart(t.period); if (!start) continue;
+    months.set(t.period, {id:t.period, start, end:new Date(start.getFullYear(), start.getMonth()+1, 24, 12),
+                          inc: sal[t.period] || {ATO:0,ALH:0,JNT:0}, bills:[], tab:false});
+  }
+
+  // Merge actuals into each period: matching payee => taken at the actual amount
+  for (const m of months.values()){
+    const mine = tx.filter(t => t.period === m.id);
+    const used = new Set();
+    for (const b of m.bills){
+      const i = mine.findIndex((t,k) => !used.has(k) && norm(t.p) === norm(b.raw) && (t.o === b.o || !t.o));
+      const j = i >= 0 ? i : mine.findIndex((t,k) => !used.has(k) && norm(t.p) === norm(b.raw));
+      if (j >= 0){ used.add(j); const t = mine[j]; b.plan = b.a; b.a = t.a; b.paid = true; b.src = 'actual'; b.date = t.date; }
+    }
+    mine.forEach((t,k) => {
+      if (used.has(k)) return;
+      m.bills.push({o:t.o, p:t.p, raw:t.p, d:t.date ? String(t.date.getDate()) : '', a:t.a, paid:true,
+                    c:t.c, s:t.s, src:'actual', date:t.date});
+    });
+    for (const b of m.bills) b.due = b.date || dueDate(m, b.d);
+  }
+
+  const list = [...months.values()].sort((a,b) => a.start - b.start);
+  return {months:list, warn};
+}
+
+function dueDate(m, dayStr){
+  const d = parseInt(dayStr, 10);
+  if (!d) return m.start;
+  const s = m.start;
+  return new Date(s.getFullYear(), s.getMonth() + (d >= s.getDate() ? 0 : 1), d, 12);
+}
+
+/* =========================================================================
+   MICROSOFT SIGN-IN + ONEDRIVE
+   ========================================================================= */
+let pca = null, account = null, MODEL = null, FILE_META = null;
+
+async function initAuth(){
+  pca = new msal.PublicClientApplication({
+    auth: { clientId: CLIENT_ID, authority: AUTHORITY,
+            redirectUri: location.origin + location.pathname, navigateToLoginRequestUrl: false },
+    cache: { cacheLocation: 'localStorage' }
+  });
+  await pca.initialize();
+  const res = await pca.handleRedirectPromise();
+  if (res && res.account) pca.setActiveAccount(res.account);
+  account = pca.getActiveAccount() || pca.getAllAccounts()[0] || null;
+  if (account) pca.setActiveAccount(account);
+}
+
+async function token(){
+  try {
+    const r = await pca.acquireTokenSilent({scopes:SCOPES, account});
+    return r.accessToken;
+  } catch (e) {
+    if (e instanceof msal.InteractionRequiredAuthError || /interaction|login_required|consent/i.test(e.errorCode||'')){
+      await pca.acquireTokenRedirect({scopes:SCOPES, account});
+      return new Promise(()=>{}); // page navigates away
+    }
+    throw e;
+  }
+}
+
+async function graph(path, tk){
+  const r = await fetch(GRAPH + path, {headers:{Authorization:'Bearer '+tk}});
+  if (!r.ok){ const err = new Error(`Microsoft Graph ${r.status}`); err.status = r.status; throw err; }
+  return r.json();
+}
+
+const SEL = '?$select=id,name,lastModifiedDateTime,parentReference,@microsoft.graph.downloadUrl';
+async function findFile(tk){
+  // 1. remembered file id
+  const id = localStorage.getItem(LS_FILE_ID);
+  if (id){ try { return await graph(`/me/drive/items/${encodeURIComponent(id)}${SEL}`, tk); } catch(e){ if (e.status !== 404) throw e; localStorage.removeItem(LS_FILE_ID); } }
+  // 2. a path the user typed in previously
+  const saved = localStorage.getItem(LS_PATH);
+  const paths = [saved, `/${FILE_NAME}`, `/Documents/${FILE_NAME}`].filter(Boolean);
+  for (const p of paths){
+    try { return await graph(`/me/drive/root:${encodeURI(p.startsWith('/')?p:'/'+p)}${SEL}`, tk); }
+    catch(e){ if (e.status !== 404) throw e; }
+  }
+  // 3. search the whole drive for an exact name match (newest wins)
+  const s = await graph(`/me/drive/root/search(q='${encodeURIComponent(FILE_NAME.replace(/\.xlsx$/,''))}')?$select=id,name,lastModifiedDateTime&$top=50`, tk);
+  const hits = (s.value||[]).filter(f => (f.name||'').toLowerCase() === FILE_NAME.toLowerCase())
+                            .sort((a,b) => new Date(b.lastModifiedDateTime) - new Date(a.lastModifiedDateTime));
+  if (!hits.length){ const e = new Error('notfound'); e.notFound = true; throw e; }
+  return graph(`/me/drive/items/${encodeURIComponent(hits[0].id)}${SEL}`, tk);
+}
+
+async function loadFromOneDrive(){
+  showGate('loading', 'Fetching Finances.xlsx from OneDrive…');
+  try {
+    const tk = await token();
+    const meta = await findFile(tk);
+    localStorage.setItem(LS_FILE_ID, meta.id);
+    const url = meta['@microsoft.graph.downloadUrl'];
+    if (!url) throw new Error('OneDrive did not return a download link');
+    const buf = await (await fetch(url)).arrayBuffer();
+    FILE_META = {name:meta.name, modified:new Date(meta.lastModifiedDateTime), source:'onedrive',
+                 folder:(meta.parentReference && meta.parentReference.path || '').replace(/^\/drive\/root:?/,'') || '/'};
+    useWorkbook(buf);
+  } catch (e) {
+    console.error(e);
+    if (e.notFound) return showGate('notfound');
+    if (e.status === 401 || e.status === 403) return showGate('signin', null, 'Microsoft said no access (' + e.status + '). Try signing in again.');
+    showGate('error', null, 'Couldn\'t load the workbook: ' + (e.message || e));
+  }
+}
+
+function useWorkbook(buf){
+  const wb = XLSX.read(buf, {type:'array', cellDates:false});
+  MODEL = buildModel(wb);
+  if (!MODEL.months.length) return showGate('error', null, 'No month tabs (like "26 Nov") or bill transactions were found in the workbook.');
+  if (!state.period || !MODEL.months.find(m => m.id === state.period)) state.period = currentPeriod();
+  $('gate').classList.add('hide'); $('dash').classList.remove('hide');
+  render();
+}
+
+/* =========================================================================
+   GATE (sign-in / loading / errors)
+   ========================================================================= */
+function showGate(kind, msg, err){
+  $('dash').classList.add('hide'); $('gate').classList.remove('hide');
+  const e = err ? `<div class="err">${esc(err)}</div>` : '';
+  const fileBtn = `<button class="secondary" data-act="file">Or open the file from this device</button>`;
+  let h = '';
+  if (kind === 'loading') h = `<div class="spin"></div><p>${esc(msg)}</p>`;
+  else if (kind === 'signin') h = `<h2>Connect to OneDrive</h2><p>Sign in with the Microsoft account that holds <b>${FILE_NAME}</b>. You'll only need to do this once on each device.</p>${e}<button class="primary" data-act="signin">Sign in with Microsoft</button>${fileBtn}`;
+  else if (kind === 'notfound') h = `<h2>Can't find ${FILE_NAME}</h2><p>Signed in as ${esc(account && account.username)}, but there's no file called <b>${FILE_NAME}</b> in that OneDrive yet (a freshly renamed file can take a few minutes to show up in search). Enter its folder path to look there directly:</p><input type="text" id="pathIn" placeholder="/Documents/${FILE_NAME}" value="${esc(localStorage.getItem(LS_PATH)||'')}"><button class="primary" data-act="path">Look here</button><button class="secondary" data-act="retry">Try search again</button><br>${fileBtn}<br><button class="secondary" data-act="signout">Use a different Microsoft account</button>`;
+  else h = `<h2>Something went wrong</h2>${e}<button class="primary" data-act="retry">Try again</button>${fileBtn}<br><button class="secondary" data-act="signout">Sign out</button>`;
+  $('gateBody').innerHTML = h;
+}
+
+document.addEventListener('click', async ev => {
+  const b = ev.target.closest('[data-act]'); if (!b) return;
+  const act = b.dataset.act;
+  if (act === 'signin') { try { await pca.loginRedirect({scopes:SCOPES, prompt:'select_account'}); } catch(e){ showGate('signin', null, e.message); } }
+  if (act === 'retry')  loadFromOneDrive();
+  if (act === 'refresh') loadFromOneDrive();
+  if (act === 'file')   $('fileIn').click();
+  if (act === 'path')   { const v = $('pathIn').value.trim(); if (v) localStorage.setItem(LS_PATH, v); localStorage.removeItem(LS_FILE_ID); loadFromOneDrive(); }
+  if (act === 'signout'){ localStorage.removeItem(LS_FILE_ID); localStorage.removeItem(LS_PATH); if (account) await pca.logoutRedirect({account, postLogoutRedirectUri: location.origin + location.pathname}); else showGate('signin'); }
+});
+$('fileIn').addEventListener('change', async e => {
+  const f = e.target.files[0]; if (!f) return;
+  FILE_META = {name:f.name, modified:new Date(f.lastModified), source:'device'};
+  try { useWorkbook(await f.arrayBuffer()); } catch(err){ showGate('error', null, 'Couldn\'t read that file: ' + err.message); }
+  e.target.value = '';
+});
+
+/* =========================================================================
+   VIEW
+   ========================================================================= */
+let state = {period:null, owner:'ALL'};
+
+function currentPeriod(){
+  const t = today(); const ms = MODEL.months;
+  const hit = ms.find(m => t >= m.start && t <= m.end);
+  if (hit) return hit.id;
+  const past = ms.filter(m => m.start <= t);
+  return (past[past.length-1] || ms[0]).id;
+}
+function rowsFor(m){
+  const o = state.owner;
+  return m.bills.flatMap(b => {
+    let share = 1;
+    if (o === 'ATO' || o === 'ALH'){ if (b.o === o) share = 1; else if (b.o === 'JNT') share = .5; else return []; }
+    else if (o === 'JNT'){ if (b.o !== 'JNT') return []; }
+    return [{...b, amt:b.a*share, full:b.a, share}];
+  });
+}
+function incomeFor(m){ const o = state.owner; return o === 'ALL' ? (m.inc.ATO + m.inc.ALH) : (m.inc[o] || 0); }
+const colour = c => COL[c] || OTHER_COL;
+
+function squarify(items, x, y, w, h){
+  const out = []; const tot = items.reduce((s,i)=>s+i.v,0); if (!tot || w <= 0 || h <= 0) return out;
+  const scale = w*h/tot; let rest = items.map(i => ({...i, area:i.v*scale}));
+  while (rest.length){
+    const short = Math.min(w,h); let row = [rest[0]], i = 1;
+    const worst = r => { const s = r.reduce((a,b)=>a+b.area,0), mx = Math.max(...r.map(z=>z.area)), mn = Math.min(...r.map(z=>z.area));
+                         return Math.max(short*short*mx/(s*s), s*s/(short*short*mn)); };
+    while (i < rest.length && worst([...row, rest[i]]) <= worst(row)){ row.push(rest[i]); i++; }
+    rest = rest.slice(i); const s = row.reduce((a,b)=>a+b.area,0);
+    if (w >= h){ const cw = s/h; let cy = y; for (const r of row){ const rh = r.area/cw; out.push({...r,x,y:cy,w:cw,h:rh}); cy += rh; } x += cw; w -= cw; }
+    else       { const rh = s/w; let cx = x; for (const r of row){ const cw = r.area/rh; out.push({...r,x:cx,y,w:cw,h:rh}); cx += cw; } y += rh; h -= rh; }
+  }
+  return out;
+}
+
+let VIEW = null;
+function render(){
+  const m = MODEL.months.find(z => z.id === state.period);
+  const cur = currentPeriod(), t = today(), past = m.end < t;
+  $('range').textContent = `${dkey(m.start)} – ${dkey(m.end)} ${m.end.getFullYear()}`;
+  $('periods').innerHTML = MODEL.months.map(z => `<button class="${z.id===state.period?'on':''}" data-p="${esc(z.id)}">${esc(z.id)}${z.id===cur?'<small>this month</small>':''}</button>`).join('');
+  $('owners').innerHTML  = Object.entries(OWN).map(([k,v]) => `<button class="${k===state.owner?'on':''}" data-o="${k}">${v}</button>`).join('');
+  const on = $('periods').querySelector('.on'); if (on) on.scrollIntoView({block:'nearest', inline:'center'});
+
+  const R = rowsFor(m), tot = R.reduce((a,b)=>a+b.amt,0);
+  const paid = R.filter(r => r.paid), up = R.filter(r => !r.paid).sort((a,b) => a.due - b.due);
+  const paidT = paid.reduce((a,b)=>a+b.amt,0), upT = tot - paidT, inc = incomeFor(m);
+  const nxt = up.find(r => r.due >= t) || up[0];
+  const actualN = R.filter(r => r.src === 'actual').length;
+
+  const k = [
+    ['Money in', inc ? gbp(inc) : '–', state.owner==='ALL' ? `ATO ${gbp(m.inc.ATO)} · ALH ${gbp(m.inc.ALH)}` : state.owner==='JNT' ? 'Transfers into joint' : 'Salary'],
+    ['Bills this month', money(tot), inc ? `${pct(tot/inc)} of money in` : '', inc ? tot/inc : null],
+    ['Already taken', money(paidT), `${paid.length} of ${R.length} bills${actualN ? ` · ${actualN} from transactions` : ''}`, tot ? paidT/tot : 0],
+    [past ? 'Not marked as taken' : 'Still to come', money(upT), up.length ? (past ? `${up.length} bill${up.length>1?'s':''} without a ✓` : `Next: ${nxt.p} · ${dkey(nxt.due)}`) : 'All bills taken'],
+    ['Left after bills', inc ? gbp(inc - tot) : '–', inc ? `${pct((inc-tot)/inc)} of money in` : '']
+  ];
+  $('kpis').innerHTML = k.map(([l,v,n,b]) => `<div class="kpi"><div class="l">${l}</div><div class="v">${v}</div><div class="n">${esc(n)}</div>${b!=null?`<div class="bar"><i style="width:${Math.max(0,Math.min(100,b*100))}%"></i></div>`:''}</div>`).join('');
+  $('tmtot').textContent = money(tot);
+
+  // treemap: groups = categories, tiles = bills
+  const el = $('tm'), W = el.clientWidth, H = el.clientHeight;
+  const cats = [...new Set(R.map(r => r.c))];
+  const groups = cats.map(c => ({c, items:R.filter(r => r.c === c && r.amt > 0)}))
+                     .filter(g => g.items.length).map(g => ({...g, v:g.items.reduce((a,b)=>a+b.amt,0)})).sort((a,b) => b.v - a.v);
+  let html = ''; const G = 3;
+  R.forEach((r,i) => r._i = i);
+  for (const g of squarify(groups, 0, 0, W, H)){
+    const gx = g.x+G/2, gy = g.y+G/2, gw = g.w-G, gh = g.h-G, hh = gw > 70 && gh > 60 ? 24 : 0;
+    html += `<div class="grp" style="left:${gx}px;top:${gy}px;width:${gw}px;height:${gh}px">`;
+    if (hh) html += `<div class="gh"><b>${esc(g.c)}</b> <span>· ${money(g.v)} · ${pct(g.v/tot)}</span></div>`;
+    for (const tl of squarify(g.items.map(r => ({...r, v:r.amt})).sort((a,b) => b.v - a.v), 0, hh, gw, gh-hh)){
+      const col = colour(g.c), ink = INK[col] || '#fff';
+      const showN = tl.w > 54 && tl.h > 30, showA = tl.w > 54 && tl.h > 48;
+      html += `<div class="tile ${tl.paid?'':'up'}" data-i="${tl._i}" style="--c:${col};left:${tl.x+1}px;top:${tl.y+1}px;width:${Math.max(0,tl.w-2)}px;height:${Math.max(0,tl.h-2)}px;background:${col};color:${ink}">${showN?`<div class="t">${esc(tl.p)}</div>`:''}${showA?`<div class="a">${money(tl.amt)} · ${pct(tl.amt/tot)}</div>`:''}</div>`;
+    }
+    html += '</div>';
+  }
+  el.innerHTML = html || '<div class="empty">No bills for this selection.</div>';
+  VIEW = {R, tot, groups};
+  $('legend').innerHTML = groups.map(g => `<span><i style="background:${colour(g.c)}"></i>${esc(g.c)} ${pct(g.v/tot)}</span>`).join('')
+    + `<span style="margin-left:auto"><i style="background:#7d887f"></i>Taken</span><span><i class="hatch"></i>${past?'Not marked as taken':'Still to come'}</span>`;
+
+  // upcoming list
+  $('listTitle').textContent = past ? 'Not marked as taken' : 'Still to come';
+  $('upcnt').textContent = up.length ? `${up.length} · ${money(upT)}` : '';
+  $('list').innerHTML = up.length ? up.map(r => `<div class="row"><div class="dt"><b>${r.due.getDate()}</b>${MON[r.due.getMonth()]}</div><div class="nm"><span class="dot" style="background:${colour(r.c)}"></span>${esc(r.p)}<span class="own">${r.o==='JNT'?'Joint':esc(r.o)}</span><small>${esc(r.c)}${r.share<1?' · your half':''}</small></div><div>${money(r.amt)}</div></div>`).join('')
+                              : `<div class="empty">Every bill for this month has been taken.</div>`;
+
+  // status line
+  const fm = FILE_META;
+  const when = fm ? `${fm.modified.toLocaleDateString('en-GB',{day:'numeric',month:'short'})} ${fm.modified.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}` : '';
+  $('status').innerHTML = `<span>${esc(fm ? fm.name : '')} · saved ${when}${fm && fm.source==='device' ? ' · opened from this device' : ''}</span>`
+    + (fm && fm.source==='onedrive' ? `<button data-act="refresh">↻ Refresh</button><button data-act="signout">Sign out</button>` : `<button data-act="retry">Load from OneDrive</button>`)
+    + (MODEL.warn.length ? `<div class="note" style="width:100%;text-align:center">${MODEL.warn.map(esc).join('<br>')}</div>` : '');
+}
+
+document.addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b || b.dataset.act) return;
+  if (b.dataset.p) state.period = b.dataset.p;
+  if (b.dataset.o) state.owner = b.dataset.o;
+  if (b.dataset.p || b.dataset.o){ hideTip(); render(); }
+});
+
+/* tooltip: hover with a mouse, tap on a tablet */
+const tip = $('tip');
+function showTip(t, x, y){
+  const r = VIEW.R[+t.dataset.i], g = VIEW.groups.find(z => z.c === r.c);
+  const status = r.paid ? (r.src === 'actual' ? 'Taken (transaction)' : 'Taken') : (r.due < today() ? 'Was due' : 'Due');
+  tip.innerHTML = `<div class="h">${esc(r.p)}</div>
+    <div class="r">Amount<b>${money(r.amt)}${r.share<1?' (half of '+money(r.full)+')':''}</b></div>
+    ${r.src==='actual' && r.plan!=null && Math.abs(r.plan - r.a) > 0.005 ? `<div class="r">Planned<b>${money(r.plan*r.share)}</b></div>` : ''}
+    <div class="r">Of all bills<b>${pct(r.amt/VIEW.tot)}</b></div>
+    <div class="r">Of ${esc(r.c)}<b>${pct(r.amt/g.v)}</b></div>
+    <div class="r">${esc(r.c)} of all bills<b>${pct(g.v/VIEW.tot)}</b></div>
+    <div class="r">${esc(r.s||'—')}<b>${r.o==='JNT'?'Joint':esc(r.o)}</b></div>
+    <div class="r">${status}<b>${dkey(r.due)}</b></div>`;
+  tip.style.display = 'block';
+  tip.style.left = Math.max(8, Math.min(x+14, innerWidth - tip.offsetWidth - 8)) + 'px';
+  tip.style.top  = Math.max(8, Math.min(y+14, innerHeight - tip.offsetHeight - 8)) + 'px';
+  document.querySelectorAll('.tile.sel').forEach(z => z.classList.remove('sel')); t.classList.add('sel');
+}
+function hideTip(){ tip.style.display = 'none'; document.querySelectorAll('.tile.sel').forEach(z => z.classList.remove('sel')); }
+$('tm').addEventListener('pointermove', e => { if (e.pointerType !== 'mouse') return; const t = e.target.closest('.tile'); t ? showTip(t, e.clientX, e.clientY) : hideTip(); });
+$('tm').addEventListener('pointerleave', e => { if (e.pointerType === 'mouse') hideTip(); });
+document.addEventListener('pointerdown', e => { if (e.pointerType === 'mouse') return; const t = e.target.closest('.tile'); t ? showTip(t, e.clientX, e.clientY) : hideTip(); });
+let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => MODEL && !$('dash').classList.contains('hide') && render(), 120); });
+
+/* =========================================================================
+   START
+   ========================================================================= */
+(async () => {
+  try {
+    await initAuth();
+    if (account) loadFromOneDrive(); else showGate('signin');
+  } catch (e) {
+    console.error(e);
+    showGate('signin', null, 'Sign-in could not start: ' + (e.errorCode || e.message));
+  }
+})();
+</script>
+</body>
+</html>
