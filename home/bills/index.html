@@ -9,100 +9,155 @@
 <title>ATOALH — Bills</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="../../vendor/msal-browser-4.30.0.min.js"></script>
 <script src="../../vendor/xlsx-0.18.5.core.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-:root{--bg:#0c0e0d;--panel:#131614;--line:#1f2520;--text:#dde6df;--muted:#7d887f;--dim:#4c564f;--gold:#c8a97a;--blue:#4a9eff;--warn:#f18a59}
-body{font-family:'Instrument Sans',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);padding:max(24px,env(safe-area-inset-top)) 28px 48px;min-height:100vh;-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
+:root{--bg:#0c0e0d;--panel:#131614;--panel2:#181c19;--line:#1f2520;--text:#dde6df;--muted:#7d887f;--dim:#4c564f;--gold:#c8a97a;--blue:#4a9eff;--up:#f18a59;--down:#5fbf7f;
+  --ato:#C99B14;--alh:#2F9E57;--jnt:#8C6A4A;--bobby:#E2702C}
+body{font-family:'Instrument Sans',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);padding:max(22px,env(safe-area-inset-top)) 26px 48px;min-height:100vh;-webkit-font-smoothing:antialiased;font-variant-numeric:tabular-nums}
 .wrap{max-width:1240px;margin:0 auto}
 button{font:inherit;cursor:pointer}
-.top{display:flex;align-items:center;gap:16px;margin-bottom:18px;flex-wrap:wrap}
+.top{display:flex;align-items:center;gap:14px;margin-bottom:14px;flex-wrap:wrap}
 .top h1{font-size:22px;font-weight:500;letter-spacing:-.01em}
 .top .sub{color:var(--muted);font-size:13px}
 .spacer{flex:1}
 .back{border:1px solid var(--gold);color:var(--gold);border-radius:999px;padding:7px 14px;font-size:13px;text-decoration:none}
-.filters{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:18px;align-items:center}
+.filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;align-items:center}
 .seg{display:inline-flex;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:3px;max-width:100%;overflow-x:auto;scrollbar-width:none}
 .seg::-webkit-scrollbar{display:none}
-.seg button{font-size:13px;color:var(--muted);background:none;border:0;border-radius:9px;padding:7px 13px;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.15;white-space:nowrap;flex-shrink:0}
+.seg button{font-size:13px;color:var(--muted);background:none;border:0;border-radius:9px;padding:6px 12px;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.15;white-space:nowrap;flex-shrink:0}
 .seg button small{font-size:10px;color:var(--dim)}
 .seg button.on{background:#232a24;color:var(--text)}
 .seg button.on small{color:var(--muted)}
-.kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px;margin-bottom:16px}
-.kpi{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px 16px}
-.kpi .l{font-size:12px;color:var(--muted);margin-bottom:6px}
-.kpi .v{font-size:26px;font-weight:500;letter-spacing:-.02em}
-.kpi .n{font-size:12px;color:var(--muted);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.kpi .bar{height:4px;background:#232a24;border-radius:4px;margin-top:9px;overflow:hidden}
-.kpi .bar i{display:block;height:100%;background:var(--blue);border-radius:4px}
-.main{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:12px}
-.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px 16px;min-width:0}
-.card h2{font-size:13px;font-weight:500;color:var(--muted);margin-bottom:10px;display:flex;justify-content:space-between;gap:8px}
-#tm{position:relative;height:470px}
-.grp{position:absolute;border-radius:8px;overflow:hidden}
-.gh{position:absolute;left:0;right:0;top:0;height:24px;padding:4px 8px;font-size:11.5px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.gh b{font-weight:500}.gh span{color:var(--muted)}
-.tile{position:absolute;border-radius:5px;padding:6px 8px;overflow:hidden;cursor:default;transition:filter .12s;-webkit-tap-highlight-color:transparent}
-.tile:hover,.tile.sel{filter:brightness(1.15)}
-.tile.up{background:color-mix(in srgb,var(--c) 22%,#131614)!important;box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--c) 75%,transparent);background-image:repeating-linear-gradient(45deg,color-mix(in srgb,var(--c) 14%,transparent) 0 2px,transparent 2px 9px)!important;color:var(--text)!important}
-.tile .t{font-size:12.5px;font-weight:500;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.tile .a{font-size:12px;margin-top:2px;opacity:.9;white-space:nowrap}
-.legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:12px;font-size:11.5px;color:var(--muted)}
+
+/* compact KPI strip */
+.kpis{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;margin-bottom:12px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:9px 12px;min-width:0}
+.kpi .l{font-size:11px;color:var(--muted)}
+.kpi .v{font-size:19px;font-weight:500;letter-spacing:-.01em;margin-top:2px}
+.kpi .n{font-size:11px;color:var(--muted);margin-top:1px;line-height:1.3}
+.chg-up{color:var(--up)}.chg-down{color:var(--down)}
+
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:14px 16px;min-width:0;margin-bottom:12px}
+.card h2{font-size:13px;font-weight:500;color:var(--muted);margin-bottom:10px;display:flex;justify-content:space-between;gap:8px;align-items:baseline}
+.card h2 b{color:var(--text);font-weight:500}
+
+/* owner boxes + bill tiles */
+.boxes{display:flex;flex-wrap:wrap;gap:10px}
+.box{border-radius:12px;padding:8px;background:color-mix(in srgb,var(--oc) 9%,#111412);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--oc) 45%,transparent);min-width:0}
+.bh{display:flex;align-items:baseline;gap:8px;padding:2px 4px 8px;font-size:12.5px;white-space:nowrap;overflow:hidden}
+.bh .nm{font-weight:600;color:var(--text);display:flex;align-items:center;gap:6px}
+.bh .nm i{width:9px;height:9px;border-radius:3px;background:var(--oc);display:inline-block}
+.bh .meta{color:var(--muted);overflow:hidden;text-overflow:ellipsis}
+.tiles{position:relative}
+.tile{position:absolute;border-radius:7px;padding:6px 8px;overflow:hidden;display:flex;flex-direction:column;justify-content:space-between;cursor:default;transition:filter .12s;-webkit-tap-highlight-color:transparent;min-width:0}
+
+.tile:hover,.tile.sel{filter:brightness(1.12)}
+.tile.up{background:color-mix(in srgb,var(--c) 16%,#121513)!important;box-shadow:inset 0 0 0 1.5px var(--c);background-image:repeating-linear-gradient(45deg,color-mix(in srgb,var(--c) 13%,transparent) 0 2px,transparent 2px 9px)!important;color:var(--text)!important}
+.tile .t{font-size:12.5px;font-weight:600;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tile .a{font-size:12.5px;white-space:nowrap;overflow:hidden}.tile .a b{font-weight:500}.tile .a span{opacity:.75}
+.tile .s{flex-shrink:0;opacity:.9}
+.tile .m{font-size:10.5px;opacity:.85;white-space:nowrap;display:flex;justify-content:space-between;gap:6px;min-width:0}.tile .mc{overflow:hidden;text-overflow:ellipsis;min-width:0}
+.tile.tall .t{white-space:normal;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.tile.big{padding:9px 11px}.tile.big .t{font-size:15px}.tile.big .a{font-size:16px}.tile.big .m{font-size:11.5px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:10px;font-size:11.5px;color:var(--muted)}
 .legend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
 .legend .hatch{background:#262b27;box-shadow:inset 0 0 0 1.5px #7d887f}
-.list{max-height:520px;overflow:auto}
-.row{display:grid;grid-template-columns:44px 1fr auto;gap:8px;align-items:center;padding:8px 0;border-top:1px solid var(--line);font-size:13px}
-.row:first-child{border-top:0}
-.row .dt{color:var(--muted);font-size:12px}
-.row .dt b{display:block;color:var(--text);font-size:15px;font-weight:500}
-.row .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.row .nm small{display:block;color:var(--muted);font-size:11px;overflow:hidden;text-overflow:ellipsis}
-.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px}
-.own{font-size:10px;border:1px solid var(--dim);color:var(--muted);border-radius:4px;padding:0 4px;margin-left:4px}
-.empty{color:var(--muted);font-size:13px;padding:10px 0}
-#tip{position:fixed;pointer-events:none;background:#1b201c;border:1px solid #2c342d;border-radius:10px;padding:10px 12px;font-size:12.5px;min-width:200px;box-shadow:0 8px 24px rgba(0,0,0,.45);display:none;z-index:9}
+
+/* two-up row */
+.two{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:12px}
+.two .card{margin-bottom:12px}
+
+/* category summary */
+.cat{display:grid;grid-template-columns:minmax(150px,1.3fr) minmax(50px,1.4fr) 70px 40px 76px;gap:10px;align-items:center;padding:6px 0;border-top:1px solid var(--line);font-size:12.5px}
+.cat:first-of-type{border-top:0}
+.cat .cn{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cat .bar{display:flex;height:10px;border-radius:3px;overflow:hidden;gap:2px;background:#1c211d}
+.cat .bar i{display:block;height:100%}
+.cat .num{text-align:right}
+.cat .pc{text-align:right;color:var(--muted)}
+.cat .mom{text-align:right;font-size:12px;white-space:nowrap}
+.cat.head{color:var(--dim);font-size:11px;border-top:0;padding-top:0}
+.flat{color:var(--dim)}
+
+/* what's changed */
+.chg{display:grid;grid-template-columns:60px 1fr auto;gap:8px;align-items:center;padding:6px 0;border-top:1px solid var(--line);font-size:12.5px}
+.chg:first-of-type{border-top:0}
+.tag{font-size:10.5px;border-radius:5px;padding:1px 6px;text-align:center;border:1px solid var(--dim);color:var(--muted)}
+.tag.new{border-color:var(--blue);color:var(--blue)}
+.tag.end{border-color:var(--dim);color:var(--muted)}
+.tag.upt{border-color:var(--up);color:var(--up)}
+.tag.dnt{border-color:var(--down);color:var(--down)}
+.chg .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chg .nm small{color:var(--muted);margin-left:4px}
+
+/* still to come */
+.weeks{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:8px}
+.wk{background:var(--panel2);border-radius:12px;padding:10px 12px}
+.wk h3{font-size:12px;font-weight:500;color:var(--muted);display:flex;justify-content:space-between;margin-bottom:4px}
+.wk h3 b{color:var(--text);font-weight:500}
+.row{display:grid;grid-template-columns:30px minmax(0,1fr) auto;gap:8px;align-items:center;padding:6px 0;border-top:1px solid var(--line);font-size:12.5px}
+.row:first-of-type{border-top:0}
+.row .dt{color:var(--muted);font-size:11px;line-height:1.1;text-align:center}
+.row .dt b{display:block;color:var(--text);font-size:14px;font-weight:500}
+.row .nm{min-width:0}
+.row .nm div{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .nm small{display:block;color:var(--muted);font-size:10.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;vertical-align:0}
+.empty{color:var(--muted);font-size:13px;padding:6px 0}
+
+/* bills over time */
+#trend{position:relative;height:170px}
+#trend svg{width:100%;height:100%;display:block;overflow:visible}
+
+#tip{position:fixed;pointer-events:none;background:#1b201c;border:1px solid #2c342d;border-radius:10px;padding:10px 12px;font-size:12.5px;min-width:210px;box-shadow:0 8px 24px rgba(0,0,0,.45);display:none;z-index:9}
 #tip .h{font-weight:500;font-size:14px;margin-bottom:6px}
 #tip .r{display:flex;justify-content:space-between;gap:16px;color:var(--muted);line-height:1.6}
 #tip .r b{color:var(--text);font-weight:500}
-.status{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:16px;justify-content:center}
-.status button,.link{background:none;border:1px solid var(--line);color:var(--muted);border-radius:999px;padding:5px 12px;font-size:12px}
+.status{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:12px;color:var(--muted);margin-top:6px;justify-content:center}
+.status button{background:none;border:1px solid var(--line);color:var(--muted);border-radius:999px;padding:5px 12px;font-size:12px}
 .status button:hover{color:var(--text)}
+.note{font-size:11.5px;color:var(--up);margin-top:6px;width:100%;text-align:center}
 .gate{max-width:440px;margin:12vh auto 0;background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:28px;text-align:center}
 .gate h2{font-size:20px;font-weight:500;margin-bottom:8px}
 .gate p{color:var(--muted);font-size:14px;line-height:1.5;margin-bottom:20px}
 .gate .primary{background:var(--blue);color:#06121f;border:0;border-radius:12px;padding:12px 20px;font-size:15px;font-weight:500;width:100%}
 .gate .secondary{margin-top:12px;background:none;border:0;color:var(--muted);font-size:13px;text-decoration:underline}
-.gate .err{color:var(--warn);font-size:13px;margin-bottom:16px;line-height:1.5;text-align:left;white-space:pre-wrap}
+.gate .err{color:var(--up);font-size:13px;margin-bottom:16px;line-height:1.5;text-align:left;white-space:pre-wrap}
 .gate input[type=text]{width:100%;background:#0f1210;border:1px solid var(--line);color:var(--text);border-radius:10px;padding:10px 12px;font:inherit;font-size:14px;margin-bottom:10px}
 .spin{width:28px;height:28px;border:3px solid #232a24;border-top-color:var(--blue);border-radius:50%;margin:0 auto 14px;animation:s 0.9s linear infinite}
 @keyframes s{to{transform:rotate(360deg)}}
-.note{font-size:11.5px;color:var(--warn);margin-top:6px}
 .hide{display:none!important}
-@media(max-width:1000px){.kpi{padding:12px 13px}.kpi .v{font-size:21px}.main{grid-template-columns:1fr}#tm{height:420px}}
-@media(max-width:700px){.kpis{grid-template-columns:repeat(3,minmax(0,1fr))}}
-@media(max-width:560px){body{padding:max(16px,env(safe-area-inset-top)) 14px 40px}.kpis{grid-template-columns:1fr 1fr}#tm{height:380px}.kpi .v{font-size:22px}}
+@media(max-width:1000px){.kpis{grid-template-columns:repeat(4,minmax(0,1fr))}.two{grid-template-columns:1fr}}
+@media(max-width:560px){body{padding:max(16px,env(safe-area-inset-top)) 12px 40px}.kpis{grid-template-columns:1fr 1fr}.cat{grid-template-columns:minmax(90px,1fr) minmax(40px,1fr) 64px 36px 64px;gap:6px}}
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="top"><h1>Bills</h1><span class="sub" id="range"></span><span class="spacer"></span><a class="back" href="../../menu/index.html">← Menu</a></div>
 
-  <!-- Sign-in / loading / error states -->
   <div class="gate" id="gate">
     <div id="gateBody"></div>
     <input type="file" id="fileIn" accept=".xlsx" class="hide">
   </div>
 
-  <!-- Dashboard -->
   <div id="dash" class="hide">
-    <div class="filters"><div class="seg" id="periods"></div><div class="seg" id="owners"></div></div>
+    <div class="filters"><div class="seg" id="owners"></div><div class="seg" id="periods"></div></div>
     <div class="kpis" id="kpis"></div>
-    <div class="main">
-      <div class="card"><h2><span>Where the bill money goes</span><span id="tmtot"></span></h2><div id="tm"></div><div class="legend" id="legend"></div></div>
-      <div class="card"><h2><span id="listTitle">Still to come</span><span id="upcnt"></span></h2><div class="list" id="list"></div></div>
+
+    <div class="card"><div class="boxes" id="boxes"></div></div>
+
+    <div class="two">
+      <div class="card"><h2><span>By Category</span><span id="catNote"></span></h2><div id="cats"></div></div>
+      <div class="card"><h2><span>What's Changed</span><span id="chgNote"></span></h2><div id="changes"></div></div>
     </div>
+
+    <div class="card"><h2><span id="upTitle">Still To Come</span><b id="upTot"></b></h2><div class="weeks" id="weeks"></div></div>
+
+    <div class="card"><h2><span>Bills Over Time</span><span>Tap A Month To Open It</span></h2><div id="trend"></div><div class="legend" id="trendLegend"></div></div>
+
     <div class="status" id="status"></div>
   </div>
 </div>
@@ -120,28 +175,32 @@ const GRAPH       = 'https://graph.microsoft.com/v1.0';
 const LS_FILE_ID  = 'atoalh.bills.fileId';
 const LS_PATH     = 'atoalh.bills.filePath';
 
-/* Category -> colour. Colour follows the category (fixed), never its size. */
-const CATS = ['Housing','Transport','Debt','Utilities','Health & Personal Care','Pet Care',
-              'Entertainment & Leisure','Subscriptions & Software','Office','Savings loan repayments'];
-const COL  = {'Housing':'#338ced','Transport':'#e76624','Debt':'#eb6263','Utilities':'#00a888',
-              'Health & Personal Care':'#e24d8b','Pet Care':'#d28e05','Entertainment & Leisure':'#9887ef',
-              'Subscriptions & Software':'#0aac23','Office':'#a79b8e','Savings loan repayments':'#6b736d'};
-const OTHER_COL = '#4c564f';
-const INK  = {'#d28e05':'#16110a','#00a888':'#06140f','#0aac23':'#06140a','#a79b8e':'#14110d'};
+/* Owner groups. Bobby collects every pet-care bill, whoever pays it. */
+const GROUPS = [
+  {k:'ATO',   label:'ATO',   col:'#C99B14', shades:['#E3B739','#C99B14','#A87F0B','#D8C06A','#8A6706','#BE9A3E','#6E5205']},
+  {k:'ALH',   label:'ALH',   col:'#2F9E57', shades:['#5DBE7E','#2F9E57','#237A43','#8ED2A5','#195C32','#4AA86F','#134726']},
+  {k:'JNT',   label:'Joint', col:'#8C6A4A', shades:['#D9C4A3','#BFA27C','#A3825D','#8C6A4A','#C9B596','#715239','#5A4130']},
+  {k:'BOBBY', label:'Bobby', col:'#E2702C', shades:['#F29455','#E2702C','#C25A1D','#F5B381','#9E4815','#D9823F']},
+];
+/* Fixed category order -> shade slot (a category keeps its shade every month) */
+const CATS = ['Housing','Transport','Debt','Utilities','Health & Personal Care','Entertainment & Leisure',
+              'Subscriptions & Software','Office','Savings Loan Repayments','Banking & Fees','Other'];
 const OWN  = {ALL:'Everyone',ATO:'ATO',ALH:'ALH',JNT:'Joint'};
 const MON  = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const DOW  = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 
 /* =========================================================================
    HELPERS
    ========================================================================= */
 const $ = id => document.getElementById(id);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const tc = s => String(s ?? '').replace(/(^|[\s(\-–·/"])([a-z])/g, (m,a,b) => a + b.toUpperCase());
+const catName = c => { const s = tc(c || 'Other'); return /^pet care$/i.test(s) ? 'Bobby' : s; };
 const gbp = (v,dp=0) => (v<0?'−':'')+'£'+Math.abs(v).toLocaleString('en-GB',{minimumFractionDigits:dp,maximumFractionDigits:dp});
 const money = v => Math.abs(Math.round(v*100) - Math.round(v)*100) < 1 ? gbp(Math.round(v)) : gbp(v,2);
 const pct = v => !isFinite(v) ? '–' : (v*100).toFixed(Math.abs(v)<0.1?1:0)+'%';
 const norm = s => String(s ?? '').toLowerCase().replace(/[^a-z0-9]/g,'');
 const dkey = d => `${d.getDate()} ${MON[d.getMonth()]}`;
-/* Excel serial -> local Date at noon (avoids timezone/DST edge cases) */
 function xlDate(v){
   if (v == null || v === '') return null;
   if (v instanceof Date) return new Date(v.getFullYear(), v.getMonth(), v.getDate(), 12);
@@ -150,7 +209,13 @@ function xlDate(v){
   return new Date(u.getUTCFullYear(), u.getUTCMonth(), u.getUTCDate(), 12);
 }
 const today = () => { const n = new Date(); return new Date(n.getFullYear(), n.getMonth(), n.getDate(), 12); };
-
+function inkFor(hex){ // dark text on light fills, white on dark
+  const n = parseInt(hex.slice(1),16), r=(n>>16)&255, g=(n>>8)&255, b=n&255;
+  const L = c => { c/=255; return c<=.03928? c/12.92 : Math.pow((c+.055)/1.055,2.4); };
+  return (0.2126*L(r)+0.7152*L(g)+0.0722*L(b)) > 0.28 ? '#15120d' : '#ffffff';
+}
+const groupOf = b => b.c === 'Bobby' ? 'BOBBY' : (b.o === 'ATO' || b.o === 'ALH' ? b.o : 'JNT');
+const G = k => GROUPS.find(g => g.k === k);
 /* =========================================================================
    WORKBOOK -> MODEL
    ========================================================================= */
@@ -189,13 +254,16 @@ function parseMonthTab(ws, id, reg, warn){
       break;
     }
   }
+  // planned savings = "Savings" pot in the joint block (above the bill list)
+  let tabSaved = null;
+  for (let r = 0; r < hr; r++) if (String(cell(ws,r,cols[1])??'').trim() === 'Savings'){ const v = cell(ws,r,cols[1]+5); if (typeof v === 'number') tabSaved = v; break; }
   const bills = [];
   // Office pot (ATO payday move to "Office") counts as an ATO bill
   for (let r = 0; r < hr; r++){
     if (String(cell(ws,r,cols[0]+2)??'').trim() === 'Office'){
       const a = cell(ws,r,cols[0]+4);
       if (typeof a === 'number' && a !== 0)
-        bills.push({o:'ATO', p:'Office pot', raw:'Office pot', d:'25th', a, paid: cell(ws,r,cols[0]+5) === '✓',
+        bills.push({o:'ATO', p:'Office Pot', raw:'Office pot', d:'25th', a, paid: cell(ws,r,cols[0]+5) === '✓',
                     c:'Office', s:'Office pot (paid in on payday)', src:'plan'});
     }
   }
@@ -213,7 +281,7 @@ function parseMonthTab(ws, id, reg, warn){
       bills.push({o, p:name, raw, d:String(cell(ws,r,c0+1) ?? ''), a, paid: cell(ws,r,c0+5) === '✓', c:cat, s:sub, src:'plan'});
     }
   });
-  return {id, start, end, inc, bills, tab:true};
+  return {id, start, end, inc, bills, tab:true, tabSaved};
 }
 
 function buildModel(wb){
@@ -247,6 +315,27 @@ function buildModel(wb){
     (sal[r['Period']] ??= {ATO:0,ALH:0,JNT:0})[r['Owner']] = +r['Amount'] || 0;
   }
 
+  // Savings: ledger Contribution rows (Savings tab), else month tab plan, else Period Summary
+  const ledger = {};
+  (function(){
+    const ws = wb.Sheets['Savings']; if (!ws) return;
+    const rows = XLSX.utils.sheet_to_json(ws, {header:1, raw:true, defval:null});
+    const hi = rows.findIndex(r => r && r[0] === 'Date' && r[1] === 'Period' && r[2] === 'Type');
+    if (hi < 0) return;
+    const H = rows[hi], ix = n => H.indexOf(n);
+    for (const r of rows.slice(hi+1)){
+      const per = r[ix('Period')], type = r[ix('Type')], amt = r[ix('Amount')];
+      if (!per || type !== 'Contribution' || typeof amt !== 'number') continue;
+      const o = ['ATO','ALH'].includes(r[ix('Owner')]) ? r[ix('Owner')] : 'JNT';
+      (ledger[per] ??= {ATO:0,ALH:0,JNT:0})[o] += amt;
+    }
+  })();
+  const psSaved = {};
+  for (const r of sheetRows(wb,'Period Summary')){
+    if (r['Metric'] !== 'Savings' || !r['Period']) continue;
+    (psSaved[r['Period']] ??= {ATO:0,ALH:0,JNT:0})[r['Owner']] = +r['Amount'] || 0;
+  }
+
   // Periods that only exist as transactions (history before month tabs)
   for (const t of tx){
     if (months.has(t.period)) continue;
@@ -269,9 +358,15 @@ function buildModel(wb){
       m.bills.push({o:t.o, p:t.p, raw:t.p, d:t.date ? String(t.date.getDate()) : '', a:t.a, paid:true,
                     c:t.c, s:t.s, src:'actual', date:t.date});
     });
-    for (const b of m.bills) b.due = b.date || dueDate(m, b.d);
+    for (const b of m.bills){ b.due = b.date || dueDate(m, b.d); b.c = catName(b.c); b.s = tc(b.s); }
   }
 
+  for (const m of months.values()){
+    if (ledger[m.id]) m.saved = {...ledger[m.id], src:'ledger'};
+    else if (m.tabSaved != null) m.saved = {ATO:0, ALH:0, JNT:m.tabSaved, src:'plan'};
+    else if (psSaved[m.id]) m.saved = {...psSaved[m.id], src:'summary'};
+    else m.saved = null;
+  }
   const list = [...months.values()].sort((a,b) => a.start - b.start);
   return {months:list, warn};
 }
@@ -350,7 +445,7 @@ async function findFile(tk){
 }
 
 async function loadFromOneDrive(){
-  showGate('loading', 'Fetching Finances.xlsx from OneDrive…');
+  showGate('loading', 'Fetching Finances.xlsx From OneDrive…');
   try {
     const tk = await token();
     const meta = await findFile(tk);
@@ -359,11 +454,11 @@ async function loadFromOneDrive(){
     const url = meta['@microsoft.graph.downloadUrl'];
     if (url) {
       const r = await fetch(url);
-      if (!r.ok) throw new Error('Download failed (' + r.status + ')');
+      if (!r.ok) throw new Error('Download Failed (' + r.status + ')');
       buf = await r.arrayBuffer();
     } else {
       const r = await fetch(`${GRAPH}/me/drive/items/${encodeURIComponent(meta.id)}/content`, {headers:{Authorization:'Bearer '+tk}});
-      if (!r.ok) throw new Error('Download failed (' + r.status + ')');
+      if (!r.ok) throw new Error('Download Failed (' + r.status + ')');
       buf = await r.arrayBuffer();
     }
     FILE_META = {name:meta.name, modified:new Date(meta.lastModifiedDateTime), source:'onedrive',
@@ -372,15 +467,15 @@ async function loadFromOneDrive(){
   } catch (e) {
     console.error(e);
     if (e.notFound) return showGate('notfound');
-    if (e.status === 401 || e.status === 403) return showGate('signin', null, 'Microsoft said no access (' + e.status + '). Try signing in again.');
-    showGate('error', null, 'Couldn\'t load the workbook: ' + (e.message || e));
+    if (e.status === 401 || e.status === 403) return showGate('signin', null, 'Microsoft Said No Access (' + e.status + '). Try Signing In Again.');
+    showGate('error', null, 'Couldn\'t Load The Workbook: ' + tc(e.message || String(e)));
   }
 }
 
 function useWorkbook(buf){
   const wb = XLSX.read(buf, {type:'array', cellDates:false});
   MODEL = buildModel(wb);
-  if (!MODEL.months.length) return showGate('error', null, 'No month tabs (like "26 Nov") or bill transactions were found in the workbook.');
+  if (!MODEL.months.length) return showGate('error', null, 'No Month Tabs (Like "26 Nov") Or Bill Transactions Were Found In The Workbook.');
   if (!state.period || !MODEL.months.find(m => m.id === state.period)) state.period = currentPeriod();
   $('gate').classList.add('hide'); $('dash').classList.remove('hide');
   render();
@@ -392,12 +487,12 @@ function useWorkbook(buf){
 function showGate(kind, msg, err){
   $('dash').classList.add('hide'); $('gate').classList.remove('hide');
   const e = err ? `<div class="err">${esc(err)}</div>` : '';
-  const fileBtn = `<button class="secondary" data-act="file">Or open the file from this device</button>`;
+  const fileBtn = `<button class="secondary" data-act="file">Or Open The File From This Device</button>`;
   let h = '';
   if (kind === 'loading') h = `<div class="spin"></div><p>${esc(msg)}</p>`;
-  else if (kind === 'signin') h = `<h2>Connect to OneDrive</h2><p>Sign in with the Microsoft account that holds <b>${FILE_NAME}</b>. You'll only need to do this once on each device.</p>${e}<button class="primary" data-act="signin">Sign in with Microsoft</button>${fileBtn}`;
-  else if (kind === 'notfound') h = `<h2>Can't find ${FILE_NAME}</h2><p>Signed in as ${esc(account && account.username)}, but there's no file called <b>${FILE_NAME}</b> in that OneDrive yet (a freshly renamed file can take a few minutes to show up in search). Enter its folder path to look there directly:</p><input type="text" id="pathIn" placeholder="/Documents/${FILE_NAME}" value="${esc(localStorage.getItem(LS_PATH)||'')}"><button class="primary" data-act="path">Look here</button><button class="secondary" data-act="retry">Try search again</button><br>${fileBtn}<br><button class="secondary" data-act="signout">Use a different Microsoft account</button>`;
-  else h = `<h2>Something went wrong</h2>${e}<button class="primary" data-act="retry">Try again</button>${fileBtn}<br><button class="secondary" data-act="signout">Sign out</button>`;
+  else if (kind === 'signin') h = `<h2>Connect To OneDrive</h2><p>Sign In With The Microsoft Account That Holds <b>${FILE_NAME}</b>. You'll Only Need To Do This Once On Each Device.</p>${e}<button class="primary" data-act="signin">Sign In With Microsoft</button>${fileBtn}`;
+  else if (kind === 'notfound') h = `<h2>Can't Find ${FILE_NAME}</h2><p>Signed In As ${esc(account && account.username)}, But There's No File Called <b>${FILE_NAME}</b> In That OneDrive Yet. Enter Its Location In OneDrive (Or Paste The Path From File Explorer):</p><input type="text" id="pathIn" placeholder="/Documents/${FILE_NAME}" value="${esc(localStorage.getItem(LS_PATH)||'')}"><button class="primary" data-act="path">Look Here</button><button class="secondary" data-act="retry">Try Search Again</button><br>${fileBtn}<br><button class="secondary" data-act="signout">Use A Different Microsoft Account</button>`;
+  else h = `<h2>Something Went Wrong</h2>${e}<button class="primary" data-act="retry">Try Again</button>${fileBtn}<br><button class="secondary" data-act="signout">Sign Out</button>`;
   $('gateBody').innerHTML = h;
 }
 
@@ -405,8 +500,7 @@ document.addEventListener('click', async ev => {
   const b = ev.target.closest('[data-act]'); if (!b) return;
   const act = b.dataset.act;
   if (act === 'signin') { try { await pca.loginRedirect({scopes:SCOPES, prompt:'select_account'}); } catch(e){ showGate('signin', null, e.message); } }
-  if (act === 'retry')  loadFromOneDrive();
-  if (act === 'refresh') loadFromOneDrive();
+  if (act === 'retry' || act === 'refresh') loadFromOneDrive();
   if (act === 'file')   $('fileIn').click();
   if (act === 'path')   { const v = $('pathIn').value.trim(); if (v) localStorage.setItem(LS_PATH, v); localStorage.removeItem(LS_FILE_ID); loadFromOneDrive(); }
   if (act === 'signout'){ localStorage.removeItem(LS_FILE_ID); localStorage.removeItem(LS_PATH); if (account) await pca.logoutRedirect({account, postLogoutRedirectUri: location.origin + location.pathname}); else showGate('signin'); }
@@ -414,7 +508,7 @@ document.addEventListener('click', async ev => {
 $('fileIn').addEventListener('change', async e => {
   const f = e.target.files[0]; if (!f) return;
   FILE_META = {name:f.name, modified:new Date(f.lastModified), source:'device'};
-  try { useWorkbook(await f.arrayBuffer()); } catch(err){ showGate('error', null, 'Couldn\'t read that file: ' + err.message); }
+  try { useWorkbook(await f.arrayBuffer()); } catch(err){ showGate('error', null, 'Couldn\'t Read That File: ' + err.message); }
   e.target.value = '';
 });
 
@@ -422,6 +516,7 @@ $('fileIn').addEventListener('change', async e => {
    VIEW
    ========================================================================= */
 let state = {period:null, owner:'ALL'};
+let VIEW = null;
 
 function currentPeriod(){
   const t = today(); const ms = MODEL.months;
@@ -430,18 +525,44 @@ function currentPeriod(){
   const past = ms.filter(m => m.start <= t);
   return (past[past.length-1] || ms[0]).id;
 }
+const idFor = d => `${String(d.getFullYear()).slice(2)} ${MON[d.getMonth()]}`;
+function prevMonth(m){
+  const d = new Date(m.start.getFullYear(), m.start.getMonth()-1, 25, 12);
+  return MODEL.months.find(z => z.id === idFor(d)) || null;
+}
 function rowsFor(m){
+  if (!m) return [];
   const o = state.owner;
   return m.bills.flatMap(b => {
     let share = 1;
     if (o === 'ATO' || o === 'ALH'){ if (b.o === o) share = 1; else if (b.o === 'JNT') share = .5; else return []; }
     else if (o === 'JNT'){ if (b.o !== 'JNT') return []; }
-    return [{...b, amt:b.a*share, full:b.a, share}];
-  });
+    return [{...b, amt:b.a*share, full:b.a, share, g:groupOf(b)}];
+  }).filter(r => r.amt > 0);
 }
 function incomeFor(m){ const o = state.owner; return o === 'ALL' ? (m.inc.ATO + m.inc.ALH) : (m.inc[o] || 0); }
-const colour = c => COL[c] || OTHER_COL;
+const sum = a => a.reduce((s,r) => s + r.amt, 0);
+const billKey = r => r.g + '|' + norm(r.raw || r.p);
+function delta(cur, prev, {tiny=0.5}={}){
+  if (prev == null) return '<span class="flat">–</span>';
+  if (!prev && cur) return '<span class="chg-up">New</span>';
+  if (prev && !cur) return '<span class="chg-down">Gone</span>';
+  const d = cur - prev;
+  if (Math.abs(d) < tiny) return '<span class="flat">Same</span>';
+  return d > 0 ? `<span class="chg-up">↑ ${money(d)}</span>` : `<span class="chg-down">↓ ${money(-d)}</span>`;
+}
+function shadeFor(r, idxInBox){
+  const g = G(r.g);
+  if (r.g === 'BOBBY') return g.shades[idxInBox % g.shades.length];
+  const i = CATS.indexOf(r.c);
+  return g.shades[(i < 0 ? CATS.length-1 : i) % g.shades.length];
+}
 
+
+/* ---- treemap with a readable minimum tile size ---- */
+const MINW = 112, MINH = 62;
+const SHORT = {'Pet Insurance':'Insurance','Entertainment & Leisure':'E&L','Subscriptions & Software':'S&S','Health & Personal Care':'H&PC','Savings Loan Repayments':'Savings Loan','Banking & Fees':'Fees'};
+const shortCat = c => SHORT[c] || c;
 function squarify(items, x, y, w, h){
   const out = []; const tot = items.reduce((s,i)=>s+i.v,0); if (!tot || w <= 0 || h <= 0) return out;
   const scale = w*h/tot; let rest = items.map(i => ({...i, area:i.v*scale}));
@@ -456,110 +577,288 @@ function squarify(items, x, y, w, h){
   }
   return out;
 }
+/* Sizes follow the amounts, except that tiny bills are topped up to a minimum share
+   (the smallest top-up that keeps every tile readable is used, so sizes stay as true as possible) */
+const RHOS = [0,.02,.04,.06,.08,.1,.12,.15,.18,.22,.26,.3,.35,.4,.5,.65,.8,1];
+function layoutBox(items, W, H){
+  const S = items.reduce((a,r) => a + r.amt, 0);
+  for (const rho of RHOS){
+    const vals = items.map(r => ({r, v:Math.max(r.amt, rho*S)})).sort((a,b) => b.v - a.v);
+    const rects = squarify(vals, 0, 0, W, H);
+    if (rects.every(q => q.w >= MINW && q.h >= MINH)) return rects;
+  }
+  return null;
+}
+function rhoAt(items, W, H){
+  const S = items.reduce((a,r) => a + r.amt, 0);
+  for (let i = 0; i < RHOS.length; i++){
+    const vals = items.map(r => ({r, v:Math.max(r.amt, RHOS[i]*S)})).sort((a,b) => b.v - a.v);
+    if (squarify(vals, 0, 0, W, H).every(q => q.w >= MINW && q.h >= MINH)) return i;
+  }
+  return 99;
+}
+function minBoxHeight(items, W){
+  for (let H = MINH; H <= 2000; H += 10) if (layoutBox(items, W, H)) return H;
+  return 2000;
+}
+/* Starting from the shortest workable height, allow up to ~50% taller if that lets sizes follow the amounts more closely */
+function bestBoxHeight(items, W, floorH){
+  const h0 = Math.max(floorH, minBoxHeight(items, W));
+  let best = h0, bestR = rhoAt(items, W, h0);
+  for (let H = h0 + 10; H <= h0 * 1.5 && bestR > 0; H += 10){ const r = rhoAt(items, W, H); if (r < bestR - 1){ best = H; bestR = r; } }
+  return best;
+}
 
-let VIEW = null;
 function render(){
   const m = MODEL.months.find(z => z.id === state.period);
-  const cur = currentPeriod(), t = today(), past = m.end < t;
+  const pm = prevMonth(m);
+  const cur = currentPeriod(), t = today(), past = m.end < t, future = m.start > t;
   $('range').textContent = `${dkey(m.start)} – ${dkey(m.end)} ${m.end.getFullYear()}`;
-  $('periods').innerHTML = MODEL.months.map(z => `<button class="${z.id===state.period?'on':''}" data-p="${esc(z.id)}">${esc(z.id)}${z.id===cur?'<small>this month</small>':''}</button>`).join('');
+  $('periods').innerHTML = MODEL.months.map(z => `<button class="${z.id===state.period?'on':''}" data-p="${esc(z.id)}">${esc(z.id)}${z.id===cur?'<small>This Month</small>':''}</button>`).join('');
   $('owners').innerHTML  = Object.entries(OWN).map(([k,v]) => `<button class="${k===state.owner?'on':''}" data-o="${k}">${v}</button>`).join('');
   const on = $('periods').querySelector('.on'); if (on) on.scrollIntoView({block:'nearest', inline:'center'});
 
-  const R = rowsFor(m), tot = R.reduce((a,b)=>a+b.amt,0);
+  const R = rowsFor(m), P = pm ? rowsFor(pm) : null;
+  const tot = sum(R), prevTot = P ? sum(P) : null;
   const paid = R.filter(r => r.paid), up = R.filter(r => !r.paid).sort((a,b) => a.due - b.due);
-  const paidT = paid.reduce((a,b)=>a+b.amt,0), upT = tot - paidT, inc = incomeFor(m);
+  const paidT = sum(paid), upT = tot - paidT, inc = incomeFor(m);
   const nxt = up.find(r => r.due >= t) || up[0];
-  const actualN = R.filter(r => r.src === 'actual').length;
-
-  const k = [
-    ['Money in', inc ? gbp(inc) : '–', state.owner==='ALL' ? `ATO ${gbp(m.inc.ATO)} · ALH ${gbp(m.inc.ALH)}` : state.owner==='JNT' ? 'Transfers into joint' : 'Salary'],
-    ['Bills this month', money(tot), inc ? `${pct(tot/inc)} of money in` : '', inc ? tot/inc : null],
-    ['Already taken', money(paidT), `${paid.length} of ${R.length} bills${actualN ? ` · ${actualN} from transactions` : ''}`, tot ? paidT/tot : 0],
-    [past ? 'Not marked as taken' : 'Still to come', money(upT), up.length ? (past ? `${up.length} bill${up.length>1?'s':''} without a ✓` : `Next: ${nxt.p} · ${dkey(nxt.due)}`) : 'All bills taken'],
-    ['Left after bills', inc ? gbp(inc - tot) : '–', inc ? `${pct((inc-tot)/inc)} of money in` : '']
-  ];
-  $('kpis').innerHTML = k.map(([l,v,n,b]) => `<div class="kpi"><div class="l">${l}</div><div class="v">${v}</div><div class="n">${esc(n)}</div>${b!=null?`<div class="bar"><i style="width:${Math.max(0,Math.min(100,b*100))}%"></i></div>`:''}</div>`).join('');
-  $('tmtot').textContent = money(tot);
-
-  // treemap: groups = categories, tiles = bills
-  const el = $('tm'), W = el.clientWidth, H = el.clientHeight;
-  const cats = [...new Set(R.map(r => r.c))];
-  const groups = cats.map(c => ({c, items:R.filter(r => r.c === c && r.amt > 0)}))
-                     .filter(g => g.items.length).map(g => ({...g, v:g.items.reduce((a,b)=>a+b.amt,0)})).sort((a,b) => b.v - a.v);
-  let html = ''; const G = 3;
   R.forEach((r,i) => r._i = i);
-  for (const g of squarify(groups, 0, 0, W, H)){
-    const gx = g.x+G/2, gy = g.y+G/2, gw = g.w-G, gh = g.h-G, hh = gw > 70 && gh > 60 ? 24 : 0;
-    html += `<div class="grp" style="left:${gx}px;top:${gy}px;width:${gw}px;height:${gh}px">`;
-    if (hh) html += `<div class="gh"><b>${esc(g.c)}</b> <span>· ${money(g.v)} · ${pct(g.v/tot)}</span></div>`;
-    for (const tl of squarify(g.items.map(r => ({...r, v:r.amt})).sort((a,b) => b.v - a.v), 0, hh, gw, gh-hh)){
-      const col = colour(g.c), ink = INK[col] || '#fff';
-      const showN = tl.w > 54 && tl.h > 30, showA = tl.w > 54 && tl.h > 48;
-      html += `<div class="tile ${tl.paid?'':'up'}" data-i="${tl._i}" style="--c:${col};left:${tl.x+1}px;top:${tl.y+1}px;width:${Math.max(0,tl.w-2)}px;height:${Math.max(0,tl.h-2)}px;background:${col};color:${ink}">${showN?`<div class="t">${esc(tl.p)}</div>`:''}${showA?`<div class="a">${money(tl.amt)} · ${pct(tl.amt/tot)}</div>`:''}</div>`;
-    }
-    html += '</div>';
+
+  /* ---- KPI strip ---- */
+  const S = m.saved, o = state.owner;
+  const sv = !S ? null : o === 'ALL' ? S.ATO + S.ALH + S.JNT : o === 'JNT' ? S.JNT : S[o] + S.JNT/2;
+  const dTot = prevTot == null ? null : tot - prevTot;
+  const k = [
+    ['Money In', inc ? gbp(inc) : '–', state.owner==='ALL' ? `ATO ${gbp(m.inc.ATO)} · ALH ${gbp(m.inc.ALH)}` : state.owner==='JNT' ? 'Transfers Into Joint' : 'Salary'],
+    ['Bills This Month', money(tot), inc ? `${pct(tot/inc)} Of Money In` : `${R.length} Bills`],
+    ['Already Taken', money(paidT), `${paid.length} Of ${R.length} Bills`],
+    [past ? 'Not Ticked' : 'Still To Come', money(upT), up.length ? (past ? `${up.length} Without A ✓` : `Next: ${nxt.p} · ${dkey(nxt.due)}`) : 'All Taken'],
+    ['Left After Bills', inc ? gbp(inc - tot) : '–', inc ? `${pct((inc-tot)/inc)} Of Money In` : ''],
+    ['Saved This Month', sv == null ? '–' : gbp(sv), sv == null ? 'No Savings Data' : `${inc ? pct(sv/inc) + ' Of Money In' : ''}${m.saved.src==='plan' ? ' · Planned' : ''}`],
+    ['Vs Last Month', dTot == null ? '–' : `<span class="${dTot>0.5?'chg-up':dTot<-0.5?'chg-down':''}">${dTot>0.5?'↑ ':dTot<-0.5?'↓ ':''}${money(Math.abs(dTot))}</span>`,
+       dTot == null ? 'No Data For Last Month' : `${pm.id}: ${money(prevTot)}`]
+  ];
+  $('kpis').innerHTML = k.map(([l,v,n]) => `<div class="kpi"><div class="l">${l}</div><div class="v">${v}</div><div class="n">${esc(n)}</div></div>`).join('');
+
+  /* ---- owner boxes with bill tiles ---- */
+  const prevByKey = new Map(); if (P) for (const r of P) prevByKey.set(billKey(r), (prevByKey.get(billKey(r))||0) + r.amt);
+  // pass 1: box shells (Joint full width on top, the rest share the row below)
+  const boxGroups = [];
+  let bh = '';
+  for (const g of [G('JNT'), G('ATO'), G('ALH'), G('BOBBY')]){
+    const items = R.filter(r => r.g === g.k);
+    if (!items.length) continue;
+    const gt = sum(items);
+    boxGroups.push({g, items, gt});
+    bh += `<div class="box" style="--oc:${g.col};flex:${g.k==='JNT' ? '1 1 100%' : Math.max(1,Math.round(gt)) + ' 1 300px'}">
+      <div class="bh"><span class="nm"><i></i>${g.label}</span><span class="meta">${money(gt)} · ${pct(gt/tot)} · ${items.length} Bill${items.length>1?'s':''}</span></div>
+      <div class="tiles" data-g="${g.k}"></div></div>`;
   }
-  el.innerHTML = html || '<div class="empty">No bills for this selection.</div>';
-  VIEW = {R, tot, groups};
-  $('legend').innerHTML = groups.map(g => `<span><i style="background:${colour(g.c)}"></i>${esc(g.c)} ${pct(g.v/tot)}</span>`).join('')
-    + `<span style="margin-left:auto"><i style="background:#7d887f"></i>Taken</span><span><i class="hatch"></i>${past?'Not marked as taken':'Still to come'}</span>`;
+  $('boxes').innerHTML = bh || '<div class="empty">No Bills For This Selection.</div>';
+  // pass 2: measure each box, find a height where every tile is readable, then lay tiles out as a treemap
+  const shells = boxGroups.map(b => ({...b, el:$('boxes').querySelector(`.tiles[data-g="${b.g.k}"]`)}));
+  shells.forEach(b => { b.W = b.el.clientWidth; b.top = b.el.getBoundingClientRect().top; });
+  // boxes sitting on the same row share one height so the row lines up; a box alone on its row stays compact
+  for (const b of shells){
+    const alone = shells.filter(z => Math.abs(z.top - b.top) < 4).length === 1;
+    b.minH = b.g.k === 'JNT' ? bestBoxHeight(b.items, b.W, 190) : alone ? Math.max(150, minBoxHeight(b.items, b.W)) : bestBoxHeight(b.items, b.W, 230);
+  }
+  for (const b of shells){ const row = shells.filter(z => Math.abs(z.top - b.top) < 4); b.H = Math.max(...row.map(z => z.minH)); }
+  for (const b of shells){
+    const rects = layoutBox(b.items, b.W, b.H) || layoutBox(b.items, b.W, b.H + 200) || [];
+    b.el.style.height = b.H + 'px';
+    const order = [...b.items].sort((x,y) => y.amt - x.amt);
+    b.el.innerHTML = rects.map(q => {
+      const r = q.r, i = order.indexOf(r), col = shadeFor(r, i), ink = inkFor(col), share = r.amt / tot;
+      const narrow = q.w < 150;
+      const status = r.paid ? 'Taken' : (r.due < t ? 'Not Ticked' : (narrow ? '' : 'Due ') + dkey(r.due));
+      const meta = shortCat(b.g.k === 'BOBBY' ? (r.s || 'Bobby') : r.c);
+      const big = q.w >= 140 && q.h > 110 && q.w * q.h > 30000 ? ' big' : '';
+      const tall = q.h > 96 ? ' tall' : '';
+      return `<div class="tile${r.paid ? '' : ' up'}${big}${tall}" data-i="${r._i}" style="--c:${col};background:${col};color:${ink};left:${q.x+2}px;top:${q.y+2}px;width:${q.w-4}px;height:${q.h-4}px">
+        <div class="t">${esc(r.p)}</div>
+        <div class="a"><b>${money(r.amt)}</b> <span>· ${pct(share)}</span></div>
+        <div class="m"><span class="mc">${esc(meta)}</span><span class="s">${status}</span></div></div>`;
+    }).join('');
+  }
 
-  // upcoming list
-  $('listTitle').textContent = past ? 'Not marked as taken' : 'Still to come';
-  $('upcnt').textContent = up.length ? `${up.length} · ${money(upT)}` : '';
-  $('list').innerHTML = up.length ? up.map(r => `<div class="row"><div class="dt"><b>${r.due.getDate()}</b>${MON[r.due.getMonth()]}</div><div class="nm"><span class="dot" style="background:${colour(r.c)}"></span>${esc(r.p)}<span class="own">${r.o==='JNT'?'Joint':esc(r.o)}</span><small>${esc(r.c)}${r.share<1?' · your half':''}</small></div><div>${money(r.amt)}</div></div>`).join('')
-                              : `<div class="empty">Every bill for this month has been taken.</div>`;
 
-  // status line
+  /* ---- by category ---- */
+  const cats = [...new Set(R.map(r => r.c))].map(c => {
+    const rs = R.filter(r => r.c === c);
+    return {c, v:sum(rs), parts:GROUPS.map(g => ({g, v:sum(rs.filter(r => r.g === g.k))})).filter(p => p.v > 0),
+            pv: P ? sum(P.filter(r => r.c === c)) : null};
+  }).sort((a,b) => b.v - a.v);
+  if (P) for (const c of new Set(P.map(r => r.c))) if (!cats.find(z => z.c === c)) cats.push({c, v:0, parts:[], pv:sum(P.filter(r => r.c === c))});
+  const maxC = Math.max(...cats.map(c => c.v), 1);
+  $('catNote').textContent = P ? `Vs ${pm.id}` : 'No Data For Last Month';
+  $('cats').innerHTML = `<div class="cat head"><span>Category</span><span>Who Pays</span><span class="num">Amount</span><span class="pc">Share</span><span class="mom">Vs Last Month</span></div>`
+    + cats.map(c => `<div class="cat"><span class="cn">${esc(c.c)}</span>
+      <span class="bar" style="width:${Math.max(2, c.v/maxC*100)}%">${c.parts.map(p => `<i style="background:${p.g.col};flex:${p.v}" title="${p.g.label} ${money(p.v)}"></i>`).join('')}</span>
+      <span class="num">${money(c.v)}</span><span class="pc">${pct(c.v/tot)}</span><span class="mom">${delta(c.v, c.pv)}</span></div>`).join('');
+
+  /* ---- what's changed ---- */
+  if (!P){ $('chgNote').textContent = ''; $('changes').innerHTML = `<div class="empty">There's No Data For The Month Before ${esc(m.id)}, So Nothing To Compare Yet.</div>`; }
+  else {
+    const curBy = new Map(); for (const r of R){ const k2 = billKey(r); const e = curBy.get(k2) || {p:r.p, g:r.g, v:0}; e.v += r.amt; curBy.set(k2, e); }
+    const prevBy = new Map(); for (const r of P){ const k2 = billKey(r); const e = prevBy.get(k2) || {p:r.p, g:r.g, v:0}; e.v += r.amt; prevBy.set(k2, e); }
+    const list = [];
+    for (const [k2,e] of curBy){ const p = prevBy.get(k2); if (!p) list.push({type:'new', ...e, d:e.v}); else if (Math.abs(e.v - p.v) >= 0.5) list.push({type: e.v > p.v ? 'up' : 'down', ...e, was:p.v, d:e.v - p.v}); }
+    for (const [k2,e] of prevBy) if (!curBy.has(k2)) list.push({type:'end', ...e, d:-e.v});
+    list.sort((a,b) => Math.abs(b.d) - Math.abs(a.d));
+    const lbl = {new:['New','new'], end:['Ended','end'], up:['Up','upt'], down:['Down','dnt']};
+    $('chgNote').textContent = `Vs ${pm.id}`;
+    $('changes').innerHTML = list.length ? list.slice(0,9).map(x => `<div class="chg"><span class="tag ${lbl[x.type][1]}">${lbl[x.type][0]}</span>
+        <span class="nm"><span class="dot" style="background:${G(x.g).col}"></span>${esc(x.p)}<small>${G(x.g).label}</small></span>
+        <span>${x.type==='new' ? money(x.v) : x.type==='end' ? `<span class="flat">Was ${money(x.v)}</span>` : `<span class="${x.type==='up'?'chg-up':'chg-down'}">${money(x.was)} → ${money(x.v)}</span>`}</span></div>`).join('')
+        + (list.length > 9 ? `<div class="empty">And ${list.length-9} More Smaller Changes</div>` : '')
+      : `<div class="empty">Same Bills And Amounts As ${esc(pm.id)}.</div>`;
+  }
+
+  /* ---- still to come, by week of the pay period ---- */
+  $('upTitle').textContent = past ? 'Not Ticked As Taken' : 'Still To Come';
+  $('upTot').textContent = up.length ? `${up.length} Bills · ${money(upT)}` : '';
+  if (!up.length) $('weeks').innerHTML = `<div class="empty">Every Bill For This Month Has Been Taken.</div>`;
+  else {
+    const weeks = [];
+    for (let ws = new Date(m.start); ws <= m.end; ws = new Date(ws.getFullYear(), ws.getMonth(), ws.getDate()+7, 12)){
+      const we = new Date(ws.getFullYear(), ws.getMonth(), ws.getDate()+6, 12);
+      weeks.push({ws, we: we > m.end ? m.end : we, items:[]});
+    }
+    // fold a short final stub (e.g. 23–24 Dec) into the week before
+    if (weeks.length > 1 && (weeks[weeks.length-1].we - weeks[weeks.length-1].ws) < 3*864e5){ const last = weeks.pop(); weeks[weeks.length-1].we = last.we; }
+    for (const r of up){ const w = weeks.find(w => r.due >= w.ws && r.due <= w.we) || (r.due < m.start ? weeks[0] : weeks[weeks.length-1]); w.items.push(r); }
+    $('weeks').innerHTML = weeks.filter(w => w.items.length).map(w => {
+      const isNow = t >= w.ws && t <= w.we;
+      return `<div class="wk"><h3><span>${isNow ? 'This Week · ' : ''}${dkey(w.ws)} – ${dkey(w.we)}</span><b>${money(sum(w.items))}</b></h3>${w.items.map(r =>
+        `<div class="row"><div class="dt"><b>${r.due.getDate()}</b>${DOW[r.due.getDay()]}</div>
+          <div class="nm"><div><span class="dot" style="background:${G(r.g).col}"></span>${esc(r.p)}</div><small>${G(r.g).label} · ${esc(r.g==='BOBBY' ? (r.s||'Bobby') : shortCat(r.c))}${r.share<1?' · Your Half':''}${r.due < t ? ' · Not Ticked Yet' : ''}</small></div>
+          <div>${money(r.amt)}</div></div>`).join('')}</div>`;
+    }).join('');
+  }
+
+  /* ---- bills over time ---- */
+  renderTrend(cur);
+
+  /* ---- status ---- */
   const fm = FILE_META;
   const when = fm ? `${fm.modified.toLocaleDateString('en-GB',{day:'numeric',month:'short'})} ${fm.modified.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})}` : '';
-  $('status').innerHTML = `<span>${esc(fm ? fm.name : '')} · saved ${when}${fm && fm.source==='device' ? ' · opened from this device' : ''}</span>`
-    + (fm && fm.source==='onedrive' ? `<button data-act="refresh">↻ Refresh</button><button data-act="signout">Sign out</button>` : `<button data-act="retry">Load from OneDrive</button>`)
-    + (MODEL.warn.length ? `<div class="note" style="width:100%;text-align:center">${MODEL.warn.map(esc).join('<br>')}</div>` : '');
+  $('status').innerHTML = `<span>${esc(fm ? fm.name : '')} · Saved ${when}${fm && fm.source==='device' ? ' · Opened From This Device' : ''}${fm && fm.source==='preview' ? ' · Preview' : ''}</span>`
+    + (fm && fm.source==='onedrive' ? `<button data-act="refresh">↻ Refresh</button><button data-act="signout">Sign Out</button>` : fm && fm.source==='preview' ? '' : `<button data-act="retry">Load From OneDrive</button>`)
+    + (MODEL.warn.length ? `<div class="note">${MODEL.warn.map(w => esc(tc(w))).join('<br>')}</div>` : '');
+
+  VIEW = {R, tot, prevByKey, m};
+}
+
+function renderTrend(cur){
+  const el = $('trend'), W = el.clientWidth, H = el.clientHeight, t = today();
+  const ms = MODEL.months; if (!ms.length) return;
+  // continuous run of months so gaps (no data) stay visible
+  const seq = []; let d = new Date(ms[0].start);
+  while (d <= ms[ms.length-1].start){ seq.push(ms.find(m => m.id === idFor(d)) || {id:idFor(d), start:new Date(d), missing:true}); d = new Date(d.getFullYear(), d.getMonth()+1, 25, 12); }
+  const data = seq.map(m => {
+    if (m.missing) return {m, parts:[], tot:0};
+    const R = rowsFor(m);
+    return {m, parts:GROUPS.map(g => ({g, v:sum(R.filter(r => r.g === g.k))})), tot:sum(R)};
+  });
+  const max = Math.max(...data.map(x => x.tot), 1), nice = Math.ceil(max/500)*500;
+  const padL = 44, padB = 34, padT = 6, cw = (W - padL) / data.length, bw = Math.min(38, cw*0.62), ph = H - padB - padT;
+  let s = '';
+  for (let v = 0; v <= nice; v += nice/2){
+    const y = padT + ph - v/nice*ph;
+    s += `<line x1="${padL}" x2="${W}" y1="${y}" y2="${y}" stroke="#1f2520"/><text x="${padL-8}" y="${y+4}" fill="#4c564f" font-size="10.5" text-anchor="end">${gbp(v)}</text>`;
+  }
+  data.forEach((x, i) => {
+    const cx = padL + cw*i + cw/2, fut = !x.m.missing && x.m.start > t, sel = x.m.id === state.period;
+    let y = padT + ph;
+    s += `<g class="tb" data-p="${x.m.missing?'':esc(x.m.id)}" style="cursor:${x.m.missing?'default':'pointer'}">`;
+    s += `<rect x="${cx-cw/2}" y="${padT}" width="${cw}" height="${ph+padB}" fill="${sel?'#1a201b':'transparent'}" rx="6"/>`;
+    for (const p of x.parts){
+      if (!p.v) continue;
+      const h = p.v/nice*ph; y -= h;
+      s += `<rect x="${cx-bw/2}" y="${y}" width="${bw}" height="${Math.max(0,h-2)}" rx="2" fill="${p.g.col}" opacity="${fut?0.45:1}"/>`;
+    }
+    if (x.m.missing) s += `<text x="${cx}" y="${padT+ph-6}" fill="#4c564f" font-size="9.5" text-anchor="middle">No Data</text>`;
+    else if (x.tot && cw > 44) s += `<text x="${cx}" y="${y-5}" fill="${sel?'#dde6df':'#7d887f'}" font-size="10" text-anchor="middle">${gbp(x.tot)}</text>`;
+    s += `<text x="${cx}" y="${padT+ph+15}" fill="${sel?'#dde6df':'#7d887f'}" font-size="11" text-anchor="middle" font-weight="${sel?600:400}">${esc(x.m.id)}</text>`;
+    if (x.m.id === cur) s += `<text x="${cx}" y="${padT+ph+28}" fill="#4a9eff" font-size="9.5" text-anchor="middle">Now</text>`;
+    else if (fut) s += `<text x="${cx}" y="${padT+ph+28}" fill="#4c564f" font-size="9.5" text-anchor="middle">Planned</text>`;
+    s += `</g>`;
+  });
+  el.innerHTML = `<svg viewBox="0 0 ${W} ${H}">${s}</svg>`;
+  el._data = data;
+  $('trendLegend').innerHTML = GROUPS.map(g => `<span><i style="background:${g.col}"></i>${g.label}</span>`).join('') + `<span style="margin-left:auto"><i style="background:#7d887f;opacity:.45"></i>Planned (Future Months)</span>`;
 }
 
 document.addEventListener('click', e => {
-  const b = e.target.closest('button'); if (!b || b.dataset.act) return;
-  if (b.dataset.p) state.period = b.dataset.p;
-  if (b.dataset.o) state.owner = b.dataset.o;
-  if (b.dataset.p || b.dataset.o){ hideTip(); render(); }
+  const b = e.target.closest('button'); if (b && !b.dataset.act){
+    if (b.dataset.p) state.period = b.dataset.p;
+    if (b.dataset.o) state.owner = b.dataset.o;
+    if (b.dataset.p || b.dataset.o){ hideTip(); render(); }
+    return;
+  }
+  const tb = e.target.closest('.tb');
+  if (tb && tb.dataset.p){ state.period = tb.dataset.p; hideTip(); render(); window.scrollTo({top:0, behavior:'smooth'}); }
 });
 
-/* tooltip: hover with a mouse, tap on a tablet */
+/* tooltips: hover with a mouse, tap on a tablet */
 const tip = $('tip');
-function showTip(t, x, y){
-  const r = VIEW.R[+t.dataset.i], g = VIEW.groups.find(z => z.c === r.c);
-  const status = r.paid ? (r.src === 'actual' ? 'Taken (transaction)' : 'Taken') : (r.due < today() ? 'Was due' : 'Due');
-  tip.innerHTML = `<div class="h">${esc(r.p)}</div>
-    <div class="r">Amount<b>${money(r.amt)}${r.share<1?' (half of '+money(r.full)+')':''}</b></div>
-    ${r.src==='actual' && r.plan!=null && Math.abs(r.plan - r.a) > 0.005 ? `<div class="r">Planned<b>${money(r.plan*r.share)}</b></div>` : ''}
-    <div class="r">Of all bills<b>${pct(r.amt/VIEW.tot)}</b></div>
-    <div class="r">Of ${esc(r.c)}<b>${pct(r.amt/g.v)}</b></div>
-    <div class="r">${esc(r.c)} of all bills<b>${pct(g.v/VIEW.tot)}</b></div>
-    <div class="r">${esc(r.s||'—')}<b>${r.o==='JNT'?'Joint':esc(r.o)}</b></div>
-    <div class="r">${status}<b>${dkey(r.due)}</b></div>`;
+function place(x, y){
   tip.style.display = 'block';
   tip.style.left = Math.max(8, Math.min(x+14, innerWidth - tip.offsetWidth - 8)) + 'px';
   tip.style.top  = Math.max(8, Math.min(y+14, innerHeight - tip.offsetHeight - 8)) + 'px';
-  document.querySelectorAll('.tile.sel').forEach(z => z.classList.remove('sel')); t.classList.add('sel');
+}
+function showTileTip(el, x, y){
+  const r = VIEW.R[+el.dataset.i], t = today();
+  const gTot = sum(VIEW.R.filter(z => z.g === r.g)), pv = VIEW.prevByKey.get(billKey(r));
+  const status = r.paid ? (r.src === 'actual' ? 'Taken (From Bank)' : 'Taken') : (r.due < t ? 'Due (Not Ticked)' : 'Due');
+  tip.innerHTML = `<div class="h">${esc(r.p)}</div>
+    <div class="r">Amount<b>${money(r.amt)}${r.share<1?' (Half Of '+money(r.full)+')':''}</b></div>
+    ${r.src==='actual' && r.plan!=null && Math.abs(r.plan - r.a) > 0.005 ? `<div class="r">Planned<b>${money(r.plan*r.share)}</b></div>` : ''}
+    <div class="r">Of All Bills<b>${pct(r.amt/VIEW.tot)}</b></div>
+    <div class="r">Of ${G(r.g).label}<b>${pct(r.amt/gTot)}</b></div>
+    <div class="r">Category<b>${esc(r.c)}</b></div>
+    ${r.s ? `<div class="r">Type<b>${esc(r.s)}</b></div>` : ''}
+    <div class="r">Paid By<b>${r.o==='JNT'?'Joint':esc(r.o)}</b></div>
+    <div class="r">${status}<b>${dkey(r.due)}</b></div>
+    <div class="r">Last Month<b>${pv == null ? 'Not Billed' : money(pv)}</b></div>`;
+  place(x, y);
+  document.querySelectorAll('.tile.sel').forEach(z => z.classList.remove('sel')); el.classList.add('sel');
+}
+function showBarTip(g, x, y){
+  const x0 = $('trend')._data.find(d => d.m.id === g.dataset.p); if (!x0) return;
+  tip.innerHTML = `<div class="h">${esc(x0.m.id)}${x0.m.start > today() ? ' · Planned' : ''}</div>` + x0.parts.filter(p => p.v).map(p => `<div class="r">${p.g.label}<b>${money(p.v)}</b></div>`).join('') + `<div class="r">Total<b>${money(x0.tot)}</b></div>`;
+  place(x, y);
 }
 function hideTip(){ tip.style.display = 'none'; document.querySelectorAll('.tile.sel').forEach(z => z.classList.remove('sel')); }
-$('tm').addEventListener('pointermove', e => { if (e.pointerType !== 'mouse') return; const t = e.target.closest('.tile'); t ? showTip(t, e.clientX, e.clientY) : hideTip(); });
-$('tm').addEventListener('pointerleave', e => { if (e.pointerType === 'mouse') hideTip(); });
-document.addEventListener('pointerdown', e => { if (e.pointerType === 'mouse') return; const t = e.target.closest('.tile'); t ? showTip(t, e.clientX, e.clientY) : hideTip(); });
+document.addEventListener('pointermove', e => {
+  if (e.pointerType !== 'mouse') return;
+  const tl = e.target.closest('.tile'), tb = e.target.closest('.tb');
+  if (tl) showTileTip(tl, e.clientX, e.clientY); else if (tb && tb.dataset.p) showBarTip(tb, e.clientX, e.clientY); else hideTip();
+});
+document.addEventListener('pointerdown', e => {
+  if (e.pointerType === 'mouse') return;
+  const tl = e.target.closest('.tile'); tl ? showTileTip(tl, e.clientX, e.clientY) : hideTip();
+});
 let rz; addEventListener('resize', () => { clearTimeout(rz); rz = setTimeout(() => MODEL && !$('dash').classList.contains('hide') && render(), 120); });
 
 /* =========================================================================
    START
    ========================================================================= */
 (async () => {
+  if (window.PREVIEW_XLSX_B64){ // offline preview build only
+    const bin = atob(window.PREVIEW_XLSX_B64), buf = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) buf[i] = bin.charCodeAt(i);
+    FILE_META = {name:'Finances.xlsx', modified:new Date(), source:'preview'};
+    return useWorkbook(buf.buffer);
+  }
   try {
     await initAuth();
     if (account) loadFromOneDrive(); else showGate('signin');
   } catch (e) {
     console.error(e);
-    showGate('signin', null, 'Sign-in could not start: ' + (e.errorCode || e.message));
+    showGate('signin', null, 'Sign-In Could Not Start: ' + (e.errorCode || e.message));
   }
 })();
 </script>

@@ -260,6 +260,10 @@ input[type=number]{-moz-appearance:textfield}
 /* ═════════════ DEFAULTS ═════════════ */
 var MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 var START={y:2026,m:10}; /* savings figure is as at 25 Nov 2026 (month index 10) */
+/* Santander illustration 25 Nov 2026: fixed rate runs to a set date (2 Mar 2030), not a set length.
+   Offset of Mar 2030 from START, in months. Last fixed payment is Feb 2030. */
+var FIX_END_OFF=(2030-2026)*12+(2-10);  /* = 40 */
+var OFFER_VALID='28 May 2027';            /* illustration valid only if the loan completes before this date */
 
 var DEFAULT_SETTINGS={
   savings:19200,     /* LISA + Nationwide + loans back + Nov payday + all gifts */
@@ -268,10 +272,10 @@ var DEFAULT_SETTINGS={
   monthly:1400,
   compIdx:4,         /* months after Nov 2026 → 4 = Apr 2027 (Dec..Apr = 5 paydays) · vendor can't move until late Apr/May */
   maxLoan:256500,
-  rate:5.63, fixYrs:2, refix:5.0, svr:6.75,
+  rate:5.63, fixYrs:3, refix:5.0, svr:6.75,   /* illustration 25 Nov 2026: EO55H 3-yr fix to 2 Mar 2030, SVR 6.75% · refix is a guess */
   termA:35, termB:30, overpay:150, overOn:'A',
-  broker:400, solicitor:1616.4, survey:800, removals:450, valuation:0, otherFees:0,
-  cashback:250, keep:3500, sunk:1550,
+  broker:350, accountFee:225, solicitor:1616.4, survey:800, removals:450, valuation:0, otherFees:0,
+  cashback:250, keep:3500, sunk:1500,
   energy:165, water:55, insurance:32
 };
 var CROSSHALL={
@@ -283,7 +287,8 @@ var CROSSHALL={
 
 /* ═════════════ STATE ═════════════ */
 var KEY='atoalh_house_calc_v1';
-var DATA_VERSION=2; /* v2 · 24 Nov 2026: £215k agreed, 5.63%, Gorvins quote, Apr completion */
+var DATA_VERSION=3; /* v2 · 24 Nov 2026: £215k agreed, 5.63%, Gorvins quote, Apr completion
+                       v3 · 25 Nov 2026: Santander illustration: 3-yr fix to 2 Mar 2030, broker £350, account fee £225 */
 var ST=load();
 var editingId=null;
 
@@ -297,6 +302,13 @@ function load(){
     s.settings.rate=5.63; s.settings.solicitor=1616.4; s.settings.compIdx=4;
     s.houses.forEach(function(h){if(h.id===CROSSHALL.id){h.offer=215000;h.agreed=215000;h.valSel='likely';h.scenario='A';}});
     s.v=2;
+  }
+  if(s.v<3){
+    /* one-off update to match the Santander illustration of 25 Nov 2026 */
+    s.settings.rate=5.63; s.settings.fixYrs=3; s.settings.svr=6.75;
+    s.settings.broker=350; s.settings.accountFee=225; s.settings.cashback=250;
+    if(s.settings.sunk===1550) s.settings.sunk=1500;   /* broker fee £50 lower */
+    s.v=3;
   }
   for(var k in DEFAULT_SETTINGS) if(s.settings[k]===undefined) s.settings[k]=DEFAULT_SETTINGS[k];
   if(!s.houses.some(function(h){return h.id===s.sel;})) s.sel=s.houses[0].id;
@@ -336,7 +348,9 @@ function payoff(P,rate,yrs,extra){
 function valuation(h){
   return h.valSel==='worst'?h.vWorst:h.valSel==='best'?h.vBest:h.valSel==='custom'?(h.valCustom||h.vLikely):h.vLikely;
 }
-function fees(s){return s.broker+s.solicitor+s.survey+s.removals+s.valuation+s.otherFees;}
+function fees(s){return s.broker+(s.accountFee||0)+s.solicitor+s.survey+s.removals+s.valuation+s.otherFees;}
+/* months of fixed-rate payments: completion is at the end of month compIdx+1, the fix ends Mar 2030 */
+function fixMonths(s){return Math.max(0,FIX_END_OFF-(s.compIdx+1));}
 function paydays(s){return s.compIdx+1;}            /* completion at month end → that month's payday counts */
 function available(s){return s.savings-s.ringfenced+s.monthly*paydays(s);}
 
@@ -399,13 +413,14 @@ function buildFields(){
     +fieldHTML('ringfenced','Ring-fenced (Dad)','House things only, never deposit or fees')
     +fieldHTML('monthly','Saved each payday','25th of each month');
   document.getElementById('mort-fields').innerHTML=
-     fieldHTML('rate','Initial rate','Santander · cut to 5.63% 24 Nov',{suf:'%',step:0.01})
-    +fieldHTML('fixYrs','Fixed for','',{suf:'yrs'})
-    +fieldHTML('refix','New-deal rate after fix','Your guess',{suf:'%',step:0.01})
-    +fieldHTML('svr','Standard rate','If nobody switches you',{suf:'%',step:0.01})
+     fieldHTML('rate','Initial rate','Santander illustration 25 Nov · fixed to 2 Mar 2030',{suf:'%',step:0.01})
+    +fieldHTML('fixYrs','Fixed for','Label only · fix ends 2 Mar 2030 whatever the completion date',{suf:'yrs'})
+    +fieldHTML('refix','New-deal rate after fix','Your guess (estimate)',{suf:'%',step:0.01})
+    +fieldHTML('svr','Standard rate','Santander SVR, currently 6.75%',{suf:'%',step:0.01})
     +fieldHTML('maxLoan','Max borrowing','From the DIP',{step:500});
   document.getElementById('cost-fields').innerHTML=
-     fieldHTML('broker','Broker fee','EMS · charged on application')
+     fieldHTML('broker','Broker fee','EMS · on application · per illustration')
+    +fieldHTML('accountFee','Mortgage account fee','Santander · on completion, or defer to the end',{step:0.01})
     +fieldHTML('solicitor','Solicitor &amp; searches','Gorvins quote · incl. VAT, searches, LISA fee')
     +fieldHTML('survey','Survey','RICS Level 3')
     +fieldHTML('removals','Removals')
@@ -413,7 +428,7 @@ function buildFields(){
     +fieldHTML('otherFees','Anything else')
     +fieldHTML('stamp','Stamp duty','First-time buyer',{locked:true,value:0})
     +'<div class="divider"></div>'
-    +fieldHTML('cashback','Cashback','Paid after completion')
+    +fieldHTML('cashback','Cashback','Paid on completion')
     +fieldHTML('keep','Moving-in target','Incl. the ring-fenced money')
     +fieldHTML('sunk','Lost if you walk away','Survey, broker, searches');
   document.getElementById('run-fields').innerHTML=
@@ -478,7 +493,7 @@ function renderAll(){
   }).join('');
 
   /* keep typed fields in sync */
-  ['savings','lisa','ringfenced','monthly','rate','fixYrs','refix','svr','maxLoan','broker','solicitor','survey','removals','valuation','otherFees','cashback','keep','sunk','energy','water','insurance'].forEach(function(k){
+  ['savings','lisa','ringfenced','monthly','rate','fixYrs','refix','svr','maxLoan','broker','accountFee','solicitor','survey','removals','valuation','otherFees','cashback','keep','sunk','energy','water','insurance'].forEach(function(k){
     var el=document.getElementById('f-'+k); if(el&&document.activeElement!==el) el.value=s[k];
   });
   document.getElementById('f-ct').value=Math.round(h.councilTax/12);
@@ -506,6 +521,8 @@ function renderMain(h,s,V){
   var o='';
 
   /* warnings */
+  if(s.compIdx+1>=7) o+='<div class="banner c-red">Santander’s illustration is only valid if the loan completes before '+OFFER_VALID+'. A '+compM+' completion is after that, so the rate and terms would need re-confirming with John.</div>';
+  else if(s.compIdx+1===6) o+='<div class="banner c-amber">Completing in May 2027 is tight: Santander’s illustration is only valid if the loan completes before '+OFFER_VALID+'.</div>';
   if(c.capped) o+='<div class="banner c-amber">The loan would be above your DIP maximum of '+gbp(s.maxLoan)+'. The extra has been added to the cash needed.</div>';
 
   /* KPIs */
@@ -578,11 +595,11 @@ function renderMain(h,s,V){
   var base0=payoff(c.loan,s.rate,overTerm,0), withO=payoff(c.loan,s.rate,overTerm,s.overpay);
   var totA=payoff(c.loan,s.rate,s.termA,0).interest, totB=payoff(c.loan,s.rate,s.termB,0).interest;
   var allowance=c.loan*0.10;
-  var fixM=s.fixYrs*12;
+  var fixM=fixMonths(s);
   var balFix=balanceAfter(c.loan,s.rate,s.termA,fixM,0);
-  var remYrs=s.termA-s.fixYrs;
+  var remYrs=(s.termA*12-fixM)/12;
   var payRefix=payment(balFix,s.refix,remYrs), paySvr=payment(balFix,s.svr,remYrs);
-  var fixEnd=monthLabel(s.compIdx+1+fixM), diary=monthLabel(s.compIdx+1+fixM-3);
+  var fixEnd='2 Mar 2030', diary=monthLabel(FIX_END_OFF-6);
   var dMonthly=monthlyB-monthlyA, dInt=totA-totB;
   var compareNote;
   if(s.termA===s.termB) compareNote='Both terms are the same. Move a slider to compare.';
@@ -596,10 +613,11 @@ function renderMain(h,s,V){
     +(s.overpay>0
       ? row('Mortgage-free in',yrsMths(withO.months))+row('Sooner by',yrsMths(base0.months-withO.months),'t-green')+row('Interest saved',gbp(base0.interest-withO.interest),'t-green')
       : '<div class="note">Move the overpayment slider to see how much sooner you’d be mortgage-free.</div>')
-    +'<div class="divider"></div><div class="note">Applied to Term '+s.overOn+'. Penalty-free limit is 10% a year: '+gbp(allowance)+', about '+gbp(allowance/12)+'/mo'
-    +(s.overpay*12>allowance?'. <span class="t-red">You’re over the limit.</span>':'.')+'</div></section>'
+    +'<div class="divider"></div><div class="note">Applied to Term '+s.overOn+'. Penalty-free limit is 10% of the balance each calendar year: about '+gbp(allowance)+', or '+gbp(allowance/12)+'/mo'
+    +(s.overpay*12>allowance?'. <span class="t-red">You’re over the limit.</span>':'.')
+    +' Above that, early repayment charges apply: 2% to 2 Mar 2028, 2% to 2 Mar 2029, 1% to 2 Mar 2030.</div></section>'
     +'<section class="card"><h2 class="sech" style="margin-bottom:14px">When the fix ends</h2>'
-    +'<div class="note" style="margin-bottom:8px">'+pct(s.rate)+' lasts to about <b>'+fixEnd+'</b>. On Term A you’ll still owe <b>'+gbp(balFix)+'</b>.</div>'
+    +'<div class="note" style="margin-bottom:8px">'+pct(s.rate)+' is fixed until <b>'+fixEnd+'</b> (about '+fixM+' payments if you complete in '+compM+'). On Term A you’ll still owe about <b>'+gbp(balFix)+'</b>.</div>'
     +row('New deal at '+pct(s.refix),gbp(payRefix)+'/mo',payRefix<=monthlyA?'t-green':'t-amber')
     +row('Standard rate ~'+pct(s.svr),gbp(paySvr)+'/mo','t-red')
     +'<div class="divider"></div><div class="note">Compared with '+gbp(monthlyA)+' now. Your broker switches you for free. Diarise it for '+diary+'.</div></section>'
@@ -632,7 +650,7 @@ function renderMain(h,s,V){
     +'<div class="row"><span class="k">Total'+(s.overpay>0?' with overpayment':'')+'</span><span class="big t-blue" style="font-size:24px">'+gbp(monthlyA+bills+s.overpay)+'</span></div>'
     +'</section></div>';
 
-  o+='<div class="foot">Santander DIP 19 Nov 2026 · '+gbp(s.maxLoan)+' max · '+pct(s.rate)+' '+s.fixYrs+'-yr fix · fee-free · £250 cashback · 10% overpayments<br>Stamp duty £0 as first-time buyers under £300k · Lenders lend 95% of the lower of price and valuation · Gorvins Residential quote 23 Nov 2026 £1,616.40 · Figures are estimates, not advice</div>';
+  o+='<div class="foot">Santander illustration 25 Nov 2026 · EO55H FTB 3 Year Fixed No Fee Purchase Cashback · £204,250 over 35 yrs · '+pct(s.rate)+' fixed to 2 Mar 2030 then SVR 6.75% · £1,113.50/mo · APRC 6.7%<br>No product fee · £225 account fee · £250 cashback on completion · 10% overpayments a calendar year · valid if completing before '+OFFER_VALID+' · DIP 19 Nov 2026 '+gbp(s.maxLoan)+' max<br>Stamp duty £0 as first-time buyers under £300k · Lenders lend 95% of the lower of price and valuation · Gorvins Residential quote 23 Nov 2026 £1,616.40 · Figures are estimates, not advice</div>';
 
   document.getElementById('main').innerHTML=o;
 }
