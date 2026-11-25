@@ -266,11 +266,11 @@ var DEFAULT_SETTINGS={
   lisa:10120,        /* only usable towards the price */
   ringfenced:3000,   /* Dad's gift: things for the house only, never deposit or fees */
   monthly:1400,
-  compIdx:3,         /* months after Nov 2026 → 3 = Mar 2027 (Dec..Mar = 4 paydays) */
+  compIdx:4,         /* months after Nov 2026 → 4 = Apr 2027 (Dec..Apr = 5 paydays) · vendor can't move until late Apr/May */
   maxLoan:256500,
-  rate:5.68, fixYrs:2, refix:5.0, svr:6.75,
+  rate:5.63, fixYrs:2, refix:5.0, svr:6.75,
   termA:35, termB:30, overpay:150, overOn:'A',
-  broker:400, solicitor:1500, survey:800, removals:450, valuation:0, otherFees:0,
+  broker:400, solicitor:1616.4, survey:800, removals:450, valuation:0, otherFees:0,
   cashback:250, keep:3500, sunk:1550,
   energy:165, water:55, insurance:32
 };
@@ -278,11 +278,12 @@ var CROSSHALL={
   id:'crosshall-43', name:'43 Crosshall Brow',
   address:'Westhead, Ormskirk · L40 6JD · 3-bed mid-terrace · Freehold',
   asking:225000, vWorst:208000, vLikely:215000, vBest:222000, councilTax:1893.57,
-  offer:225000, valSel:'likely', valCustom:215000, scenario:'A'
+  offer:215000, agreed:215000, valSel:'likely', valCustom:215000, scenario:'A'
 };
 
 /* ═════════════ STATE ═════════════ */
 var KEY='atoalh_house_calc_v1';
+var DATA_VERSION=2; /* v2 · 24 Nov 2026: £215k agreed, 5.63%, Gorvins quote, Apr completion */
 var ST=load();
 var editingId=null;
 
@@ -290,7 +291,13 @@ function clone(o){return JSON.parse(JSON.stringify(o));}
 function load(){
   var s=null;
   try{s=JSON.parse(localStorage.getItem(KEY));}catch(e){}
-  if(!s||!s.houses||!s.houses.length) s={houses:[clone(CROSSHALL)],sel:CROSSHALL.id,settings:clone(DEFAULT_SETTINGS)};
+  if(!s||!s.houses||!s.houses.length) s={v:DATA_VERSION,houses:[clone(CROSSHALL)],sel:CROSSHALL.id,settings:clone(DEFAULT_SETTINGS)};
+  if((s.v||1)<2){
+    /* one-off update of figures saved before 24 Nov 2026 */
+    s.settings.rate=5.63; s.settings.solicitor=1616.4; s.settings.compIdx=4;
+    s.houses.forEach(function(h){if(h.id===CROSSHALL.id){h.offer=215000;h.agreed=215000;h.valSel='likely';h.scenario='A';}});
+    s.v=2;
+  }
   for(var k in DEFAULT_SETTINGS) if(s.settings[k]===undefined) s.settings[k]=DEFAULT_SETTINGS[k];
   if(!s.houses.some(function(h){return h.id===s.sel;})) s.sel=s.houses[0].id;
   return s;
@@ -392,14 +399,14 @@ function buildFields(){
     +fieldHTML('ringfenced','Ring-fenced (Dad)','House things only, never deposit or fees')
     +fieldHTML('monthly','Saved each payday','25th of each month');
   document.getElementById('mort-fields').innerHTML=
-     fieldHTML('rate','Initial rate','Santander DIP',{suf:'%',step:0.01})
+     fieldHTML('rate','Initial rate','Santander · cut to 5.63% 24 Nov',{suf:'%',step:0.01})
     +fieldHTML('fixYrs','Fixed for','',{suf:'yrs'})
     +fieldHTML('refix','New-deal rate after fix','Your guess',{suf:'%',step:0.01})
     +fieldHTML('svr','Standard rate','If nobody switches you',{suf:'%',step:0.01})
     +fieldHTML('maxLoan','Max borrowing','From the DIP',{step:500});
   document.getElementById('cost-fields').innerHTML=
-     fieldHTML('broker','Broker fee','Charged on application')
-    +fieldHTML('solicitor','Solicitor &amp; searches')
+     fieldHTML('broker','Broker fee','EMS · charged on application')
+    +fieldHTML('solicitor','Solicitor &amp; searches','Gorvins quote · incl. VAT, searches, LISA fee')
     +fieldHTML('survey','Survey','RICS Level 3')
     +fieldHTML('removals','Removals')
     +fieldHTML('valuation','Lender valuation','Free with Santander')
@@ -430,7 +437,7 @@ function renderAll(){
   var last=parts.length>1?parts.pop():'';
   document.getElementById('h-title').innerHTML=esc(parts.join(' '))+(last?' <span>'+esc(last)+'</span>':'');
   document.getElementById('h-sub').textContent=(h.address?h.address+' · ':'')+'Asking '+gbp(h.asking);
-  document.getElementById('h-chips').innerHTML='<span class="chip c-blue">Santander '+pct(s.rate)+' · '+s.fixYrs+'-yr fix</span><span class="chip c-grey">5% deposit</span><span class="chip c-grey">First-time buyers</span>';
+  document.getElementById('h-chips').innerHTML=(h.agreed?'<span class="chip c-green">Agreed '+gbp(h.agreed)+'</span>':'')+'<span class="chip c-blue">Santander '+pct(s.rate)+' · '+s.fixYrs+'-yr fix</span><span class="chip c-grey">5% deposit</span><span class="chip c-grey">First-time buyers</span>';
 
   /* offer slider */
   var lo=Math.floor((h.asking*0.85)/5000)*5000, hi=Math.ceil((h.asking*1.08)/5000)*5000;
@@ -625,7 +632,7 @@ function renderMain(h,s,V){
     +'<div class="row"><span class="k">Total'+(s.overpay>0?' with overpayment':'')+'</span><span class="big t-blue" style="font-size:24px">'+gbp(monthlyA+bills+s.overpay)+'</span></div>'
     +'</section></div>';
 
-  o+='<div class="foot">Santander DIP 19 Nov 2026 · '+gbp(s.maxLoan)+' max · 5.68% 2-yr fix · fee-free · £250 cashback · 10% overpayments<br>Stamp duty £0 as first-time buyers under £300k · Lenders lend 95% of the lower of price and valuation · Figures are estimates, not advice</div>';
+  o+='<div class="foot">Santander DIP 19 Nov 2026 · '+gbp(s.maxLoan)+' max · '+pct(s.rate)+' '+s.fixYrs+'-yr fix · fee-free · £250 cashback · 10% overpayments<br>Stamp duty £0 as first-time buyers under £300k · Lenders lend 95% of the lower of price and valuation · Gorvins Residential quote 23 Nov 2026 £1,616.40 · Figures are estimates, not advice</div>';
 
   document.getElementById('main').innerHTML=o;
 }
@@ -642,7 +649,7 @@ function pickCell(p,v){
 }
 
 /* ═════════════ HOUSES MODAL ═════════════ */
-var HF=[['name','Name','text'],['address','Area & description','text'],['asking','Asking price','num'],['vWorst','Valuation · worst','num'],['vLikely','Valuation · likely','num'],['vBest','Valuation · best','num'],['councilTax','Council tax a year','num']];
+var HF=[['name','Name','text'],['address','Area & description','text'],['asking','Asking price','num'],['vWorst','Valuation · worst','num'],['vLikely','Valuation · likely','num'],['vBest','Valuation · best','num'],['councilTax','Council tax a year','num'],['agreed','Agreed price (if any)','num']];
 function openModal(){editingId=ST.sel;renderModal();document.getElementById('modal').classList.add('open');}
 function closeModal(){document.getElementById('modal').classList.remove('open');}
 function renderModal(){

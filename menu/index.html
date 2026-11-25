@@ -2,84 +2,121 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="ATO Tools">
 <title>ATOALH — Menu</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@500;600&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body {
-  font-family: 'DM Mono', monospace;
-  background: #0c0e0d;
-  color: #dde6df;
-  padding: 24px 32px 64px;
-  min-height: 100vh;
+:root {
+  --bg: #0c0e0d;
+  --panel: #131614;
+  --line: #1f2520;
+  --text: #dde6df;
+  --muted: #7d887f;
+  --gold: #c8a97a;
+  --icon: 88px;
 }
-
+html { -webkit-text-size-adjust: 100%; }
+body {
+  font-family: 'Instrument Sans', system-ui, -apple-system, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  padding: max(24px, env(safe-area-inset-top)) 32px 64px;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
 .dashboard { max-width: 1160px; margin: 0 auto; }
 
 .top-bar {
-  display: flex;
-  justify-content: flex-end;
+  display: flex; justify-content: space-between; align-items: center;
   margin-bottom: 28px;
 }
+.top-bar h1 { font-size: 22px; font-weight: 500; letter-spacing: -0.01em; }
 .back-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  border: 1px solid #c8a97a;
-  color: #c8a97a;
-  border-radius: 999px;
-  padding: 8px 16px;
-  font-size: 12px;
-  font-family: 'DM Mono', monospace;
-  text-decoration: none;
+  display: inline-flex; align-items: center; gap: 6px;
+  border: 1px solid var(--gold); color: var(--gold);
+  border-radius: 999px; padding: 8px 16px;
+  font-size: 13px; font-weight: 500; text-decoration: none;
 }
 
-.board { display: flex; gap: 24px; align-items: flex-start; }
-.column { flex: 1 1 0; min-width: 0; }
-
-.column-header { padding: 0 2px; margin-bottom: 10px; }
-.column-header h2 {
-  font-family: 'Syne', sans-serif;
-  font-size: 11px; font-weight: 500;
-  text-transform: uppercase; letter-spacing: 0.05em;
+.board {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 20px;
 }
-
-.column-finances .column-header h2 { color: #4a9eff; }
-.column-food     .column-header h2 { color: #c8a97a; }
-.column-other    .column-header h2 { color: #ff6b5c; }
-.column-life     .column-header h2 { color: #e6b800; }
-
-.tool-card {
-  display: flex; align-items: center; gap: 10px;
-  background: #141714;
-  border: 1px solid #222822;
-  border-radius: 10px; padding: 10px 14px; margin-bottom: 6px;
-  text-decoration: none; color: #dde6df;
-  transition: background 0.12s, border-color 0.12s;
-  -webkit-tap-highlight-color: transparent; cursor: pointer;
+.group {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  padding: 18px 20px 22px;
 }
-.tool-card:hover { background: #1c201c; border-color: #2e362e; }
-.tool-card:active { transform: scale(0.98); }
+.group h2 {
+  font-size: 13px; font-weight: 500;
+  letter-spacing: 0.01em;
+  margin-bottom: 18px;
+}
+.group-finances h2 { color: #4a9eff; }
+.group-food     h2 { color: #c8a97a; }
+.group-other    h2 { color: #ff6b5c; }
+.group-life     h2 { color: #e6b800; }
 
-.tool-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-.tool-card span.title { font-size: 14px; flex: 1; }
-.tool-arrow { font-size: 16px; color: #3a4440; flex-shrink: 0; }
-
-.footer { text-align: center; font-size: 11px; color: #3a4440; margin-top: 28px; }
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px 12px;
+}
+.app {
+  display: flex; flex-direction: column; align-items: center; gap: 9px;
+  text-decoration: none; color: var(--text);
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+  user-select: none;
+}
+.icon {
+  width: var(--icon); height: var(--icon);
+  border-radius: 23%;
+  display: grid; place-items: center;
+  background: linear-gradient(155deg, var(--c1) 0%, var(--c2) 100%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.22),
+    inset 0 -1px 0 rgba(0,0,0,0.18),
+    0 6px 16px rgba(0,0,0,0.35);
+  color: #fff;
+  transition: transform 0.14s ease, filter 0.14s ease;
+}
+.icon svg {
+  width: 46%; height: 46%;
+  fill: none; stroke: currentColor; stroke-width: 1.8;
+  stroke-linecap: round; stroke-linejoin: round;
+  filter: drop-shadow(0 1px 1px rgba(0,0,0,0.25));
+}
+.app:hover .icon { filter: brightness(1.08); }
+.app:active .icon { transform: scale(0.92); filter: brightness(0.92); }
+.label {
+  font-size: 13px; font-weight: 400; line-height: 1.25;
+  text-align: center; max-width: 100%;
+  overflow-wrap: anywhere;
+}
 
 @media (max-width: 980px) {
-  body { padding: 20px 20px 48px; }
-  .board { flex-wrap: wrap; }
-  .column { flex: 1 1 calc(50% - 12px); }
+  :root { --icon: 80px; }
+  body { padding: max(20px, env(safe-area-inset-top)) 20px 48px; }
+  .board { gap: 16px; }
 }
-@media (max-width: 560px) {
-  body { padding: 16px 16px 48px; }
-  .board { flex-direction: column; }
-  .column { flex: 1 1 100%; }
+@media (max-width: 760px) {
+  .board { grid-template-columns: 1fr; }
+}
+@media (max-width: 440px) {
+  :root { --icon: 64px; }
+  body { padding: max(16px, env(safe-area-inset-top)) 14px 40px; }
+  .group { padding: 16px 12px 18px; border-radius: 18px; }
+  .grid { gap: 16px 8px; }
+  .label { font-size: 12px; }
 }
 </style>
 </head>
@@ -87,97 +124,83 @@ body {
 <div class="dashboard">
 
   <div class="top-bar">
+    <h1>Menu</h1>
     <a class="back-btn" href="https://andyami.github.io/atoalh/">← Brief</a>
   </div>
 
   <div class="board">
-
-    <div class="column column-finances">
-      <div class="column-header"><h2>Finances</h2></div>
-      <a class="tool-card" href="../home/finance-ato/index.html">
-        <span class="tool-dot" style="background:#A48300"></span>
-        <span class="title">ATO</span>
-        <span class="tool-arrow">›</span>
+    <section class="group group-finances">
+      <h2>Finances</h2>
+      <div class="grid">
+      <a class="app" href="../home/finance-ato/index.html">
+        <span class="icon" style="--c1:#C49D12;--c2:#7A6100"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5.5 7.5 15 4.2a1.2 1.2 0 0 1 1.5.8l.7 2.5"/><rect x="3" y="7.5" width="18" height="12.5" rx="2.6"/><path d="M21 11.5h-4.2a2 2 0 0 0 0 4H21"/><circle cx="16.9" cy="13.5" r=".9" fill="currentColor" stroke="none"/></svg></span>
+        <span class="label">ATO</span>
       </a>
-      <a class="tool-card" href="../home/finance-alh/index.html">
-        <span class="tool-dot" style="background:#216A39"></span>
-        <span class="title">ALH</span>
-        <span class="tool-arrow">›</span>
+      <a class="app" href="../home/finance-alh/index.html">
+        <span class="icon" style="--c1:#2E8A4C;--c2:#16492A"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5.5 7.5 15 4.2a1.2 1.2 0 0 1 1.5.8l.7 2.5"/><rect x="3" y="7.5" width="18" height="12.5" rx="2.6"/><path d="M21 11.5h-4.2a2 2 0 0 0 0 4H21"/><circle cx="16.9" cy="13.5" r=".9" fill="currentColor" stroke="none"/></svg></span>
+        <span class="label">ALH</span>
       </a>
-      <a class="tool-card" href="../home/finance-jnt/index.html">
-        <span class="tool-dot" style="background:#A79B8E"></span>
-        <span class="title">Joint</span>
-        <span class="tool-arrow">›</span>
+      <a class="app" href="../home/finance-jnt/index.html">
+        <span class="icon" style="--c1:#A79B8E;--c2:#5F564C"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8.2" r="3.3"/><path d="M2.8 20c0-3.4 2.8-6.1 6.2-6.1s6.2 2.7 6.2 6.1"/><circle cx="16.8" cy="9" r="2.6"/><path d="M16.6 14c2.7.2 4.7 2.6 4.7 5.5"/></svg></span>
+        <span class="label">Joint</span>
       </a>
-      <a class="tool-card" href="../home/house-calculator/index.html">
-        <span class="tool-dot" style="background:#4a9eff"></span>
-        <span class="title">House Calculator</span>
-        <span class="tool-arrow">›</span>
+      <a class="app" href="../home/house-calculator/index.html">
+        <span class="icon" style="--c1:#4A9EFF;--c2:#1F5FBF"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 11.2 12 4l9 7.2"/><path d="M5.5 9.4V20h13V9.4"/><path d="M10 20v-5.2a2 2 0 0 1 4 0V20"/></svg></span>
+        <span class="label">House Calculator</span>
       </a>
-    </div>
-
-    <div class="column column-food">
-      <div class="column-header"><h2>Food</h2></div>
-      <a class="tool-card" href="../home/weekly-meal-planner/index.html">
-        <span class="tool-dot" style="background:#c8a97a"></span>
-        <span class="title">Weekly Meal Planner</span>
-        <span class="tool-arrow">›</span>
+      </div>
+    </section>
+    <section class="group group-food">
+      <h2>Food</h2>
+      <div class="grid">
+      <a class="app" href="../home/weekly-meal-planner/index.html">
+        <span class="icon" style="--c1:#C8A97A;--c2:#80603A"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2.6"/><path d="M3 10h18M8 3v4M16 3v4"/><circle cx="8" cy="14" r=".9" fill="currentColor" stroke="none"/><circle cx="12" cy="14" r=".9" fill="currentColor" stroke="none"/><circle cx="16" cy="14" r=".9" fill="currentColor" stroke="none"/><circle cx="8" cy="17.5" r=".9" fill="currentColor" stroke="none"/><circle cx="12" cy="17.5" r=".9" fill="currentColor" stroke="none"/></svg></span>
+        <span class="label">Weekly Meal Planner</span>
       </a>
-      <a class="tool-card" href="../home/meal-prep-planner/index.html">
-        <span class="tool-dot" style="background:#c8a97a"></span>
-        <span class="title">Meal Prep Planner</span>
-        <span class="tool-arrow">›</span>
+      <a class="app" href="../home/meal-prep-planner/index.html">
+        <span class="icon" style="--c1:#C8A97A;--c2:#80603A"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="6" width="19" height="3.6" rx="1.4"/><path d="M4 9.6V18a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9.6M12 9.6V20"/></svg></span>
+        <span class="label">Meal Prep Planner</span>
       </a>
-      <a class="tool-card" href="../home/recipe-database/index.html">
-        <span class="tool-dot" style="background:#c8a97a"></span>
-        <span class="title">Recipe Database</span>
-        <span class="tool-arrow">›</span>
+      <a class="app" href="../home/recipe-database/index.html">
+        <span class="icon" style="--c1:#C8A97A;--c2:#80603A"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 13.8a4 4 0 0 1-.6-7.9A5.6 5.6 0 0 1 12 2.8a5.6 5.6 0 0 1 5.6 3.1 4 4 0 0 1-.6 7.9"/><path d="M7 13.5V20h10v-6.5M7 16.8h10"/></svg></span>
+        <span class="label">Recipe Database</span>
       </a>
-      <a class="tool-card" href="../home/food-database/index.html">
-        <span class="tool-dot" style="background:#c8a97a"></span>
-        <span class="title">Food Database</span>
-        <span class="tool-arrow">›</span>
+      </div>
+    </section>
+    <section class="group group-other">
+      <h2>Other</h2>
+      <div class="grid">
+      <a class="app" href="../home/tv-show-tracker/index.html">
+        <span class="icon" style="--c1:#FF6B5C;--c2:#B8362B"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2.5" y="6" width="19" height="13" rx="2.6"/><path d="m8 2.5 4 3.5 4-3.5M8.5 21.5h7"/></svg></span>
+        <span class="label">TV Tracker</span>
       </a>
-    </div>
-
-    <div class="column column-other">
-      <div class="column-header"><h2>Other</h2></div>
-      <a class="tool-card" href="../home/tv-show-tracker/index.html">
-        <span class="tool-dot" style="background:#ff6b5c"></span>
-        <span class="title">TV Tracker</span>
-        <span class="tool-arrow">›</span>
+      <a class="app" href="../home/book-library/index.html">
+        <span class="icon" style="--c1:#FF6B5C;--c2:#B8362B"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="4" width="4.5" height="16" rx="1"/><rect x="8" y="4" width="4.5" height="16" rx="1"/><path d="m14.6 5.3 3.8-1.1a.8.8 0 0 1 1 .6l3.3 13.9a.8.8 0 0 1-.6 1l-3.8 1a.8.8 0 0 1-1-.6L14 6.3a.8.8 0 0 1 .6-1Z"/><path d="M3.5 8h9M3.5 16h9"/></svg></span>
+        <span class="label">Book Library</span>
       </a>
-      <a class="tool-card" href="../home/book-library/index.html">
-        <span class="tool-dot" style="background:#ff6b5c"></span>
-        <span class="title">Book Library</span>
-        <span class="tool-arrow">›</span>
+      <a class="app" href="../home/temporary/index.html">
+        <span class="icon" style="--c1:#FF6B5C;--c2:#B8362B"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4.5" y="4.5" width="15" height="17" rx="2.4"/><rect x="8.5" y="2.5" width="7" height="4" rx="1.2"/><path d="M8.5 11.5h7M8.5 15.5h4.5"/></svg></span>
+        <span class="label">Temporary</span>
       </a>
-      <a class="tool-card" href="../home/temporary/index.html">
-        <span class="tool-dot" style="background:#ff6b5c"></span>
-        <span class="title">Temporary</span>
-        <span class="tool-arrow">›</span>
+      </div>
+    </section>
+    <section class="group group-life">
+      <h2>Life &amp; Health</h2>
+      <div class="grid">
+      <a class="app" href="../ato-life/exercise-nutrition-today/index.html">
+        <span class="icon" style="--c1:#E6B800;--c2:#9A7400"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2.5 12.5h4l2.5-6 5 11.5 2.6-5.5h4.9"/></svg></span>
+        <span class="label">Exercise &amp; Nutrition</span>
       </a>
-    </div>
-
-    <div class="column column-life">
-      <div class="column-header"><h2>Life & Health</h2></div>
-      <a class="tool-card" href="../ato-life/exercise-nutrition-today/index.html">
-        <span class="tool-dot" style="background:#e6b800"></span>
-        <span class="title">Exercise & Nutrition</span>
-        <span class="tool-arrow">›</span>
+      <a class="app" href="../ato-life/srsandp/index.html">
+        <span class="icon" style="--c1:#E6B800;--c2:#9A7400"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.5 6.5v11M17.5 6.5v11M3.5 9v6M20.5 9v6M6.5 12h11"/></svg></span>
+        <span class="label">SRS&amp;P</span>
       </a>
-      <a class="tool-card" href="../ato-life/srsandp/index.html">
-        <span class="tool-dot" style="background:#e6b800"></span>
-        <span class="title">SRS&P</span>
-        <span class="tool-arrow">›</span>
+      <a class="app" href="../ato-life/exercise-planner/index.html">
+        <span class="icon" style="--c1:#E6B800;--c2:#9A7400"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2.6"/><path d="M3 10h18M8 3v4M16 3v4"/><path d="m9 15.3 2.1 2.1 4-4"/></svg></span>
+        <span class="label">Exercise Planner</span>
       </a>
-      <a class="tool-card" href="../ato-life/exercise-planner/index.html">
-        <span class="tool-dot" style="background:#e6b800"></span>
-        <span class="title">Exercise Planner</span>
-        <span class="tool-arrow">›</span>
-      </a>
-    </div>
-
+      </div>
+    </section>
   </div>
 
 </div>
